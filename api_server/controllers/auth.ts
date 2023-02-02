@@ -3,40 +3,44 @@ import { pbkdf2, randomBytes, timingSafeEqual } from 'crypto'
 import dayjs from 'dayjs'
 import jwt from 'jsonwebtoken'
 import UserModel from '../models/user'
+import { setStatus } from '../../lib/status'
 
 export const signIn = (req: Request, res: Response): void => {
   UserModel.getUser(req.body.username)
     .then((user: any) => {
       pbkdf2(req.body.password, user.salt, 310000, 64, 'sha512', (err, derivedKey) => {
         if (err != null) {
-          console.error(err)
-          return
+          return res
+            .status(500)
+            .json(setStatus(req, 500, 'Internal server error'))
         }
-        if (!timingSafeEqual(user.password, derivedKey)) console.error('Incorrect username or password.')
-        else console.log('User logged in successfully')
-      })
 
-      const payload = {
-        id: user._id,
-        username: user.username
-      }
+        if (!timingSafeEqual(user.password, derivedKey)) {
+          return res
+            .status(401)
+            .json(setStatus(req, 401, 'Invalid credentials'))
+        }
 
-      const token = jwt.sign(payload, process.env.JWT_SECRET ?? '', { expiresIn: '1h' })
+        const payload = {
+          id: user._id,
+          username: user.username
+        }
 
-      res.cookie('api-auth', token, {
-        secure: false,
-        httpOnly: true,
-        expires: dayjs().add(7, 'days').toDate()
-      })
+        const token = jwt.sign(payload, String(process.env.JWT_SECRET), { expiresIn: '1h' })
+        res.cookie('api-auth', token, {
+          secure: false,
+          httpOnly: true,
+          expires: dayjs().add(7, 'days').toDate()
+        })
 
-      return res.status(200).json({
-        message: 'user ' + String(user.username) + ' logged in successfully'
+        return res
+          .status(200)
+          .json(Object.assign({}, { data: user.toJSON() }, setStatus(req, 200, 'User logged in successfully')))
       })
-    }).catch((error: any) => {
-      console.error(error)
-      return res.status(500).json({
-        message: 'Internal server error'
-      })
+    }).catch(_ => {
+      return res
+        .status(500)
+        .json(setStatus(req, 500, 'Internal server error'))
     })
 }
 
@@ -50,14 +54,22 @@ export const signUp = (req: Request, res: Response): void => {
       password: derivedKey,
       salt
     })
-      .then(() => console.log('User saved successfully'))
-      .catch((error: any) => console.error(error))
+      .then((user) => {
+        res
+          .status(201)
+          .json(Object.assign({}, { data: user.toJSON() }, setStatus(req, 0, 'User created successfully')))
+      })
+      .catch((_) => {
+        res
+          .status(500)
+          .json(setStatus(req, 500, 'Internal server error'))
+      })
   })
-
-  res.send('User created')
 }
 
-export const signOut = (_req: Request, res: Response): void => {
+export const signOut = (req: Request, res: Response): void => {
   res.clearCookie('api-auth')
-  res.send('User logged out')
+  res
+    .status(200)
+    .json(setStatus(req, 200, 'User logged out successfully'))
 }
