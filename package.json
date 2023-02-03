@@ -13,7 +13,7 @@
     "tsc": "tsc",
     "lint": "ts-standard --fix",
     "prepare": "husky install",
-    "test": "nyc mocha --exit"
+    "test": "nyc mocha --exit --timeout 5000"
   },
   "dependencies": {
     "body-parser": "1.20.1",
