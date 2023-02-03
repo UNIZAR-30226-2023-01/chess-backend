@@ -1,4 +1,5 @@
 import express from 'express'
+import connectDB from './config/database'
 import path from 'path'
 import helmet from 'helmet'
 import bodyParser from 'body-parser'
@@ -7,7 +8,6 @@ import { stamp } from './api_server/middlewares/timestamp'
 import indexRouter from './api_server/routes/index'
 import authRouter from './api_server/routes/auth'
 import cors from 'cors'
-import connectDB from './config/database'
 import * as dotenv from 'dotenv'
 dotenv.config()
 require('./auth/passport')
@@ -28,8 +28,9 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 const PORT = process.env.PORT ?? 3000
 app.listen(PORT, () => {
+  console.log(`Server is running → PORT ${String(PORT)}`)
   connectDB()
-    .then(() => console.log('Server is running on port', PORT))
+    .then(() => console.log('MongoDB has been connected'))
     .catch((err) => console.error(err))
 })
 

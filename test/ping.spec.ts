@@ -30,13 +30,16 @@ describe('GET /api/v1/ping-v2', () => {
     await request(app)
       .post('/api/v1/sign-up')
       .send(client)
+      .expect(201)
       .then(async _ => {
         await request(app)
           .post('/api/v1/sign-in')
           .send(client)
-          .then(async _ => {
+          .expect(200)
+          .then(async res => {
             const response = await request(app)
               .get('/api/v1/ping-v2')
+              .set('Cookie', res.headers['set-cookie'])
               .expect('Content-Type', /json/)
               .expect(200)
 
@@ -50,12 +53,11 @@ describe('GET /api/v1/ping-v2', () => {
             chai.expect(response.body.status.error_message).to.be.equal('pong (protected)')
           })
       })
+  })
 
-    it('El usuario no tiene permiso', async () => {
-      await request(app)
-        .get('/api/v1/ping-v2')
-        .expect('Content-Type', /json/)
-        .expect(401)
-    })
+  it('El usuario no tiene permiso', async () => {
+    await request(app)
+      .get('/api/v1/ping-v2')
+      .expect(401)
   })
 })

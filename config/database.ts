@@ -1,16 +1,15 @@
-import * as dotenv from 'dotenv'
 import mongoose from 'mongoose'
+import * as dotenv from 'dotenv'
 dotenv.config()
 
-const CONNECTION_URI = process.env.DATABASE_URI ?? 'mongodb://localhost:27017/example'
-
-console.log('Connecting to database...', process.env.DATABASE_URI)
-
+mongoose.set('strictQuery', true)
 const connectDB = async (): Promise<void> => {
-  mongoose.set('strictQuery', true)
-  await mongoose.connect(CONNECTION_URI)
-    .then(() => console.log('MongoDB has been connected'))
+  await mongoose.connect(String(process.env.DATABASE_URI))
     .catch((err) => console.error(err))
 }
+mongoose.Promise = global.Promise
+mongoose.connection.on('error', (err) => {
+  console.error(`🙅 🚫 🙅 🚫 🙅 🚫 🙅 🚫 → ${String(err.message)}`)
+})
 
 export default connectDB

@@ -8,6 +8,7 @@ on:
 
 env:
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  DATABASE_URI: ${{ secrets.DATABASE_URI }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
