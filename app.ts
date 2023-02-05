@@ -9,20 +9,32 @@ import indexRouter from './api_server/routes/index'
 import authRouter from './api_server/routes/auth'
 import cors from 'cors'
 import * as dotenv from 'dotenv'
+import passport from 'passport'
+import session from 'express-session'
 dotenv.config()
 require('./auth/passport')
+require('./auth/passportGoogle')
 
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(cors({
-  origin: ['https://cdn.redoc.ly']
+  origin: ['https://cdn.redoc.ly'],
+  credentials: true
 }))
 app.use(helmet({
   contentSecurityPolicy: false
 }))
 app.use(cookieParser())
+app.use(session({
+  name: 'api-auth',
+  secret: String(process.env.JWT_SECRET),
+  resave: false,
+  saveUninitialized: true
+}))
+app.use(passport.initialize())
+app.use(passport.session())
 
 app.use(express.static(path.join(__dirname, 'public')))
 

@@ -1,13 +1,19 @@
 import { model, Schema, Document, Model } from 'mongoose'
 
 export interface UserDocument extends Document {
+  googleId: string
   username: string
+  email: string
+  avatar: string
   password: Buffer
   salt: Buffer
 }
 
 interface User {
+  googleId: string
   username: string
+  email: string
+  avatar: string
   password: Buffer
   salt: Buffer
 }
@@ -18,9 +24,21 @@ interface UserModel extends Model<User> {
 }
 
 const userSchema = new Schema<User, UserModel>({
+  googleId: {
+    type: String,
+    required: false
+  },
   username: {
     type: String,
     required: true
+  },
+  email: {
+    type: String,
+    required: false
+  },
+  avatar: {
+    type: String,
+    required: false
   },
   password: {
     type: Buffer,
