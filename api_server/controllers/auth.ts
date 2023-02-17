@@ -69,6 +69,7 @@ export const signUp = (req: Request, res: Response): void => {
 }
 
 export const signOut = (req: Request, res: Response): void => {
+  console.log('req.user', req.user)
   res.clearCookie('api-auth')
   res
     .status(200)
@@ -76,7 +77,6 @@ export const signOut = (req: Request, res: Response): void => {
 }
 
 export const verify = (req: Request, res: Response): void => {
-  console.log('req.user', req.user)
   res
     .status(200)
     .json(setStatus(req, 200, 'User verified successfully'))
