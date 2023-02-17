@@ -30,11 +30,13 @@ const userSchema = new Schema<User, UserModel>({
   },
   username: {
     type: String,
+    unique: true,
     required: true
   },
   email: {
     type: String,
-    required: false
+    unique: true,
+    required: true
   },
   avatar: {
     type: String,

@@ -20,7 +20,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(cors({
-  origin: ['https://cdn.redoc.ly'],
+  origin: ['https://cdn.redoc.ly', 'http://localhost:3000'],
   credentials: true
 }))
 app.use(helmet({

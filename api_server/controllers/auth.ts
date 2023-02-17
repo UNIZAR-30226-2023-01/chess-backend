@@ -28,8 +28,8 @@ export const signIn = (req: Request, res: Response): void => {
 
         const token = jwt.sign(payload, String(process.env.JWT_SECRET), { expiresIn: '1h' })
         res.cookie('api-auth', token, {
-          secure: false,
           httpOnly: true,
+          secure: false,
           expires: dayjs().add(7, 'days').toDate()
         })
 
@@ -51,6 +51,7 @@ export const signUp = (req: Request, res: Response): void => {
 
     UserModel.create({
       username: req.body.username,
+      email: req.body.email,
       password: derivedKey,
       salt
     })
@@ -72,4 +73,11 @@ export const signOut = (req: Request, res: Response): void => {
   res
     .status(200)
     .json(setStatus(req, 200, 'User logged out successfully'))
+}
+
+export const verify = (req: Request, res: Response): void => {
+  console.log('req.user', req.user)
+  res
+    .status(200)
+    .json(setStatus(req, 200, 'User verified successfully'))
 }
