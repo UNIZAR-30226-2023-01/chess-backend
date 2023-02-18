@@ -1,0 +1,126 @@
+post:
+  tags:
+    - Auth
+  summary: Sign Up
+  description: Allows you to register a new user to the system.
+  operationId: sign-up
+  security: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - username
+            - email
+            - password
+          properties: 
+            username: 
+              type: string
+              example: johndoe
+              uniqueItems: true
+              description: Nickname with which the user will be identified within the platform
+            email: 
+              type: string
+              example: johndoe@example.com
+              uniqueItems: true
+              description: e-mail address with which the user registers
+            password: 
+              type: string
+              format: password
+              example: qwerty
+              description: Password to protect the user's profile
+  responses:
+    '201':
+      description: Created
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              data:
+                type: object
+                properties: 
+                  id:
+                    type: string
+                    example: 63f0e5fd3b2d2904b0915fa8
+                  username:
+                    type: string
+                    example: johndoe
+                  email:
+                    type: string
+                    example: johndoe@example.com
+                  createdAt:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.307Z
+                  updatedAt:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.307Z
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: User created successfully
+                  elapsed:
+                    type: number
+    409:
+      description: User already exists
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: User already exists
+                  elapsed:
+                    type: number
+    500:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: Internal server error
+                  elapsed:
+                    type: number
+  x-codeSamples:
+    - lang: cURL
+      source:
+        $ref: "../code_samples/curl/signUp.sh"
+    - lang: JavaScript
+      source:
+         $ref: "../code_samples/javascript/signUp.js"
+    - lang: Dart
+      source:
+         $ref: "../code_samples/dart/signUp.dart"

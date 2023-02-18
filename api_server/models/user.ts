@@ -1,26 +1,46 @@
 import { model, Schema, Document, Model } from 'mongoose'
 
 export interface UserDocument extends Document {
+  googleId: string
   username: string
+  email: string
+  avatar: string
   password: Buffer
   salt: Buffer
 }
 
 interface User {
+  googleId: string
   username: string
+  email: string
+  avatar: string
   password: Buffer
   salt: Buffer
 }
 
 interface UserModel extends Model<User> {
-  doesUserExist: (username: string) => Promise<Boolean>
+  doesUserExist: (username: string, email: string) => Promise<Boolean>
   getUser: (username: string) => Promise<User>
 }
 
 const userSchema = new Schema<User, UserModel>({
+  googleId: {
+    type: String,
+    required: false
+  },
   username: {
     type: String,
+    unique: true,
     required: true
+  },
+  email: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  avatar: {
+    type: String,
+    required: false
   },
   password: {
     type: Buffer,
@@ -34,8 +54,13 @@ const userSchema = new Schema<User, UserModel>({
   timestamps: true
 })
 
-userSchema.static('doesUserExist', async function (username): Promise<Boolean> {
-  return await this.findOne({ username })
+userSchema.static('doesUserExist', async function (username, email): Promise<Boolean> {
+  return await this.findOne({
+    $or: [
+      { username },
+      { email }
+    ]
+  })
     .then((user: any) => user !== null)
     .catch((error: any) => {
       console.error(error)

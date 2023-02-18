@@ -1,0 +1,121 @@
+post:
+  tags:
+    - Auth
+  summary: Sign In
+  description: Allows a user to log in to the system.
+  operationId: sign-in
+  security: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - username
+            - email
+            - password
+          properties: 
+            username: 
+              type: string
+              example: johndoe
+              uniqueItems: true
+              description: Nickname with which the user registered on the platform
+            password: 
+              type: string
+              format: password
+              example: qwerty
+              description: Password used to register the user
+  responses:
+    200: 
+      description: Login ok
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              data:
+                type: object
+                properties: 
+                  id:
+                    type: string
+                    example: 63f0e5fd3b2d2904b0915fa8
+                  username:
+                    type: string
+                    example: johndoe
+                  email:
+                    type: string
+                    example: johndoe@example.com
+                  createdAt:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.307Z
+                  updatedAt:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.307Z
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: User logged in successfully
+                  elapsed:
+                    type: number
+    401:
+      description: Invalid credentials
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: Invalid credentials
+                  elapsed:
+                    type: number
+    500:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: Internal server error
+                  elapsed:
+                    type: number
+  x-codeSamples:
+    - lang: cURL
+      source:
+        $ref: "../code_samples/curl/signIn.sh"
+    - lang: JavaScript
+      source:
+         $ref: "../code_samples/javascript/signIn.js"
+    - lang: Dart
+      source:
+         $ref: "../code_samples/dart/signIn.dart"

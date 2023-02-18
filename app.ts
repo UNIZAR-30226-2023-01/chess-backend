@@ -9,20 +9,31 @@ import indexRouter from './api_server/routes/index'
 import authRouter from './api_server/routes/auth'
 import cors from 'cors'
 import * as dotenv from 'dotenv'
+import passport from 'passport'
+import cookieSession from 'cookie-session'
 dotenv.config()
 require('./auth/passport')
+require('./auth/passportGoogle')
 
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(cors({
-  origin: ['https://cdn.redoc.ly']
+  origin: ['https://cdn.redoc.ly', 'http://localhost:3000'],
+  credentials: true
 }))
 app.use(helmet({
   contentSecurityPolicy: false
 }))
 app.use(cookieParser())
+app.use(cookieSession({
+  name: 'api-auth',
+  secret: String(process.env.JWT_SECRET),
+  maxAge: 7 * 24 * 60 * 60 * 1000
+}))
+app.use(passport.initialize())
+app.use(passport.session())
 
 app.use(express.static(path.join(__dirname, 'public')))
 
@@ -36,6 +47,6 @@ app.listen(PORT, () => {
 
 app.use('/api/v1', stamp)
 app.use('/api/v1', indexRouter)
-app.use('/api/v1', authRouter)
+app.use('/api/v1/auth', authRouter)
 
 export default app

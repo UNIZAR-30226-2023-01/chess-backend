@@ -2,8 +2,14 @@ import * as chai from 'chai'
 import request from 'supertest'
 import app from '../app'
 
+const newClient = {
+  username: 'johndoe',
+  email: 'johndoe@example.com',
+  password: 'qwerty123'
+}
+
 const client = {
-  username: 'Jonh Doe',
+  username: 'johndoe',
   password: 'qwerty123'
 }
 
@@ -28,12 +34,12 @@ describe('GET /api/v1/ping', () => {
 describe('GET /api/v1/ping-v2', () => {
   it('El servidor hace pong', async () => {
     await request(app)
-      .post('/api/v1/sign-up')
-      .send(client)
+      .post('/api/v1/auth/sign-up')
+      .send(newClient)
       .expect(201)
       .then(async _ => {
         await request(app)
-          .post('/api/v1/sign-in')
+          .post('/api/v1/auth/sign-in')
           .send(client)
           .expect(200)
           .then(async res => {
