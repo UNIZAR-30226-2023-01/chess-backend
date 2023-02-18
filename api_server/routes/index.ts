@@ -1,10 +1,10 @@
 import express from 'express'
 import * as indexCtrl from '../controllers/main'
-import passport from 'passport'
+import * as userMiddleware from '../middlewares/user'
 
 const router = express.Router()
 
 router.get('/ping', indexCtrl.pong)
-router.get('/ping-v2', passport.authenticate('jwt', { session: false }), indexCtrl.protectedPong)
+router.get('/ping-v2', userMiddleware.isAuthenticated, indexCtrl.protectedPong)
 
 export default router

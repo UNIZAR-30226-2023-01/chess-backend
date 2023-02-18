@@ -19,7 +19,7 @@ interface User {
 }
 
 interface UserModel extends Model<User> {
-  doesUserExist: (username: string) => Promise<Boolean>
+  doesUserExist: (username: string, email: string) => Promise<Boolean>
   getUser: (username: string) => Promise<User>
 }
 
@@ -54,8 +54,13 @@ const userSchema = new Schema<User, UserModel>({
   timestamps: true
 })
 
-userSchema.static('doesUserExist', async function (username): Promise<Boolean> {
-  return await this.findOne({ username })
+userSchema.static('doesUserExist', async function (username, email): Promise<Boolean> {
+  return await this.findOne({
+    $or: [
+      { username },
+      { email }
+    ]
+  })
     .then((user: any) => user !== null)
     .catch((error: any) => {
       console.error(error)

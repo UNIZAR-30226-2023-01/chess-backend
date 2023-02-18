@@ -60,7 +60,8 @@ export const signUp = (req: Request, res: Response): void => {
           .status(201)
           .json(Object.assign({}, { data: user.toJSON() }, setStatus(req, 0, 'User created successfully')))
       })
-      .catch((_) => {
+      .catch((err) => {
+        console.error(err)
         res
           .status(500)
           .json(setStatus(req, 500, 'Internal server error'))
@@ -69,7 +70,6 @@ export const signUp = (req: Request, res: Response): void => {
 }
 
 export const signOut = (req: Request, res: Response): void => {
-  console.log('req.user', req.user)
   res.clearCookie('api-auth')
   res
     .status(200)

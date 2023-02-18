@@ -10,7 +10,7 @@ import authRouter from './api_server/routes/auth'
 import cors from 'cors'
 import * as dotenv from 'dotenv'
 import passport from 'passport'
-import session from 'express-session'
+import cookieSession from 'cookie-session'
 dotenv.config()
 require('./auth/passport')
 require('./auth/passportGoogle')
@@ -27,11 +27,10 @@ app.use(helmet({
   contentSecurityPolicy: false
 }))
 app.use(cookieParser())
-app.use(session({
+app.use(cookieSession({
   name: 'api-auth',
   secret: String(process.env.JWT_SECRET),
-  resave: false,
-  saveUninitialized: true
+  maxAge: 7 * 24 * 60 * 60 * 1000
 }))
 app.use(passport.initialize())
 app.use(passport.session())
