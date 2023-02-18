@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   version: 1.0.0
   title: Example.com
-  termsOfService: 'https://example.com/terms/'
+  termsOfService: 'https://example.com/tos/'
   contact:
     email: contact@example.com
     url: 'http://example.com/contact'
@@ -11,249 +11,31 @@ info:
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
   x-logo:
     url: 'https://redocly.github.io/openapi-template/logo.png'
-  description: |
-    This is an **example** API to demonstrate features of the OpenAPI
-    specification.
-
-    # Introduction
-
-    This API definition is intended to to be a good starting point for
-    describing your API in [OpenAPI/Swaggerformat](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md).
-    It also demonstrates features of the
-    [create-openapi-repo](https://github.com/Redocly/create-openapi-repo) tool and
-    the [Redoc](https://github.com/Redocly/Redoc) documentation engine. Beyond
-    the standard OpenAPI syntax, we use a few [vendor extensions](https://github.com/Redocly/Redoc/blob/master/docs/redoc-vendor-extensions.md).
-
-    # OpenAPI Specification
-
-    The goal of The OpenAPI Specification is to define a standard,
-    language-agnostic interface to REST APIs which
-    allows both humans and computers to discover and understand the capabilities
-    of the service without access to source
-    code, documentation, or through network traffic inspection. When properly
-    defined via OpenAPI, a consumer can understand and interact with the remote service with a minimal amount of implementation logic. Similar to what
-    interfaces have done for lower-level programming, OpenAPI removes the
-    guesswork in calling the service.
 tags:
-  - name: Echo
+  - name: Auth
     description: Example echo operations.
+  - name: OAuth 2.0
+    description: OAuth 2.0, which stands for (open authorization), is a standard designed to allow a website or application to access resources hosted by other web applications on behalf of a user.
+x-tagGroups:
+  - name: Auth
+    tags:
+      - Auth
+      - OAuth 2.0
 servers:
-  - url: 'http://example.com/api/v1'
+  - url: 'http://localhost:4000/api/v1'
   - url: 'https://example.com/api/v1'
 paths:
-  /echo:
-    post:
-      tags:
-        - Echo
-      summary: Echo test
-      description: Receive the exact message you've sent
-      operationId: echo
-      security:
-        - api_key: []
-        - basic_auth: []
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: string
-              examples:
-                response:
-                  value: Hello world!
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: string
-              example: Hello world!
-        description: Echo payload
-        required: true
-      x-codeSamples:
-        - lang: curl
-          source: |
-            pepo
-        - lang: ES6
-          source: |
-            pepo
-        - lang: Dart
-          source: |
-            pepo
+  /auth/sign-up:
+    $ref: 'paths/signUp.yaml'
+  /auth/sign-in:
+    $ref: 'paths/signIn.yaml'
+  /auth/sign-out:
+    $ref: 'paths/signOut.yaml'
+  /auth/sign-in/google:
+    $ref: 'paths/signInGoogle.yaml'
+  /auth/verify:
+    $ref: paths\verify.yaml
 components:
   securitySchemes:
-    main_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: 'http://example.com/api/oauth/dialog'
-          scopes:
-            'read:users': read users info
-            'write:users': modify or remove users
     api_key:
-      type: apiKey
-      in: header
-      name: api_key
-    basic_auth:
-      type: http
-      scheme: basic
-  schemas:
-    Email:
-      description: User email address
-      type: string
-      format: test
-      example: john.smith@example.com
-    User:
-      type: object
-      properties:
-        username:
-          description: User supplied username
-          type: string
-          minLength: 4
-          example: John78
-        firstName:
-          description: User first name
-          type: string
-          minLength: 1
-          example: John
-        lastName:
-          description: User last name
-          type: string
-          minLength: 1
-          example: Smith
-        email:
-          $ref: '#/components/schemas/Email'
-    Schema:
-      type: object
-      title: Scalars
-      properties:
-        stringProperty:
-          description: Property name's description (type is string)1111
-          type: string
-          example: example
-        readOnlyStringProperty:
-          description: Notice this only appears in the response.
-          type: string
-          readOnly: true
-          example: example
-        writeOnlyStringProperty:
-          description: Notice this only appears in the request.
-          type: string
-          writeOnly: true
-          example: example
-        minLengthString:
-          description: Property name's description (type is string)
-          type: string
-          minLength: 4
-          example: example
-        maxLengthString:
-          description: Property name's description (type is string)
-          type: string
-          maxLength: 140
-          example: example
-        minAndMaxLengthString:
-          description: Property name's description (type is string)
-          type: string
-          minLength: 4
-          maxLength: 140
-          example: example
-        stringEnumValues:
-          description: Property name's description (type is string)
-          type: string
-          enum:
-            - sample
-            - example
-            - specimen
-            - case
-            - instance
-            - illustration
-        stringDateTime:
-          description: 'Property name''s description (type is string, format is date-time)'
-          type: string
-          format: date-time
-        stringDate:
-          description: 'Property name''s description (type is string, format is date-time)'
-          type: string
-          format: date
-        stringEmail:
-          description: 'Property name''s description (type is string, format is email)'
-          type: string
-          format: email
-        stringIpAddressV4:
-          description: 'Property name''s description (type is string, format is ipv4 address)'
-          type: string
-          format: ipv4
-        stringIpAddressV6:
-          description: 'Property name''s description (type is string, format is ipv6 address)'
-          type: string
-          format: ipv6
-        stringPassword:
-          description: 'Property name''s description (type is string, format is password)'
-          type: string
-          format: password
-        stringHostname:
-          description: 'Property name''s description (type is string, format is hostname)'
-          type: string
-          format: hostname
-        stringUri:
-          description: 'Property name''s description (type is string, format is uri)'
-          type: string
-          format: uri
-        stringUuid:
-          description: 'Property name''s description (type is string, format is uuid)'
-          type: string
-          format: uuid
-        numberProperty:
-          description: Property name's description (type is number)
-          type: number
-          example: 8
-        numberFloat:
-          description: 'Property name''s description (type is number, format is float)'
-          type: number
-          format: float
-        numberDouble:
-          description: 'Property name''s description (type is number, format is double)'
-          type: number
-          format: double
-        numberGreaterThanOrEquals:
-          description: Property name's description (type is number)
-          type: number
-          minimum: 5
-        numberGreaterThan:
-          description: Property name's description (type is number)
-          type: number
-        numberLessThan:
-          description: Property name's description (type is number)
-          type: number
-        numberLessThanOrEquals:
-          description: Property name's description (type is number)
-          type: number
-          maximum: 8
-        numberRange:
-          description: Property name's description (type is number)
-          type: number
-          minimum: 5
-          maximum: 8
-        numberRangeExclusiveMaximum:
-          description: Property name's description (type is number)
-          type: number
-        numberRangeExclusiveMinimumAndMaximum:
-          description: Property name's description (type is number)
-          type: number
-        numberMultipleOf:
-          description: Property name's description (type is number)
-          type: number
-          multipleOf: 2
-        integerType:
-          description: Property name's description (type is integer)
-          type: integer
-        integer32bit:
-          description: 'Property name''s description (type is integer, format is int32)'
-          type: integer
-          format: int32
-        integer64bit:
-          description: 'Property name''s description (type is integer, format is int64)'
-          type: integer
-          format: int64
-        booleanProperty:
-          description: Property name's description (type is boolean)
-          type: boolean
+      $ref: 'components/securitySchemes/api_key.yaml'

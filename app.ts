@@ -47,6 +47,6 @@ app.listen(PORT, () => {
 
 app.use('/api/v1', stamp)
 app.use('/api/v1', indexRouter)
-app.use('/api/v1', authRouter)
+app.use('/api/v1/auth', authRouter)
 
 export default app

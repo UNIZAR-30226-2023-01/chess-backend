@@ -79,5 +79,5 @@ export const signOut = (req: Request, res: Response): void => {
 export const verify = (req: Request, res: Response): void => {
   res
     .status(200)
-    .json(setStatus(req, 200, 'User verified successfully'))
+    .json(setStatus(req, 200, 'User Authorized'))
 }

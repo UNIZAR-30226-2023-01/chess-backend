@@ -6,7 +6,6 @@ import passport from 'passport'
 export const userExists = (req: Request, res: Response, next: NextFunction): void => {
   UserModel.doesUserExist(req.body.username, req.body.email)
     .then((flag: Boolean) => {
-      console.log(flag)
       if (flag === false) return next()
       return res
         .status(409)
