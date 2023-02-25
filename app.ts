@@ -11,6 +11,7 @@ import cors from 'cors'
 import * as dotenv from 'dotenv'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
+import server from './server'
 dotenv.config()
 require('./auth/passport')
 require('./auth/passportGoogle')
@@ -48,5 +49,9 @@ app.listen(PORT, () => {
 app.use('/api/v1', stamp)
 app.use('/api/v1', indexRouter)
 app.use('/api/v1/auth', authRouter)
+
+server.listen(Number(PORT) + 1, () => {
+  console.log(`Socket.IO is running → PORT ${String(Number(PORT) + 1)}`)
+})
 
 export default app
