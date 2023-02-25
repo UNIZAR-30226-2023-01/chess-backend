@@ -2,25 +2,29 @@
 import App from './app'
 import http from 'http'
 import { Server } from 'socket.io'
+import * as gameCtrl from './api_server/controllers/game'
 
 const server = http.createServer(App)
 
 const io = new Server(server, {
   cors: {
     origin: '*'
+  },
+  connectionStateRecovery: {
+    // the backup duration of the sessions and the packets
+    maxDisconnectionDuration: 2 * 60 * 1000,
+    // whether to skip middlewares upon successful recovery
+    skipMiddlewares: true
   }
 })
 
-io.on('connection', (socket: any) => {
-  console.log(`User Connected: ${socket.id}`)
+const onConnection = (socket: any): any => {
+  socket.on('create_room', gameCtrl.createRoom)
+  socket.on('join_room', gameCtrl.joinRoom)
+  socket.on('leave_room', gameCtrl.leaveRoom)
+  socket.on('move', gameCtrl.move)
+}
 
-  socket.on('join_room', (data: any) => {
-    socket.join(data)
-  })
-
-  socket.on('send_message', (data: any) => {
-    socket.to(data.room).emit('receive_message', data)
-  })
-})
+io.on('connection', onConnection)
 
 export default server
