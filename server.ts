@@ -18,11 +18,12 @@ const io = new Server(server, {
   }
 })
 
-const onConnection = (socket: any): any => {
-  socket.on('create_room', gameCtrl.createRoom)
-  socket.on('join_room', gameCtrl.joinRoom)
-  socket.on('leave_room', gameCtrl.leaveRoom)
+function onConnection (socket: any): any {
+  socket.on('create_room', gameCtrl.createRoom.bind(null, socket))
+  socket.on('join_room', gameCtrl.joinRoom.bind(null, socket, io))
+  socket.on('leave_room', gameCtrl.leaveRoom.bind(null, socket))
   socket.on('move', gameCtrl.move)
+  io.sockets.adapter.rooms.get('pistacho')
 }
 
 io.on('connection', onConnection)
