@@ -3,4 +3,4 @@ services:
   express:
     build: ./
     ports:
-      - 80:3000
+      - 80:4000
