@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import App from './app'
 import http from 'http'
-import { Server } from 'socket.io'
+import { Server, Socket } from 'socket.io'
 import * as gameCtrl from './api_server/controllers/game'
 
 const server = http.createServer(App)
@@ -18,12 +18,11 @@ const io = new Server(server, {
   }
 })
 
-function onConnection (socket: any): any {
+function onConnection (socket: Socket): void {
   socket.on('create_room', gameCtrl.createRoom.bind(null, socket))
   socket.on('join_room', gameCtrl.joinRoom.bind(null, socket, io))
   socket.on('leave_room', gameCtrl.leaveRoom.bind(null, socket))
   socket.on('move', gameCtrl.move.bind(null, socket))
-  io.sockets.adapter.rooms.get('pistacho')
 }
 
 io.on('connection', onConnection)

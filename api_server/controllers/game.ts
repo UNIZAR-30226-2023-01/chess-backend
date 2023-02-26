@@ -1,4 +1,5 @@
 import { Chess } from 'chess.ts'
+import { Server, Socket } from 'socket.io'
 
 enum PlayerColor {
   LIGHT = 'LIGHT',
@@ -24,25 +25,6 @@ const game: GameRoom = {
   board: startBoard
 }
 
-export function createRoom (socket: any, data: any): any {
-  const chess = new Chess()
-  console.log('create_room', chess)
-  console.log('create_room', JSON.stringify(data))
-  socket.join(data.roomID)
-}
-
-export const joinRoom = (socket: any, io: any, data: any): any => {
-  if (io.sockets.adapter.rooms.get(data.roomID) === undefined) return
-
-  console.log('join_room', data.roomID)
-  socket.join(data.roomID)
-}
-
-export const leaveRoom = (socket: any, data: any): any => {
-  console.log('leave_room', data.roomID)
-  socket.leave(data.roomID)
-}
-
 interface Message {
   jugador: string // socket.jugador (temporal para testing)
   roomID: string
@@ -62,20 +44,46 @@ interface ReturnMessage {
   winner: undefined | PlayerColor
 }
 
-export const move = (socket: any, data: Message): any => {
+export const createRoom = async (socket: Socket, data: Message): Promise<void> => {
+  const chess = new Chess()
+  console.log('create_room', chess)
+  console.log('create_room', JSON.stringify(data))
+  await socket.join(data.roomID)
+}
+
+export const joinRoom = async (socket: Socket, io: Server, data: Message): Promise<void> => {
+  console.log(io.sockets.adapter.rooms)
+  if (io.sockets.adapter.rooms.get(data.roomID) === undefined) return
+
+  console.log('join_room', data.roomID)
+  await socket.join(data.roomID)
+}
+
+export const leaveRoom = async (socket: Socket, data: Message): Promise<void> => {
+  console.log('leave_room', data.roomID)
+  await socket.leave(data.roomID)
+}
+
+export const move = (socket: Socket, data: Message): void => {
   console.log('move', data)
 
   const { jugador, roomID, move } = data
 
-  if (game.light !== jugador && game.dark !== jugador) socket.emit('error', 'No eres jugador de esta partida')
-  if (game.dark === jugador && game.turn === PlayerColor.LIGHT) socket.emit('error', 'No es tu turno')
-  if (game.light === jugador && game.turn === PlayerColor.DARK) socket.emit('error', 'No es tu turno')
+  if (game.light !== jugador && game.dark !== jugador) {
+    socket.emit('error', 'No eres jugador de esta partida')
+    return
+  }
+  if ((game.dark === jugador && game.turn === PlayerColor.LIGHT) ||
+      (game.light === jugador && game.turn === PlayerColor.DARK)) {
+    socket.emit('error', 'No es tu turno')
+    return
+  }
 
   const chess = new Chess(game.board)
-  try {
-    chess.move(move)
-  } catch (err: any) {
-    socket.emit('error', err?.message)
+  const moveRes = chess.move(move, { sloppy: true })
+  if (moveRes === null) {
+    socket.emit('error', 'Movimiento ilegal')
+    return
   }
 
   let flag: GameFlag | undefined
@@ -98,4 +106,6 @@ export const move = (socket: any, data: Message): any => {
   }
 
   socket.to(roomID).emit('move', returnMessage)
+  console.log('room', socket.rooms.has(roomID))
+  console.log('rooms', socket.rooms)
 }
