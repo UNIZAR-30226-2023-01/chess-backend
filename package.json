@@ -34,6 +34,7 @@
     "passport": "^0.6.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "4.0.1",
+    "redis": "^4.6.5",
     "socket.io": "^4.6.1"
   },
   "devDependencies": {
@@ -70,7 +71,8 @@
       "./node_modules/ts-standard/eslintrc.json"
     ],
     "rules": {
-      "@typescript-eslint/no-var-requires": 0
+      "@typescript-eslint/no-var-requires": 0,
+      "@typescript-eslint/strict-boolean-expressions": 0
     }
   },
   "lint-staged": {

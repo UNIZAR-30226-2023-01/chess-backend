@@ -1,5 +1,5 @@
 import express from 'express'
-import connectDB from './config/database'
+import { connectDB, connectRedis } from './config/database'
 import path from 'path'
 import helmet from 'helmet'
 import bodyParser from 'body-parser'
@@ -43,6 +43,9 @@ app.listen(PORT, () => {
   console.log(`Server is running → PORT ${String(PORT)}`)
   connectDB()
     .then(() => console.log('MongoDB has been connected'))
+    .catch((err) => console.error(err))
+  connectRedis()
+    .then(() => console.log('Redis has been connected'))
     .catch((err) => console.error(err))
 })
 

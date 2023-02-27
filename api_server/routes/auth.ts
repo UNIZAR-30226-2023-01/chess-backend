@@ -10,6 +10,7 @@ const FAILURE_REDIRECT = process.env.FAILURE_REDIRECT ?? 'http://localhost:3000/
 
 router.post('/sign-in', authCtrl.signIn)
 router.post('/sign-up', userMiddleware.userExists, authCtrl.signUp)
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 router.post('/sign-out', userMiddleware.isAuthenticated, authCtrl.signOut)
 router.post('/verify', userMiddleware.isAuthenticated, authCtrl.verify)
 
