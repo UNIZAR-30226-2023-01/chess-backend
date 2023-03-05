@@ -1,29 +1,11 @@
 import { Chess } from 'chess.ts'
 import { Server, Socket } from 'socket.io'
-
-enum PlayerColor {
-  LIGHT = 'LIGHT',
-  DARK = 'DARK'
-}
-
-interface GameRoom {
-  roomID: string
-  light: string
-  dark: string
-  turn: PlayerColor
-  moves: string[]
-  board: string // fen notation
-}
-const startBoard = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-
-const game: GameRoom = {
-  roomID: 'pistacho',
-  light: 'Hector',
-  dark: 'Fernando',
-  turn: PlayerColor.LIGHT,
-  moves: [],
-  board: startBoard
-}
+import {
+  /* GameType, */ PlayerColor, EndState /* GameDocument, */
+  /* GameState, GameModel, newBoard */
+} from '../models/game'
+import * as competitive from './competitive_game'
+import { client } from '../../config/database'
 
 interface Message {
   jugador: string // socket.jugador (temporal para testing)
@@ -31,22 +13,28 @@ interface Message {
   move: string
 }
 
-enum GameFlag {
-  DRAW = 'DRAW',
-  CHECKMATE = 'CHECKMATE',
-  CHECK = 'CHECK'
+interface MoveMessage {
+  roomID: string
+  move: string
 }
 
-interface ReturnMessage {
-  board: string
+interface MoveResponse {
+  timer_dark?: number
+  timer_light?: number
+
+  move: string
   turn: PlayerColor
-  flag: undefined | GameFlag
-  winner: undefined | PlayerColor
+  finished: boolean
+  check: boolean
+  end_state?: EndState
+  winner?: PlayerColor
 }
+
+export const roomPrefix = 'game-'
+
+export const findGame = competitive.findGame
 
 export const createRoom = async (socket: Socket, data: Message): Promise<void> => {
-  const chess = new Chess()
-  console.log('create_room', chess)
   console.log('create_room', JSON.stringify(data))
   await socket.join(data.roomID)
 }
@@ -64,17 +52,31 @@ export const leaveRoom = async (socket: Socket, data: Message): Promise<void> =>
   await socket.leave(data.roomID)
 }
 
-export const move = (socket: Socket, data: Message): void => {
+export const move = async (socket: Socket, data: MoveMessage): Promise<void> => {
   console.log('move', data)
 
-  const { jugador, roomID, move } = data
+  const { roomID, move } = data
 
-  if (game.light !== jugador && game.dark !== jugador) {
+  if (!(roomID && move)) {
+    socket.to(roomID).emit('error', 'Missing parameters')
+    return
+  }
+
+  const rawGame = await client.get(roomPrefix + roomID)
+  if (!rawGame) {
+    socket.to(roomID).emit('error', 'Not such room')
+    return
+  }
+
+  const game = JSON.parse(rawGame)
+
+  if (game.light_socket_id !== socket.id &&
+    game.dark_socket_id !== socket.id) {
     socket.emit('error', 'No eres jugador de esta partida')
     return
   }
-  if ((game.dark === jugador && game.turn === PlayerColor.LIGHT) ||
-      (game.light === jugador && game.turn === PlayerColor.DARK)) {
+  if ((game.dark_socket_id === socket.id && game.turn === PlayerColor.LIGHT) ||
+      (game.light_socket_id === socket.id && game.turn === PlayerColor.DARK)) {
     socket.emit('error', 'No es tu turno')
     return
   }
@@ -86,26 +88,45 @@ export const move = (socket: Socket, data: Message): void => {
     return
   }
 
-  let flag: GameFlag | undefined
-  if (chess.inCheckmate()) flag = GameFlag.CHECKMATE
-  else if (chess.inDraw()) flag = GameFlag.DRAW
-  else if (chess.inCheck()) flag = GameFlag.CHECK
+  // Cancelar avance de tiempo
 
-  let winner: PlayerColor | undefined
-  if (chess.inCheckmate()) winner = game.turn
+  let flag: EndState | undefined
+  let finished = true
+  if (chess.inCheckmate()) flag = EndState.CHECKMATE
+  else if (chess.inDraw()) flag = EndState.DRAW
+  else finished = false
+
+  const check = chess.inCheck()
+
+  const winner = game.turn
 
   game.board = chess.fen()
   game.turn = game.turn === PlayerColor.DARK ? PlayerColor.LIGHT : PlayerColor.DARK
   game.moves.push(move)
 
-  const returnMessage: ReturnMessage = {
-    board: game.board,
+  await client.set(roomPrefix + roomID, JSON.stringify(game))
+
+  const returnMessage: MoveResponse = {
+    move,
     turn: game.turn,
-    flag,
-    winner
+    finished,
+    check
+  }
+
+  if (finished) {
+    returnMessage.end_state = flag
+    if (flag === EndState.CHECKMATE) {
+      returnMessage.winner = winner
+    }
+  }
+
+  if (game.use_timer) {
+    returnMessage.timer_dark = game.timer_dark
+    returnMessage.timer_light = game.timer_light
   }
 
   socket.to(roomID).emit('move', returnMessage)
-  console.log('room', socket.rooms.has(roomID))
-  console.log('rooms', socket.rooms)
+  socket.emit('move', returnMessage)
+
+  // Avance de tiempos
 }

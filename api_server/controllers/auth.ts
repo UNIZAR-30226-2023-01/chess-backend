@@ -80,11 +80,14 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
     const expTime = 60 * 60 * 5 // segundos de expiracion
 
     const record = await client.get(blacklist)
+
     console.log('Record: ', record)
+
     if (record !== null) {
       const parsedData = JSON.parse(record)
       parsedData[blacklist].push(authToken)
-      await client.setEx(blacklist, expTime, JSON.stringify(parsedData))
+      await client.setex(blacklist, expTime, JSON.stringify(parsedData))
+
       console.log('Data: ', parsedData)
 
       res.clearCookie('api-auth').status(200).json({ message: 'Good Bye!' })
@@ -93,7 +96,7 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
         [blacklist]: [authToken]
       }
 
-      await client.setEx(
+      await client.setex(
         blacklist,
         expTime,
         JSON.stringify(blacklistedData)

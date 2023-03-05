@@ -18,10 +18,16 @@ const io = new Server(server, {
   }
 })
 
+io.use((socket, next) => {
+  console.log(socket.handshake.auth)
+  next()
+})
+
 function onConnection (socket: Socket): void {
   socket.on('create_room', gameCtrl.createRoom.bind(null, socket))
   socket.on('join_room', gameCtrl.joinRoom.bind(null, socket, io))
   socket.on('leave_room', gameCtrl.leaveRoom.bind(null, socket))
+  socket.on('find_game', gameCtrl.findGame.bind(null, socket))
   socket.on('move', gameCtrl.move.bind(null, socket))
 }
 
