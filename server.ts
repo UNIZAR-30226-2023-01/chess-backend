@@ -29,6 +29,7 @@ function onConnection (socket: Socket): void {
   socket.on('leave_room', gameCtrl.leaveRoom.bind(null, socket))
   socket.on('find_game', gameCtrl.findGame.bind(null, socket))
   socket.on('move', gameCtrl.move.bind(null, socket))
+  socket.on('game_state', gameCtrl.gameState.bind(null, socket))
 }
 
 io.on('connection', onConnection)

@@ -52,9 +52,10 @@ export interface GameState {
   moves: string[] // UCI LAN format
 
   use_timer: boolean
-  initial_timer: number
-  timer_dark: number
-  timer_light: number
+  initial_timer: number // seconds
+  increment: number // seconds
+  timer_dark: number // milliseconds
+  timer_light: number // milliseconds
 
   finished: boolean
   end_state: EndState | undefined
