@@ -44,7 +44,7 @@ export const createRoom = async (socket: Socket, data: Message): Promise<void> =
   await socket.join(data.roomID)
 }
 
-export const gameState = async (socket: Socket, data: Message): Promise<void> => {
+export const gameState = async (socket: Socket, data: Message, join?: boolean): Promise<void> => {
   if (!data.roomID) {
     socket.emit('error', 'Missing parameters')
     return
@@ -73,9 +73,11 @@ export const gameState = async (socket: Socket, data: Message): Promise<void> =>
       game.timer_light = gameTimer.getTimeLight()
     }
 
-    // TODO: añadir el nombre de los espectadores a la lista... requiere autentificación
-    // de momento usamos el socket id...
-    game.spectators.push(socket.id)
+    if (join) {
+      // TODO: añadir el nombre de los espectadores a la lista... requiere autentificación
+      // de momento usamos el socket id...
+      game.spectators.push(socket.id)
+    }
 
     await client.setex(roomPrefix + roomID, gameOverTTL, JSON.stringify(game))
   } finally {
@@ -83,14 +85,18 @@ export const gameState = async (socket: Socket, data: Message): Promise<void> =>
     await lock.release() // UNLOCK
   }
 
-  socket.emit('game_state', game)
+  const res: Partial<GameState> = Object.assign(game)
+  delete res.light_socket_id
+  delete res.dark_socket_id
+
+  socket.emit('game_state', res)
 }
 
 export const joinRoom = async (socket: Socket, io: Server, data: Message): Promise<void> => {
   console.log(io.sockets.adapter.rooms)
   if (!io.sockets.adapter.rooms.get(data.roomID)) return
 
-  await gameState(socket, data)
+  await gameState(socket, data, true)
 
   console.log('join_room', data.roomID)
   await socket.join(data.roomID)
@@ -185,6 +191,7 @@ export const move = async (socket: Socket, data: MoveMessage): Promise<void> => 
           return
         }
         gameTimer.stop()
+        chessTimers.delete(roomID)
       }
       game.end_state = flag
       await client.setex(roomPrefix + roomID, JSON.stringify(game), gameOverTTL)
