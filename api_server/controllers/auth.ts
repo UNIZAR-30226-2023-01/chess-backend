@@ -73,6 +73,7 @@ export const signUp = (req: Request, res: Response): void => {
 }
 
 export const signOut = async (req: Request, res: Response): Promise<void> => {
+  // console.log(user.username)
   try {
     const blacklist = 'token-blacklist'
     const authToken = req.cookies['api-auth']
@@ -80,7 +81,6 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
     const expTime = 60 * 60 * 5 // segundos de expiracion
 
     let lock = await redlock.acquire([blacklist + '-lock'], 5000) // LOCK
-    console.log(blacklist + '-lock: AQUIRED')
     try {
       const record = await client.get(blacklist)
       lock = await lock.extend(5000) // EXTEND
@@ -101,7 +101,6 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
       }
     } finally {
       await lock.release() // UNLOCK
-      console.log(blacklist + '-lock: RELEASED')
     }
     res
       .clearCookie('api-auth')
@@ -116,6 +115,7 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
 }
 
 export const verify = (req: Request, res: Response): void => {
+  console.log(req.user)
   res
     .status(200)
     .json(setStatus(req, 200, 'User Authorized'))

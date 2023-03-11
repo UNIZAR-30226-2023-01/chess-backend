@@ -22,13 +22,14 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
   if (req.isAuthenticated()) return next()
   try {
     passport.authenticate('jwt', { session: false },
-      async (_err: Error, user: boolean, _info: any): Promise<void> => {
+      async (_err: Error, user: any, _info: any): Promise<void> => {
         if (!user) {
           res
             .status(401)
             .json({ message: 'User not authenticated!' })
           return
         }
+
         const blacklist = 'token-blacklist'
         const token = req.cookies['api-auth']
 
@@ -54,6 +55,7 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
             .status(401)
             .json({ message: 'Invalid Token!' })
         } else {
+          req.user = user
           next()
         }
       })(req, res, next)

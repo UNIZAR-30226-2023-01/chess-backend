@@ -5,7 +5,7 @@ import UserModel from '../api_server/models/user'
 
 const cookieExtractor = (req: Request): string | null => {
   let token = null
-  if ((Boolean(req)) && (Boolean(req.cookies))) token = req.cookies['api-auth']
+  if (req?.cookies) token = req.cookies['api-auth']
   // if (req && req.signedCookies && req.signedCookies.jwt) {
   //   token = req.signedCookies["jwt"]["token"];
   // }
@@ -22,7 +22,7 @@ passport.use(
         maxAge: '7d'
       }
     },
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+
     async (_req: Request, payload: any, done: VerifiedCallback) => {
       return await UserModel.findOne({ username: payload.username })
         .then(async (user) => {
