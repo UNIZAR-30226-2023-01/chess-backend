@@ -7,6 +7,8 @@ import {
 import * as competitive from './competitive_game'
 import { client, redlock } from '../../config/database'
 import { chessTimers } from '../../lib/timer'
+import { roomLockPrefix, roomPrefix } from '../../lib/room'
+const _ = require('lodash')
 
 interface Message {
   jugador: string // socket.jugador (temporal para testing)
@@ -34,9 +36,6 @@ interface MoveResponse {
 // 2 minutes after a game is over, it is deleted from redis
 export const gameOverTTL = 2 * 60
 
-export const roomPrefix = 'game-'
-export const roomLockPrefix = 'game-lock-'
-
 export const findGame = competitive.findGame
 
 export const createRoom = async (socket: Socket, data: Message): Promise<void> => {
@@ -44,7 +43,11 @@ export const createRoom = async (socket: Socket, data: Message): Promise<void> =
   await socket.join(data.roomID)
 }
 
-export const gameState = async (socket: Socket, data: Message, join?: boolean): Promise<void> => {
+export const gameState = async (
+  socket: Socket,
+  data: Message,
+  join?: boolean
+): Promise<void> => {
   if (!data.roomID) {
     socket.emit('error', 'Missing parameters')
     return
@@ -63,23 +66,22 @@ export const gameState = async (socket: Socket, data: Message, join?: boolean): 
     lock = await lock.extend(5000) // EXTEND
     game = JSON.parse(rawGame)
 
-    if (game.use_timer) {
+    if (game.use_timer && !game.finished) {
       const gameTimer = chessTimers.get(roomID)
       if (!gameTimer) {
         socket.emit('error', 'Internal server error')
         return
+      } else {
+        game.timer_dark = gameTimer.getTimeDark()
+        game.timer_light = gameTimer.getTimeLight()
       }
-      game.timer_dark = gameTimer.getTimeDark()
-      game.timer_light = gameTimer.getTimeLight()
     }
 
     if (join) {
-      // TODO: añadir el nombre de los espectadores a la lista... requiere autentificación
-      // de momento usamos el socket id...
-      game.spectators.push(socket.id)
+      game.spectators.push(socket.data.username)
     }
 
-    await client.setex(roomPrefix + roomID, gameOverTTL, JSON.stringify(game))
+    await client.set(roomPrefix + roomID, JSON.stringify(game))
   } finally {
     // This block executes even if a return statement is called
     await lock.release() // UNLOCK
@@ -92,9 +94,26 @@ export const gameState = async (socket: Socket, data: Message, join?: boolean): 
   socket.emit('game_state', res)
 }
 
-export const joinRoom = async (socket: Socket, io: Server, data: Message): Promise<void> => {
-  console.log(io.sockets.adapter.rooms)
-  if (!io.sockets.adapter.rooms.get(data.roomID)) return
+export const joinRoom = async (
+  socket: Socket,
+  io: Server,
+  data: Message
+): Promise<void> => {
+  if (!data.roomID) {
+    socket.emit('error', 'Missing parameters')
+    return
+  }
+
+  const roomID = data.roomID
+  if (!io.sockets.adapter.rooms.get(roomID)) {
+    socket.emit('error', `No game with roomID: ${roomID}`)
+    return
+  }
+
+  if (socket.rooms.has(roomID)) {
+    socket.emit('error', 'You have already joined this room')
+    return
+  }
 
   await gameState(socket, data, true)
 
@@ -102,18 +121,75 @@ export const joinRoom = async (socket: Socket, io: Server, data: Message): Promi
   await socket.join(data.roomID)
 }
 
-export const leaveRoom = async (socket: Socket, data: Message): Promise<void> => {
-  console.log('leave_room', data.roomID)
+export const leaveRoom = async (
+  socket: Socket,
+  io: Server,
+  data: Message
+): Promise<void> => {
+  if (!data.roomID) {
+    socket.emit('error', 'Missing parameters')
+    return
+  }
+
+  const roomID = data.roomID
+  if (io.sockets.adapter.rooms.get(data.roomID) == null) {
+    socket.emit('error', `No game with roomID: ${roomID}`)
+    return
+  }
+
+  if (!socket.rooms.has(roomID)) {
+    socket.emit('error', 'You have not joined this room')
+    return
+  }
+
+  let lock = await redlock.acquire([roomLockPrefix + roomID], 5000) // LOCK
+  try {
+    const rawGame = await client.get(roomPrefix + roomID)
+    if (!rawGame) {
+      socket.emit('error', `No game with roomID: ${roomID}`)
+      return
+    }
+
+    lock = await lock.extend(5000) // EXTEND
+    const game = JSON.parse(rawGame)
+
+    if (game.use_timer) {
+      const gameTimer = chessTimers.get(roomID)
+      if (!gameTimer) {
+        socket.emit('error', 'Internal server error')
+        return
+      }
+      game.timer_dark = gameTimer.getTimeDark()
+      game.timer_light = gameTimer.getTimeLight()
+    }
+
+    _.pullAt(
+      game.spectators,
+      [_.indexOf(game.spectators,
+        socket.data.username
+      )]
+    )
+
+    await client.setex(roomPrefix + roomID, gameOverTTL, JSON.stringify(game))
+  } finally {
+    // This block executes even if a return statement is called
+    await lock.release() // UNLOCK
+  }
+
   await socket.leave(data.roomID)
 }
 
-export const move = async (socket: Socket, data: MoveMessage): Promise<void> => {
+export const move = async (
+  socket: Socket,
+  io: Server,
+  data: MoveMessage
+): Promise<void> => {
   console.log('move', data)
 
   const { roomID, move } = data
 
   if (!(roomID && move)) {
-    socket.to(roomID).emit('error', 'Missing parameters')
+    socket.emit('error', 'Missing parameters')
     return
   }
 
@@ -128,7 +204,7 @@ export const move = async (socket: Socket, data: MoveMessage): Promise<void> => 
   try {
     const rawGame = await client.get(roomPrefix + roomID)
     if (!rawGame) {
-      socket.to(roomID).emit('error', 'Not such room')
+      socket.emit('error', 'Not such room')
       return
     }
 
@@ -141,12 +217,14 @@ export const move = async (socket: Socket, data: MoveMessage): Promise<void> => 
     }
 
     if (game.light_socket_id !== socket.id &&
-    game.dark_socket_id !== socket.id) {
+      game.dark_socket_id !== socket.id) {
       socket.emit('error', 'You are not a player of this game')
       return
     }
-    if ((game.dark_socket_id === socket.id && game.turn === PlayerColor.LIGHT) ||
-      (game.light_socket_id === socket.id && game.turn === PlayerColor.DARK)) {
+    if ((game.dark_socket_id === socket.id &&
+        game.turn === PlayerColor.LIGHT) ||
+      (game.light_socket_id === socket.id &&
+        game.turn === PlayerColor.DARK)) {
       socket.emit('error', 'It is not your turn')
       return
     }
@@ -193,7 +271,14 @@ export const move = async (socket: Socket, data: MoveMessage): Promise<void> => 
         gameTimer.stop()
         chessTimers.delete(roomID)
       }
+
       game.end_state = flag
+
+      // After some time every socket in the room is forced to leave
+      setTimeout(() => {
+        io.in(roomID).socketsLeave(roomID)
+      }, gameOverTTL)
+
       await client.setex(roomPrefix + roomID, gameOverTTL, JSON.stringify(game))
     } else {
       await client.set(roomPrefix + roomID, JSON.stringify(game))

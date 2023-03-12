@@ -1,23 +1,23 @@
 // import { Chess } from 'chess.ts'
-import { /* Server, */ Socket } from 'socket.io'
+import { /* Server, */ Server, Socket } from 'socket.io'
 import {
   GameType, PlayerColor, EndState, /* GameDocument, */
   GameState, /* GameModel, */ newBoard
 } from '../models/game'
 import { client, redlock } from '../../config/database'
 import * as matchmaking from '../../lib/matchmaking'
-import { roomPrefix, gameOverTTL, roomLockPrefix } from './game'
+import { gameOverTTL } from './game'
+import { roomPrefix, roomLockPrefix } from '../../lib/room'
 import { chessTimers, ChessTimer } from '../../lib/timer'
 const _ = require('lodash')
 
 interface FindGameMsg {
-  token: Buffer
   time: number // seconds
-  user: string
 }
 
 type FoundGameMsg = Partial<GameState> & {
   roomID: string
+  color: PlayerColor
 }
 
 interface GameOverMessage {
@@ -25,16 +25,28 @@ interface GameOverMessage {
   winner: PlayerColor
 }
 
-const initialTimes = [20, 3 * 60, 5 * 60, 10 * 60] // seconds
-const increments = [0, 3, 5, 10] // seconds
+const initialTimes = [3 * 60, 5 * 60, 10 * 60] // seconds
+const increments = [0, 0, 0] // seconds
 
-export const findGame = async (socket: Socket, data: FindGameMsg): Promise<void> => {
-  if (!(data.token && data.time && data.user)) {
+export const findGame = async (
+  socket: Socket,
+  io: Server,
+  data: FindGameMsg
+): Promise<void> => {
+  if (!data.time) {
     socket.emit('error', 'Missing parameters')
     return
   }
 
-  // TODO: Check token and username...
+  // TODO: Descomentar cuando frontend y mobile puedan acceder con token
+  /*
+  if (!socket.data.authenticated) {
+    socket.emit('error', 'Must be authenticated to find a game')
+    return
+  }
+  */
+
+  const username = socket.data.username
 
   const index = _.indexOf(initialTimes, data.time)
   if (index === -1) {
@@ -46,9 +58,9 @@ export const findGame = async (socket: Socket, data: FindGameMsg): Promise<void>
 
   console.log('Matching...')
 
-  const match = await matchmaking.findCompetitiveGame(data.user, data.time, socket)
-  console.log('match.player1: ', match.player1)
-  console.log('match.socket1: ', match.socket1)
+  const match = await matchmaking
+    .findCompetitiveGame(username, data.time, socket)
+
   if (!match.player1 || !match.socket1) {
     socket.emit('error', 'Internal server error')
     return
@@ -110,11 +122,26 @@ export const findGame = async (socket: Socket, data: FindGameMsg): Promise<void>
   const name = roomPrefix + match.roomID.toString()
   await client.set(name, JSON.stringify(game))
 
-  const res: FoundGameMsg = Object.assign({ roomID: match.roomID }, game)
-  delete res.dark_socket_id
-  delete res.light_socket_id
-  socket.to(match.roomID).emit('game_state', res)
-  socket.emit('game_state', res)
+  const res1: FoundGameMsg = Object.assign({
+    roomID: match.roomID,
+    color: game.dark_socket_id === socket.id
+      ? PlayerColor.DARK
+      : PlayerColor.LIGHT
+  }, game)
+  delete res1.dark_socket_id
+  delete res1.light_socket_id
+
+  const res2: FoundGameMsg = Object.assign({
+    roomID: match.roomID,
+    color: game.dark_socket_id === socket.id
+      ? PlayerColor.LIGHT
+      : PlayerColor.DARK
+  }, game)
+  delete res2.dark_socket_id
+  delete res2.light_socket_id
+
+  socket.to(match.roomID).emit('game_state', res2)
+  socket.emit('game_state', res1)
 
   const gameTimer = new ChessTimer(data.time * 1000, increment * 1000,
     async (winner: PlayerColor): Promise<void> => {
@@ -138,7 +165,16 @@ export const findGame = async (socket: Socket, data: FindGameMsg): Promise<void>
         game.finished = true
         game.end_state = EndState.TIMEOUT
 
-        await client.setex(roomPrefix + roomID, gameOverTTL, JSON.stringify(game))
+        // After some time every socket in the room is forced to leave
+        setTimeout(() => {
+          io.in(roomID).socketsLeave(roomID)
+        }, gameOverTTL)
+
+        await client.setex(
+          roomPrefix + roomID,
+          gameOverTTL,
+          JSON.stringify(game)
+        )
       } finally {
         // This block executes even if a return statement is called
         await lock.release() // UNLOCK
