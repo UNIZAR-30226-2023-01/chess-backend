@@ -3,7 +3,6 @@ import http from 'http'
 import { Server, Socket } from 'socket.io'
 import * as gameCtrl from './api_server/controllers/game'
 import { socketAuth } from './api_server/middlewares/socket_auth'
-// import { isSocketAuthenticated } from './api_server/middlewares/user'
 
 const server = http.createServer(App)
 
@@ -19,16 +18,14 @@ const io = new Server(server, {
   }
 })
 
-// io.use(isSocketAuthenticated)
-
 io.use(socketAuth)
 
 function onConnection (socket: Socket): void {
   socket.on('create_room', gameCtrl.createRoom.bind(null, socket))
   socket.on('join_room', gameCtrl.joinRoom.bind(null, socket, io))
-  socket.on('leave_room', gameCtrl.leaveRoom.bind(null, socket))
-  socket.on('find_game', gameCtrl.findGame.bind(null, socket))
-  socket.on('move', gameCtrl.move.bind(null, socket))
+  socket.on('leave_room', gameCtrl.leaveRoom.bind(null, socket, io))
+  socket.on('find_game', gameCtrl.findGame.bind(null, socket, io))
+  socket.on('move', gameCtrl.move.bind(null, socket, io))
   socket.on('game_state', gameCtrl.gameState.bind(null, socket))
 }
 
