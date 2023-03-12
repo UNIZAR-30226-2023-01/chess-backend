@@ -28,9 +28,7 @@ export async function generateUniqueRoomCode (): Promise<string> {
         }
       } else {
         code = newCode
-        const rooms = {
-          [roomKeys]: [newCode]
-        }
+        const rooms = [newCode]
 
         await client.set(roomKeys, JSON.stringify(rooms))
       }

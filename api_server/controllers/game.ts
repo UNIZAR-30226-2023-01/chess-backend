@@ -185,9 +185,10 @@ export const move = async (socket: Socket, data: MoveMessage): Promise<void> => 
           return
         }
         gameTimer.stop()
+        chessTimers.delete(roomID)
       }
       game.end_state = flag
-      await client.setex(roomPrefix + roomID, JSON.stringify(game), gameOverTTL)
+      await client.setex(roomPrefix + roomID, gameOverTTL, JSON.stringify(game))
     } else {
       await client.set(roomPrefix + roomID, JSON.stringify(game))
     }

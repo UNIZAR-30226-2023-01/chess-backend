@@ -3,6 +3,7 @@ import App from './app'
 import http from 'http'
 import { Server, Socket } from 'socket.io'
 import * as gameCtrl from './api_server/controllers/game'
+import { socketAuth } from './api_server/middlewares/socket_auth'
 
 const server = http.createServer(App)
 
@@ -14,14 +15,11 @@ const io = new Server(server, {
     // the backup duration of the sessions and the packets
     maxDisconnectionDuration: 2 * 60 * 1000,
     // whether to skip middlewares upon successful recovery
-    skipMiddlewares: true
+    skipMiddlewares: false
   }
 })
 
-io.use((socket, next) => {
-  console.log(socket.handshake.auth)
-  next()
-})
+io.use(socketAuth)
 
 function onConnection (socket: Socket): void {
   socket.on('create_room', gameCtrl.createRoom.bind(null, socket))
