@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { setStatus } from '../../lib/status'
 import UserModel from '../models/user'
 import passport from 'passport'
-import { client, redlock } from '../../config/database'
+import { validateToken } from '../../lib/token_blacklist'
 
 export const userExists = (req: Request, res: Response, next: NextFunction): void => {
   UserModel.doesUserExist(req.body.username, req.body.email)
@@ -30,37 +30,29 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
           return
         }
 
-        const blacklist = 'token-blacklist'
-        const token = req.cookies['api-auth']
+        const status = await validateToken(
+          String(user.username),
+          req.cookies['api-auth']
+        )
 
-        let record: string | null = null
-        const lock = await redlock.acquire([blacklist + '-lock'], 5000) // LOCK
-        try {
-          record = await client.get(blacklist)
-        } catch (err) {
+        if (status === 500) {
           res
             .status(500)
             .json({ message: 'Internal server error' })
-        } finally {
-          await lock.release() // UNLOCK
-        }
-        let parsedUserData
-        if (record !== null) {
-          parsedUserData = JSON.parse(record)[blacklist]
-        }
-
-        if (parsedUserData?.includes(token)) {
+        } else if (status === 401) {
           res.clearCookie('api-auth')
           res
             .status(401)
             .json({ message: 'Invalid Token!' })
         } else {
-          req.user = user
+          req.body.user = user
           next()
         }
       })(req, res, next)
   } catch (err) {
     console.log('Error: ', err)
-    next(err)
+    res
+      .status(500)
+      .json({ message: 'Internal server error' })
   }
 }
