@@ -1,10 +1,10 @@
 import { client, redlock } from '../config/database'
-const lodash = require('lodash')
+const _ = require('lodash')
 
 const roomKeys: string = 'room-keys'
 
 /**
- * Generates a random room code that is not currently in use.
+ * Generates a random 6-digit room code that is not currently in use.
  *
  * @returns Random and unique room code.
  */
@@ -19,7 +19,7 @@ export async function generateUniqueRoomCode (): Promise<string> {
       if (record !== null) {
         const rooms = JSON.parse(record)
         console.log('rooms: ', rooms)
-        const index = lodash.indexOf(rooms, newCode)
+        const index = _.indexOf(rooms, newCode)
 
         if (index === -1) {
           code = newCode
@@ -50,7 +50,7 @@ export async function releaseRoomCode (code: string): Promise<void> {
   lock = await lock.extend(5000)
   if (record !== null) {
     const parsedData = JSON.parse(record)
-    const rooms = lodash.remove(parsedData[roomKeys], (room: string): boolean => {
+    const rooms = _.remove(parsedData[roomKeys], (room: string): boolean => {
       return code === room
     })
     await client.set(roomKeys, JSON.stringify(rooms))
