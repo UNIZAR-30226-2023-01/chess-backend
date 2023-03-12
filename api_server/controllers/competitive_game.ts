@@ -16,7 +16,7 @@ interface FindGameMsg {
   user: string
 }
 
-type FoundGameMsg = GameState & {
+type FoundGameMsg = Partial<GameState> & {
   roomID: string
 }
 
@@ -111,6 +111,8 @@ export const findGame = async (socket: Socket, data: FindGameMsg): Promise<void>
   await client.set(name, JSON.stringify(game))
 
   const res: FoundGameMsg = Object.assign({ roomID: match.roomID }, game)
+  delete res.dark_socket_id
+  delete res.light_socket_id
   socket.to(match.roomID).emit('game_state', res)
   socket.emit('game_state', res)
 

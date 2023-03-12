@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import jwt from 'jsonwebtoken'
 import UserModel from '../models/user'
 import { setStatus } from '../../lib/status'
-import { client } from '../../config/database'
+import { client, redlock } from '../../config/database'
 
 export const signIn = (req: Request, res: Response): void => {
   UserModel.getUser(req.body.username)
@@ -73,44 +73,49 @@ export const signUp = (req: Request, res: Response): void => {
 }
 
 export const signOut = async (req: Request, res: Response): Promise<void> => {
+  // console.log(user.username)
   try {
     const blacklist = 'token-blacklist'
     const authToken = req.cookies['api-auth']
 
     const expTime = 60 * 60 * 5 // segundos de expiracion
 
-    const record = await client.get(blacklist)
+    let lock = await redlock.acquire([blacklist + '-lock'], 5000) // LOCK
+    try {
+      const record = await client.get(blacklist)
+      lock = await lock.extend(5000) // EXTEND
+      console.log('Record: ', record)
 
-    console.log('Record: ', record)
+      if (record !== null) {
+        const parsedData = JSON.parse(record)
+        parsedData[blacklist].push(authToken)
+        await client.setex(blacklist, expTime, JSON.stringify(parsedData))
 
-    if (record !== null) {
-      const parsedData = JSON.parse(record)
-      parsedData[blacklist].push(authToken)
-      await client.setex(blacklist, expTime, JSON.stringify(parsedData))
+        console.log('Data: ', parsedData)
+      } else {
+        const blacklistedData = {
+          [blacklist]: [authToken]
+        }
 
-      console.log('Data: ', parsedData)
-
-      res.clearCookie('api-auth').status(200).json({ message: 'Good Bye!' })
-    } else {
-      const blacklistedData = {
-        [blacklist]: [authToken]
+        await client.setex(blacklist, expTime, JSON.stringify(blacklistedData))
       }
-
-      await client.setex(
-        blacklist,
-        expTime,
-        JSON.stringify(blacklistedData)
-      )
-
-      res.clearCookie('api-auth').status(200).json({ message: 'Good Bye!' })
+    } finally {
+      await lock.release() // UNLOCK
     }
+    res
+      .clearCookie('api-auth')
+      .status(200)
+      .json({ message: 'Good Bye!' })
   } catch (err) {
     console.log('Error: ', err)
-    res.status(500).json({ message: 'Internal Server Error!' })
+    res
+      .status(500)
+      .json({ message: 'Internal Server Error!' })
   }
 }
 
 export const verify = (req: Request, res: Response): void => {
+  console.log(req.user)
   res
     .status(200)
     .json(setStatus(req, 200, 'User Authorized'))
