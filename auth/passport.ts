@@ -12,7 +12,7 @@ const cookieExtractor = (req: Request): string | null => {
   return token
 }
 
-passport.use(
+passport.use('jwt',
   new JWTStrategy(
     {
       jwtFromRequest: cookieExtractor,

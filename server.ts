@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import App from './app'
 import http from 'http'
 import { Server, Socket } from 'socket.io'
 import * as gameCtrl from './api_server/controllers/game'
 import { socketAuth } from './api_server/middlewares/socket_auth'
+// import { isSocketAuthenticated } from './api_server/middlewares/user'
 
 const server = http.createServer(App)
 
@@ -18,6 +18,8 @@ const io = new Server(server, {
     skipMiddlewares: false
   }
 })
+
+// io.use(isSocketAuthenticated)
 
 io.use(socketAuth)
 

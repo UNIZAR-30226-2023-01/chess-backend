@@ -1,5 +1,7 @@
 import { model, Schema, Document, Model } from 'mongoose'
 
+export const guestUser = 'Anónimo'
+
 export interface UserDocument extends Document {
   googleId: string
   username: string
