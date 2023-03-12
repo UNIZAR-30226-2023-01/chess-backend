@@ -12,6 +12,7 @@
     "dev": "ts-node-dev app.ts",
     "tsc": "tsc",
     "lint": "ts-standard --fix",
+    "eslint": "eslint --ext .ts .",
     "prepare": "husky install",
     "test": "nyc mocha --exit --timeout 5000"
   },
