@@ -27,6 +27,7 @@ function onConnection (socket: Socket): void {
   socket.on('find_game', gameCtrl.findGame.bind(null, socket, io))
   socket.on('move', gameCtrl.move.bind(null, socket, io))
   socket.on('game_state', gameCtrl.gameState.bind(null, socket))
+  socket.on('surrender', gameCtrl.surrender.bind(null, socket, io))
 }
 
 io.on('connection', onConnection)

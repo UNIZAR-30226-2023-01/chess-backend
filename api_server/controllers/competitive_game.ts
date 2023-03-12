@@ -1,29 +1,13 @@
-// import { Chess } from 'chess.ts'
-import { /* Server, */ Server, Socket } from 'socket.io'
+import { Server, Socket } from 'socket.io'
 import {
-  GameType, PlayerColor, EndState, /* GameDocument, */
+  GameType, PlayerColor, /* GameDocument, */
   GameState, /* GameModel, */ newBoard
 } from '../models/game'
-import { client, redlock } from '../../config/database'
 import * as matchmaking from '../../lib/matchmaking'
-import { gameOverTTL } from './game'
-import { roomPrefix, roomLockPrefix } from '../../lib/room'
 import { chessTimers, ChessTimer } from '../../lib/timer'
+import * as gameCtl from '../../lib/game'
+import { FindGameMsg, FoundGameMsg } from '../../lib/messages.types'
 const _ = require('lodash')
-
-interface FindGameMsg {
-  time: number // seconds
-}
-
-type FoundGameMsg = Partial<GameState> & {
-  roomID: string
-  color: PlayerColor
-}
-
-interface GameOverMessage {
-  end_state: EndState
-  winner: PlayerColor
-}
 
 const initialTimes = [3 * 60, 5 * 60, 10 * 60] // seconds
 const increments = [0, 0, 0] // seconds
@@ -119,11 +103,11 @@ export const findGame = async (
 
   console.log(game)
 
-  const name = roomPrefix + match.roomID.toString()
-  await client.set(name, JSON.stringify(game))
+  const roomID = match.roomID.toString()
+  await gameCtl.setGame(roomID, game)
 
   const res1: FoundGameMsg = Object.assign({
-    roomID: match.roomID,
+    roomID,
     color: game.dark_socket_id === socket.id
       ? PlayerColor.DARK
       : PlayerColor.LIGHT
@@ -132,7 +116,7 @@ export const findGame = async (
   delete res1.light_socket_id
 
   const res2: FoundGameMsg = Object.assign({
-    roomID: match.roomID,
+    roomID,
     color: game.dark_socket_id === socket.id
       ? PlayerColor.LIGHT
       : PlayerColor.DARK
@@ -143,55 +127,11 @@ export const findGame = async (
   socket.to(match.roomID).emit('game_state', res2)
   socket.emit('game_state', res1)
 
-  const gameTimer = new ChessTimer(data.time * 1000, increment * 1000,
-    async (winner: PlayerColor): Promise<void> => {
-      const roomID = match.roomID
-      let lock = await redlock.acquire([roomLockPrefix + roomID], 5000) // LOCK
-      try {
-        const rawGame = await client.get(roomPrefix + roomID)
-        if (!rawGame) {
-          console.log('No game with roomID:', roomID)
-          return
-        }
-
-        lock = await lock.extend(5000) // EXTEND
-        const game: GameState = JSON.parse(rawGame)
-
-        if (winner === PlayerColor.LIGHT) {
-          game.timer_dark = 0
-        } else {
-          game.timer_light = 0
-        }
-        game.finished = true
-        game.end_state = EndState.TIMEOUT
-
-        // After some time every socket in the room is forced to leave
-        setTimeout(() => {
-          io.in(roomID).socketsLeave(roomID)
-        }, gameOverTTL)
-
-        await client.setex(
-          roomPrefix + roomID,
-          gameOverTTL,
-          JSON.stringify(game)
-        )
-      } finally {
-        // This block executes even if a return statement is called
-        await lock.release() // UNLOCK
-      }
-
-      const message: GameOverMessage = {
-        winner,
-        end_state: EndState.TIMEOUT
-      }
-
-      // TODO: guardar en mongo
-
-      chessTimers.delete(roomID)
-
-      socket.to(roomID).emit('game_over', message)
-      socket.emit('game_over', message)
-    })
+  const gameTimer = new ChessTimer(
+    data.time * 1000,
+    increment * 1000,
+    gameCtl.timeoutProtocol(io, socket, roomID)
+  )
 
   chessTimers.set(match.roomID, gameTimer)
 }
