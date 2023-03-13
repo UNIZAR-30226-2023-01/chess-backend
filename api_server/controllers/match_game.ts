@@ -24,16 +24,19 @@ export const surrender = async (
     return
   }
 
+  let exit = false
   const roomID = data.roomID
   const game = await gameCtl.getGame(roomID, async (game: GameState) => {
     if (game.finished) {
       socket.emit('error', 'Game has already been finished')
+      exit = true
       return
     }
 
     if (game.light_socket_id !== socket.id &&
       game.dark_socket_id !== socket.id) {
       socket.emit('error', 'You are not a player of this game')
+      exit = true
       return
     }
 
@@ -57,16 +60,16 @@ export const surrender = async (
       const gameTimer = chessTimers.get(roomID)
       if (!gameTimer) {
         socket.emit('error', 'Internal server error')
+        exit = true
         return
       }
       game.timer_dark = gameTimer.getTimeDark()
       game.timer_light = gameTimer.getTimeLight()
-      gameTimer.stop()
-      chessTimers.delete(roomID)
     }
 
     await gameCtl.setGame(roomID, game, true)
   })
+  if (exit) return
 
   if (!game) {
     socket.emit('error', `No game with roomID: ${roomID}`)

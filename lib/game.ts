@@ -10,7 +10,7 @@ export const gameOverTTL = 2 * 60
 
 export const getGame = async (
   roomID: string,
-  action: (game: GameState) => Promise<void>
+  action?: (game: GameState) => Promise<void>
 ): Promise<GameState | undefined> => {
   let game: GameState
   let lock = await redlock.acquire([roomLockPrefix + roomID], 5000) // LOCK
@@ -23,7 +23,10 @@ export const getGame = async (
     lock = await lock.extend(5000) // EXTEND
 
     game = JSON.parse(rawGame)
-    await action(game)
+
+    if (action) {
+      await action(game)
+    }
   } finally {
     // This block executes even if a return statement is called
     await lock.release() // UNLOCK

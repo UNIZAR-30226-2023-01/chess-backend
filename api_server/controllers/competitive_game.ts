@@ -28,6 +28,17 @@ export const findGame = async (
     return
   }
 
+  console.log('rooms:', socket.rooms.values())
+  for (const roomID of socket.rooms.values()) {
+    const game = await gameCtl.getGame(roomID)
+    console.log('roomID: ', roomID)
+    console.log('game: ', game)
+    if (game && !game.finished) {
+      socket.emit('error', 'This socket is already playing or in queue')
+      return
+    }
+  }
+
   const username = socket.data.username
 
   const index = _.indexOf(initialTimes, data.time)
