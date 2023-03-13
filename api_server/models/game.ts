@@ -1,4 +1,4 @@
-import { model, Schema, Document } from 'mongoose'
+import { model, Schema, Document, Types } from 'mongoose'
 
 export const newBoard = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
@@ -22,17 +22,20 @@ export enum EndState {
 export interface GameDocument extends Document {
   dark: string
   light: string
+  dark_id: Types.ObjectId
+  light_id: Types.ObjectId
   board: string // FEN codification of board state
   moves: string[] // UCI LAN format
 
   use_timer: boolean
-  initial_timer: number
-  timer_dark: number
-  timer_light: number
+  initial_timer?: number
+  timer_increment?: number
+  timer_dark?: number
+  timer_light?: number
 
   finished: boolean
-  end_state: string
-  winner: string
+  end_state?: string
+  winner?: string
 
   game_type: string
 }
@@ -44,6 +47,8 @@ export interface GameState {
   turn: PlayerColor
   dark_socket_id: string
   light_socket_id: string
+  dark_id: Types.ObjectId
+  light_id: Types.ObjectId
 
   dark: string
   light: string
@@ -51,14 +56,14 @@ export interface GameState {
   moves: string[] // UCI LAN format
 
   use_timer: boolean
-  initial_timer: number // seconds
-  increment: number // seconds
-  timer_dark: number // milliseconds
-  timer_light: number // milliseconds
+  initial_timer?: number // seconds
+  increment?: number // seconds
+  timer_dark?: number // milliseconds
+  timer_light?: number // milliseconds
 
   finished: boolean
-  end_state: EndState | undefined
-  winner: PlayerColor | undefined
+  end_state?: EndState
+  winner?: PlayerColor
 
   spectators: string[]
 
@@ -83,6 +88,14 @@ const gameSchema = new Schema<GameDocument>({
     type: String,
     required: true
   },
+  dark_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  light_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  },
   board: {
     type: String,
     required: true
@@ -97,6 +110,10 @@ const gameSchema = new Schema<GameDocument>({
     required: true
   },
   initial_timer: {
+    type: Number,
+    required: false
+  },
+  timer_increment: {
     type: Number,
     required: false
   },
