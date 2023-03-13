@@ -1,101 +1,137 @@
-import { Chess } from 'chess.ts'
+import { Server, Socket } from 'socket.io'
+import { GameState } from '../models/game'
+import * as match from './match_game'
+import { chessTimers } from '../../lib/timer'
+import * as gameCtl from '../../lib/game'
+const _ = require('lodash')
 
-enum PlayerColor {
-  LIGHT = 'LIGHT',
-  DARK = 'DARK'
-}
-
-interface GameRoom {
+interface RoomMessage {
   roomID: string
-  light: string
-  dark: string
-  turn: PlayerColor
-  moves: string[]
-  board: string // fen notation
-}
-const startBoard = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-
-const game: GameRoom = {
-  roomID: 'pistacho',
-  light: 'Hector',
-  dark: 'Fernando',
-  turn: PlayerColor.LIGHT,
-  moves: [],
-  board: startBoard
 }
 
-export function createRoom (socket: any, data: any): any {
-  const chess = new Chess()
-  console.log('create_room', chess)
+export const findGame = match.findGame
+export const move = match.move
+export const surrender = match.surrender
+
+export const createRoom = async (
+  socket: Socket,
+  data: RoomMessage
+): Promise<void> => {
   console.log('create_room', JSON.stringify(data))
-  socket.join(data.roomID)
+  await socket.join(data.roomID)
 }
 
-export const joinRoom = (socket: any, io: any, data: any): any => {
-  if (io.sockets.adapter.rooms.get(data.roomID) === undefined) return
+export const gameState = async (
+  socket: Socket,
+  data: RoomMessage,
+  join?: boolean
+): Promise<void> => {
+  if (!data.roomID) {
+    socket.emit('error', 'Missing parameters')
+    return
+  }
+
+  const roomID = data.roomID
+  const game = await gameCtl.getGame(roomID, async (game: GameState) => {
+    if (game.use_timer && !game.finished) {
+      const gameTimer = chessTimers.get(roomID)
+      if (!gameTimer) {
+        socket.emit('error', 'Internal server error')
+        return
+      } else {
+        game.timer_dark = gameTimer.getTimeDark()
+        game.timer_light = gameTimer.getTimeLight()
+      }
+    }
+
+    if (join) {
+      game.spectators.push(socket.data.username)
+    }
+
+    await gameCtl.setGame(roomID, game)
+  })
+
+  if (!game) {
+    socket.emit('error', `No game with roomID: ${roomID}`)
+    return
+  }
+
+  socket.emit('game_state', gameCtl.filterGameState(game))
+}
+
+export const joinRoom = async (
+  socket: Socket,
+  io: Server,
+  data: RoomMessage
+): Promise<void> => {
+  if (!data.roomID) {
+    socket.emit('error', 'Missing parameters')
+    return
+  }
+
+  const roomID = data.roomID
+  if (!io.sockets.adapter.rooms.get(roomID)) {
+    socket.emit('error', `No game with roomID: ${roomID}`)
+    return
+  }
+
+  if (socket.rooms.has(roomID)) {
+    socket.emit('error', 'You have already joined this room')
+    return
+  }
+
+  await gameState(socket, data, true)
 
   console.log('join_room', data.roomID)
-  socket.join(data.roomID)
+  await socket.join(data.roomID)
 }
 
-export const leaveRoom = (socket: any, data: any): any => {
-  console.log('leave_room', data.roomID)
-  socket.leave(data.roomID)
-}
-
-interface Message {
-  jugador: string // socket.jugador (temporal para testing)
-  roomID: string
-  move: string
-}
-
-enum GameFlag {
-  DRAW = 'DRAW',
-  CHECKMATE = 'CHECKMATE',
-  CHECK = 'CHECK'
-}
-
-interface ReturnMessage {
-  board: string
-  turn: PlayerColor
-  flag: undefined | GameFlag
-  winner: undefined | PlayerColor
-}
-
-export const move = (socket: any, data: Message): any => {
-  console.log('move', data)
-
-  const { jugador, roomID, move } = data
-
-  if (game.light !== jugador && game.dark !== jugador) socket.emit('error', 'No eres jugador de esta partida')
-  if (game.dark === jugador && game.turn === PlayerColor.LIGHT) socket.emit('error', 'No es tu turno')
-  if (game.light === jugador && game.turn === PlayerColor.DARK) socket.emit('error', 'No es tu turno')
-
-  const chess = new Chess(game.board)
-  try {
-    chess.move(move)
-  } catch (err: any) {
-    socket.emit('error', err?.message)
+export const leaveRoom = async (
+  socket: Socket,
+  io: Server,
+  data: RoomMessage
+): Promise<void> => {
+  if (!data.roomID) {
+    socket.emit('error', 'Missing parameters')
+    return
   }
 
-  let flag: GameFlag | undefined
-  if (chess.inCheckmate()) flag = GameFlag.CHECKMATE
-  else if (chess.inDraw()) flag = GameFlag.DRAW
-  else if (chess.inCheck()) flag = GameFlag.CHECK
-
-  let winner: PlayerColor | undefined
-  if (chess.inCheckmate()) winner = game.turn
-
-  game.board = chess.fen()
-  game.turn = game.turn === PlayerColor.DARK ? PlayerColor.LIGHT : PlayerColor.DARK
-  game.moves.push(move)
-
-  const returnMessage: ReturnMessage = {
-    board: game.board,
-    turn: game.turn,
-    flag,
-    winner
+  const roomID = data.roomID
+  if (io.sockets.adapter.rooms.get(data.roomID) == null) {
+    socket.emit('error', `No game with roomID: ${roomID}`)
+    return
   }
 
-  socket.to(roomID).emit('move', returnMessage)
+  if (!socket.rooms.has(roomID)) {
+    socket.emit('error', 'You have not joined this room')
+    return
+  }
+
+  const game = await gameCtl.getGame(roomID, async (game: GameState) => {
+    if (game.use_timer) {
+      const gameTimer = chessTimers.get(roomID)
+      if (!gameTimer) {
+        socket.emit('error', 'Internal server error')
+        return
+      }
+      game.timer_dark = gameTimer.getTimeDark()
+      game.timer_light = gameTimer.getTimeLight()
+    }
+
+    _.pullAt(
+      game.spectators,
+      [_.indexOf(game.spectators,
+        socket.data.username
+      )]
+    )
+
+    await gameCtl.setGame(roomID, game)
+  })
+
+  if (!game) {
+    socket.emit('error', `No game with roomID: ${roomID}`)
+    return
+  }
+
+  await socket.leave(data.roomID)
 }

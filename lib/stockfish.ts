@@ -1,7 +1,7 @@
 import { Readable, Writable } from 'node:stream'
 import { spawn } from 'node:child_process'
 import * as dotenv from 'dotenv'
-const lodash = require('lodash')
+const _ = require('lodash')
 dotenv.config()
 
 export class StockfishStream {
@@ -26,8 +26,8 @@ export class StockfishStream {
 
     let chunk
     while (!(chunk = await this.reader.read()).done) {
-      const words: string[] = lodash.split(chunk.value, / |\n/)
-      const index = lodash.indexOf(words, 'uciok')
+      const words: string[] = _.split(chunk.value, / |\n/)
+      const index = _.indexOf(words, 'uciok')
       if (index !== -1) return
     }
 
@@ -50,8 +50,8 @@ export class StockfishStream {
 
     let chunk
     while (!(chunk = await reader.read()).done) {
-      const words: string[] = lodash.split(chunk.value, / |\n/)
-      const index: number = lodash.indexOf(words, 'bestmove')
+      const words: string[] = _.split(chunk.value, / |\n/)
+      const index: number = _.indexOf(words, 'bestmove')
       if (index !== -1) {
         clearTimeout(timeout)
         return words[index + 1]

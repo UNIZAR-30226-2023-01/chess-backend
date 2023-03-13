@@ -10,7 +10,7 @@ passport.use(new GoogleStrategy({
   callbackURL: GOOGLE_CALLBACK_URL,
   passReqToCallback: true
 },
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
+
 async (_req: any, _accessToken: any, _refreshToken: any, profile: any, done: any) => {
   const defaultUser = {
     googleId: profile.id,

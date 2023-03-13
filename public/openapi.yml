@@ -10,7 +10,7 @@ info:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
   x-logo:
-    url: 'https://redocly.github.io/openapi-template/logo.png'
+    url: './logo-w.png'
 tags:
   - name: Auth
     description: Example echo operations.

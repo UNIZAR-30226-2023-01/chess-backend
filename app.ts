@@ -1,5 +1,5 @@
 import express from 'express'
-import connectDB from './config/database'
+import { connectDB } from './config/database'
 import path from 'path'
 import helmet from 'helmet'
 import bodyParser from 'body-parser'
