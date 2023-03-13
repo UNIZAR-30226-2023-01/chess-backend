@@ -1,7 +1,7 @@
 import { client, redlock } from '../config/database'
 
-export const roomPrefix = 'game-'
-export const roomLockPrefix = 'game-lock-'
+export const roomPrefix: string = 'game-'
+export const roomLockPrefix: string = 'game-lock-'
 
 /**
  * Generates a random 6-digit room code that is not currently in use.

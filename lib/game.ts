@@ -1,5 +1,5 @@
 import { Server, Socket } from 'socket.io'
-import { EndState, GameState, PlayerColor } from '../api_server/models/game'
+import { EndState, GameModel, GameState, PlayerColor } from '../api_server/models/game'
 import { client, redlock } from '../config/database'
 import { roomLockPrefix, roomPrefix } from './room'
 import { chessTimers } from './timer'
@@ -41,6 +41,44 @@ export const setGame = async (
   } else {
     await client.set(roomPrefix + roomID, JSON.stringify(game))
   }
+}
+
+export const saveGame = async (
+  io: Server,
+  game: GameState
+): Promise<boolean> => {
+  const darkSocket = io.sockets.sockets.get(game.dark_socket_id)
+  const lightSocket = io.sockets.sockets.get(game.light_socket_id)
+
+  const darkIsAuth: boolean = darkSocket?.data.authenticated
+  const lightIsAuth: boolean = lightSocket?.data.authenticated
+
+  if (!darkIsAuth || !lightIsAuth) {
+    return false
+  }
+
+  const doc = new GameModel()
+
+  doc.dark = game.dark
+  doc.light = game.light
+  doc.board = game.board
+  doc.moves = game.moves
+
+  doc.use_timer = game.use_timer
+  doc.initial_timer = game.initial_timer
+  doc.timer_increment = game.increment
+  doc.timer_dark = game.timer_dark
+  doc.timer_light = game.timer_light
+
+  doc.finished = game.finished
+  doc.end_state = game.end_state
+  doc.winner = game.winner
+
+  doc.game_type = game.game_type
+
+  await doc.save()
+
+  return true
 }
 
 export const endProtocol = (io: Server, roomID: string): void => {

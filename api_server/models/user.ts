@@ -1,6 +1,6 @@
-import { model, Schema, Document, Model } from 'mongoose'
+import { model, Schema, Document, Model, Types } from 'mongoose'
 
-export const guestUser = 'Anónimo'
+export const guestUser = 'guest'
 
 export interface UserDocument extends Document {
   googleId: string
@@ -69,6 +69,16 @@ userSchema.static('doesUserExist', async function (username, email): Promise<Boo
       return false
     })
 })
+
+userSchema.static('getUserById',
+  async function (id: Types.ObjectId): Promise<any> {
+    try {
+      return await this.findOne({ _id: id })
+    } catch (error: any) {
+      console.error(error)
+      return null
+    }
+  })
 
 userSchema.static('getUser', async function (username): Promise<any> {
   return await this.findOne({ username })
