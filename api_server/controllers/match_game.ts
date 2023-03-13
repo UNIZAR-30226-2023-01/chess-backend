@@ -64,7 +64,7 @@ export const surrender = async (
       gameTimer.stop()
       chessTimers.delete(roomID)
     }
-    gameCtl.endProtocol(io, roomID)
+
     await gameCtl.setGame(roomID, game, true)
   })
 
@@ -83,10 +83,9 @@ export const surrender = async (
     end_state: game.end_state
   }
 
-  // TODO: guardar en mongo
+  void gameCtl.endProtocol(io, roomID, game)
 
-  socket.to(roomID).emit('game_over', message)
-  socket.emit('game_over', message)
+  io.to(roomID).emit('game_over', message)
 }
 
 export const move = async (
@@ -96,7 +95,7 @@ export const move = async (
 ): Promise<void> => {
   console.log('move', data)
 
-  const { roomID, move } = data
+  let { roomID, move } = data
 
   if (!(roomID && move)) {
     socket.emit('error', 'Missing parameters')
@@ -147,23 +146,26 @@ export const move = async (
       game.timer_light = gameTimer.getTimeLight()
     }
 
-    if (chess.inCheckmate()) game.end_state = EndState.CHECKMATE
-    else if (chess.inDraw()) game.end_state = EndState.DRAW
-    else game.finished = false
+    if (chess.inCheckmate()) {
+      game.end_state = EndState.CHECKMATE
+      game.winner = game.turn
+    } else if (chess.inDraw()) {
+      game.end_state = EndState.DRAW
+    } else {
+      game.finished = false
+    }
 
     game.board = chess.fen()
-    game.winner = game.turn
     game.turn = game.turn === PlayerColor.DARK
       ? PlayerColor.LIGHT
       : PlayerColor.DARK
 
-    // game.moves.push(moveRes.san)
-    // move = moveRes.san
-    game.moves.push(move)
-
-    if (game.finished) {
-      gameCtl.endProtocol(io, roomID)
+    if (moveRes.promotion) {
+      move = moveRes.from + moveRes.to + moveRes.promotion
+    } else {
+      move = moveRes.from + moveRes.to
     }
+    game.moves.push(move)
 
     await gameCtl.setGame(roomID, game, game.finished)
   })
@@ -185,6 +187,8 @@ export const move = async (
     if (game.end_state === EndState.CHECKMATE) {
       returnMessage.winner = game.winner
     }
+
+    void gameCtl.endProtocol(io, roomID, game)
   }
 
   if (game.use_timer) {
@@ -192,6 +196,5 @@ export const move = async (
     returnMessage.timer_light = game.timer_light
   }
 
-  socket.to(roomID).emit('move', returnMessage)
-  socket.emit('move', returnMessage)
+  io.to(roomID).emit('move', returnMessage)
 }

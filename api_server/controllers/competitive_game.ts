@@ -7,6 +7,7 @@ import * as matchmaking from '../../lib/matchmaking'
 import { chessTimers, ChessTimer } from '../../lib/timer'
 import * as gameCtl from '../../lib/game'
 import { FindGameMsg, FoundGameMsg } from '../../lib/messages.types'
+import UserModel from '../models/user'
 const _ = require('lodash')
 
 const initialTimes = [3 * 60, 5 * 60, 10 * 60] // seconds
@@ -22,13 +23,10 @@ export const findGame = async (
     return
   }
 
-  // TODO: Descomentar cuando frontend y mobile puedan acceder con token
-  /*
   if (!socket.data.authenticated) {
     socket.emit('error', 'Must be authenticated to find a game')
     return
   }
-  */
 
   const username = socket.data.username
 
@@ -67,10 +65,19 @@ export const findGame = async (
     lightSocketId = match.socket1
   }
 
+  const darkUser = await UserModel.findOne({ username: dark })
+  const lightUser = await UserModel.findOne({ username: light })
+  if (!darkUser || !lightUser) {
+    io.to(match.roomID).emit('error', 'Internal server error')
+    return
+  }
+
   const game: GameState = {
     turn: PlayerColor.LIGHT,
     dark_socket_id: darkSocketId,
     light_socket_id: lightSocketId,
+    dark_id: darkUser._id,
+    light_id: lightUser._id,
 
     dark,
     light,
@@ -79,7 +86,7 @@ export const findGame = async (
 
     use_timer: true,
     initial_timer: data.time,
-    increment,
+    timer_increment: increment,
     timer_dark: data.time * 1000,
     timer_light: data.time * 1000,
 
@@ -106,32 +113,32 @@ export const findGame = async (
   const roomID = match.roomID.toString()
   await gameCtl.setGame(roomID, game)
 
-  const res1: FoundGameMsg = Object.assign({
-    roomID,
-    color: game.dark_socket_id === socket.id
-      ? PlayerColor.DARK
-      : PlayerColor.LIGHT
-  }, game)
-  delete res1.dark_socket_id
-  delete res1.light_socket_id
+  const res1 = createFoundGameMsg(match.socket1, roomID, game)
+  const res2 = createFoundGameMsg(match.socket2, roomID, game)
 
-  const res2: FoundGameMsg = Object.assign({
-    roomID,
-    color: game.dark_socket_id === socket.id
-      ? PlayerColor.LIGHT
-      : PlayerColor.DARK
-  }, game)
-  delete res2.dark_socket_id
-  delete res2.light_socket_id
-
-  socket.to(match.roomID).emit('game_state', res2)
-  socket.emit('game_state', res1)
+  io.to(match.socket1).emit('game_state', res1)
+  io.to(match.socket2).emit('game_state', res2)
 
   const gameTimer = new ChessTimer(
     data.time * 1000,
     increment * 1000,
-    gameCtl.timeoutProtocol(io, socket, roomID)
+    gameCtl.timeoutProtocol(io, roomID)
   )
 
   chessTimers.set(match.roomID, gameTimer)
+}
+
+const createFoundGameMsg = (
+  playerID: string,
+  roomID: string,
+  game: GameState
+): FoundGameMsg => {
+  const msg: FoundGameMsg = Object.assign({
+    roomID,
+    color: playerID === game.dark_socket_id
+      ? PlayerColor.DARK
+      : PlayerColor.LIGHT
+  }, game)
+
+  return gameCtl.filterGameState(msg)
 }

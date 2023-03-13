@@ -22,8 +22,8 @@ export enum EndState {
 export interface GameDocument extends Document {
   dark: string
   light: string
-  dark_id: Types.ObjectId
-  light_id: Types.ObjectId
+  dark_id: Schema.Types.ObjectId
+  light_id: Schema.Types.ObjectId
   board: string // FEN codification of board state
   moves: string[] // UCI LAN format
 
@@ -47,8 +47,8 @@ export interface GameState {
   turn: PlayerColor
   dark_socket_id: string
   light_socket_id: string
-  dark_id: Types.ObjectId
-  light_id: Types.ObjectId
+  dark_id?: Types.ObjectId
+  light_id?: Types.ObjectId
 
   dark: string
   light: string
@@ -57,7 +57,7 @@ export interface GameState {
 
   use_timer: boolean
   initial_timer?: number // seconds
-  increment?: number // seconds
+  timer_increment?: number // seconds
   timer_dark?: number // milliseconds
   timer_light?: number // milliseconds
 

@@ -56,11 +56,7 @@ export const gameState = async (
     return
   }
 
-  const res: Partial<GameState> = Object.assign(game)
-  delete res.light_socket_id
-  delete res.dark_socket_id
-
-  socket.emit('game_state', res)
+  socket.emit('game_state', gameCtl.filterGameState(game))
 }
 
 export const joinRoom = async (

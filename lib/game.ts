@@ -1,5 +1,5 @@
-import { Server, Socket } from 'socket.io'
-import { EndState, GameModel, GameState, PlayerColor } from '../api_server/models/game'
+import { Server } from 'socket.io'
+import { EndState, GameModel, GameState, GameType, PlayerColor } from '../api_server/models/game'
 import { client, redlock } from '../config/database'
 import { roomLockPrefix, roomPrefix } from './room'
 import { chessTimers } from './timer'
@@ -57,31 +57,41 @@ export const saveGame = async (
     return false
   }
 
-  const doc = new GameModel()
+  try {
+    await GameModel.create({
+      dark: game.dark,
+      light: game.light,
+      dark_id: game.dark_id,
+      light_id: game.light_id,
 
-  doc.dark = game.dark
-  doc.light = game.light
-  doc.board = game.board
-  doc.moves = game.moves
+      board: game.board,
+      moves: game.moves,
 
-  doc.use_timer = game.use_timer
-  doc.initial_timer = game.initial_timer
-  doc.timer_increment = game.increment
-  doc.timer_dark = game.timer_dark
-  doc.timer_light = game.timer_light
+      use_timer: game.use_timer,
+      initial_timer: game.initial_timer,
+      timer_increment: game.timer_increment,
+      timer_dark: game.timer_dark,
+      timer_light: game.timer_light,
 
-  doc.finished = game.finished
-  doc.end_state = game.end_state
-  doc.winner = game.winner
+      finished: game.finished,
+      end_state: game.end_state,
+      winner: game.winner,
 
-  doc.game_type = game.game_type
-
-  await doc.save()
+      game_type: game.game_type
+    })
+  } catch (error: any) {
+    console.log(error)
+    return false
+  }
 
   return true
 }
 
-export const endProtocol = (io: Server, roomID: string): void => {
+export const endProtocol = async (
+  io: Server,
+  roomID: string,
+  game: GameState
+): Promise<void> => {
   // After some time every socket in the room is forced to leave
   setTimeout(() => {
     io.in(roomID).socketsLeave(roomID)
@@ -91,11 +101,17 @@ export const endProtocol = (io: Server, roomID: string): void => {
   const gameTimer = chessTimers.get(roomID)
   if (gameTimer) gameTimer.stop()
   chessTimers.delete(roomID)
+
+  // Then save in database
+  if (game.game_type === GameType.COMPETITIVE) {
+    if (!await saveGame(io, game)) {
+      console.error('Error al guardar la partida')
+    }
+  }
 }
 
 export const timeoutProtocol = (
   io: Server,
-  socket: Socket,
   roomID: string
 ): (winner: PlayerColor) => Promise<void> => {
   return async (winner: PlayerColor) => {
@@ -108,7 +124,6 @@ export const timeoutProtocol = (
       game.finished = true
       game.end_state = EndState.TIMEOUT
 
-      endProtocol(io, roomID)
       await setGame(roomID, game, true)
     })
     if (!game) {
@@ -116,12 +131,34 @@ export const timeoutProtocol = (
       return
     }
 
+    void endProtocol(io, roomID, game)
+
     const message: GameOverMessage = {
       winner,
       end_state: EndState.TIMEOUT
     }
 
-    socket.to(roomID).emit('game_over', message)
-    socket.emit('game_over', message)
+    io.to(roomID).emit('game_over', message)
   }
+}
+
+export const filterGameState = (msg: any): any => {
+  delete msg.dark_socket_id
+  delete msg.dark_id
+  delete msg.light_socket_id
+  delete msg.light_id
+
+  if (!msg.use_timer) {
+    delete msg.initial_timer
+    delete msg.increment
+    delete msg.timer_dark
+    delete msg.timer_light
+  }
+
+  if (!msg.finished) {
+    delete msg.end_state
+    delete msg.winner
+  }
+
+  return msg
 }
