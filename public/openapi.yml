@@ -1,26 +1,33 @@
 openapi: 3.1.0
 info:
   version: 1.0.0
-  title: Example.com
-  termsOfService: 'https://example.com/tos/'
+  title: REIGN
+  termsOfService: 'https://reign.com/terms'
   contact:
-    email: contact@example.com
-    url: 'http://example.com/contact'
+    email: contact@reign.com
   license:
-    name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+    name: MIT
+    url: 'https://github.com/UNIZAR-30226-2023-01/chess-backend/blob/main/LICENCE'
   x-logo:
     url: './logo-w.png'
 tags:
   - name: Auth
-    description: Example echo operations.
+    description: Allows interacting with the session service to achieve objectives such as identifying users, registering them, etc.
   - name: OAuth 2.0
-    description: OAuth 2.0, which stands for (open authorization), is a standard designed to allow a website or application to access resources hosted by other web applications on behalf of a user.
+    description: OAuth 2.0, which stands for (open authorization), is a standard designed to allow a website or application to access resources hosted by other web applications on behalf of a user. In our case, it allows identification by the methods listed below.
+  - name: Room
+    description: Under this category are defined the methods/messages that allow to interact with the different rooms that define the games.
+  - name: Game
+    description: This section defines the methods that allow you to interact with a specific room as well as the game logic.
 x-tagGroups:
   - name: Auth
     tags:
       - Auth
       - OAuth 2.0
+  - name: Game
+    tags:
+      - Room
+      - Game
 servers:
   - url: 'http://localhost:4000/api/v1'
   - url: 'https://example.com/api/v1'
@@ -29,12 +36,35 @@ paths:
     $ref: 'paths/signUp.yaml'
   /auth/sign-in:
     $ref: 'paths/signIn.yaml'
-  /auth/sign-out:
-    $ref: 'paths/signOut.yaml'
   /auth/sign-in/google:
     $ref: 'paths/signInGoogle.yaml'
+  /auth/sign-out:
+    $ref: 'paths/signOut.yaml'
   /auth/verify:
-    $ref: paths\verify.yaml
+    $ref: paths/verify.yaml
+webhooks:
+  findRoom:
+    $ref: paths/webhooks/findRoom.yaml
+  joinRoom:
+    $ref: paths/webhooks/joinRoom.yaml
+  leaveRoom:
+    $ref: paths/webhooks/leaveRoom.yaml
+  move:
+    $ref: paths/webhooks/move.yaml
+  surrender:
+    $ref: paths/webhooks/surrender.yaml
+  voteDraw:
+    $ref: paths/webhooks/voteDraw.yaml
+  voteSave:
+    $ref: paths/webhooks/voteSave.yaml
+  gameOver:
+    $ref: paths/webhooks/game_over.yaml
+  moved:
+    $ref: paths/webhooks/moved.yaml
+  room:
+    $ref: paths/webhooks/room.yaml
+  error:
+    $ref: paths/webhooks/error.yaml
 components:
   securitySchemes:
     api_key:

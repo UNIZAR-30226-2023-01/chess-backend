@@ -1,0 +1,16 @@
+type: object
+properties:
+  game_type:
+    type: string
+    enum: 
+      - AI
+      - COMPETITIVE
+      - CREATE CUSTOM
+      - JOIN CUSTOM
+  time:
+    type: integer
+    description: Available time, in seconds, for every player to move.
+    enum:
+    - 180
+    - 300
+    - 600

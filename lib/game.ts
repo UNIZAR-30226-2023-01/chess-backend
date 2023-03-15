@@ -129,6 +129,7 @@ export const timeoutProtocol = (
 
       await setGame(roomID, game, true)
     })
+
     if (!game) {
       console.log('Error at timeoutProtocol: No game with roomID:', roomID)
       return

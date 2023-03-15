@@ -1,0 +1,18 @@
+post:
+  tags: 
+    -  Room
+  summary: Join Room
+  operationId: joinRoom
+  security: []
+  requestBody:
+    description: Allows you to join as spectator in the lobby of a game in progress.
+    content:
+      application/json:
+        schema:
+          required:
+            - id
+            - name
+          properties:
+            roomID:
+              type: string
+              description: Id of the room you want to watch.

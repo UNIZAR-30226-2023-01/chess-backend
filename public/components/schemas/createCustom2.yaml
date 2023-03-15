@@ -1,0 +1,12 @@
+type: object
+properties:
+  game_type:
+    type: string
+    enum: 
+      - AI
+      - COMPETITIVE
+      - CREATE CUSTOM
+      - JOIN CUSTOM
+  roomID:
+    type: string
+    description: Id of the room another player has created.

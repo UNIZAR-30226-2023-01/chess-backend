@@ -2,7 +2,7 @@ get:
   tags:
     - OAuth 2.0
   summary: Google
-  description: Allows a user to log in to the system using Google.
+  description: Allows a user to log into the system using Google.
   operationId: google
   security: []
   responses:
