@@ -11,7 +11,7 @@ COPY ./cert.crt /etc/nginx/cert.crt
 COPY ./cert.key /etc/nginx/cert.key
 
 # Expose the listening port
-EXPOSE 80
+EXPOSE 443
 
 # Launch NGINX
 CMD [ "nginx", "-g", "daemon off;" ]
