@@ -1,5 +1,7 @@
 import { model, Schema, Document, Model } from 'mongoose'
 
+export const guestUser = 'guest'
+
 export interface UserDocument extends Document {
   googleId: string
   username: string
@@ -20,7 +22,8 @@ interface User {
 
 interface UserModel extends Model<User> {
   doesUserExist: (username: string, email: string) => Promise<Boolean>
-  getUser: (username: string) => Promise<User>
+  getUser: (username: string) => Promise<User | null>
+  getUserByEmail: (email: string) => Promise<User | null>
 }
 
 const userSchema = new Schema<User, UserModel>({
@@ -54,28 +57,41 @@ const userSchema = new Schema<User, UserModel>({
   timestamps: true
 })
 
-userSchema.static('doesUserExist', async function (username, email): Promise<Boolean> {
-  return await this.findOne({
-    $or: [
-      { username },
-      { email }
-    ]
-  })
-    .then((user: any) => user !== null)
-    .catch((error: any) => {
+userSchema.static('doesUserExist',
+  async function (username: string, email: string): Promise<Boolean> {
+    try {
+      const user = await this.findOne({
+        $or: [
+          { username },
+          { email }
+        ]
+      })
+      return user !== null
+    } catch (error: any) {
       console.error(error)
       return false
-    })
-})
+    }
+  })
 
-userSchema.static('getUser', async function (username): Promise<any> {
-  return await this.findOne({ username })
-    .then((user: any) => user)
-    .catch((error: any) => {
+userSchema.static('getUser',
+  async function (username: string): Promise<User | null> {
+    try {
+      return await this.findOne({ username })
+    } catch (error: any) {
       console.error(error)
       return null
-    })
-})
+    }
+  })
+
+userSchema.static('getUserByEmail',
+  async function (email: string): Promise<User | null> {
+    try {
+      return await this.findOne({ email })
+    } catch (error: any) {
+      console.error(error)
+      return null
+    }
+  })
 
 const UserInstance = model<User, UserModel>('User', userSchema)
 export default UserInstance

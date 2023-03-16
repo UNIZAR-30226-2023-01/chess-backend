@@ -1,0 +1,25 @@
+type: object
+properties:
+  game_type:
+    type: string
+    enum: 
+      - AI
+      - COMPETITIVE
+      - CREATE CUSTOM
+      - JOIN CUSTOM
+  time:
+    type: integer
+    default: 300
+    description: Available time, in seconds, for every player to move. If it is set to 0, players have no time restriction.
+  increment:
+    type: integer
+    default: 5
+    description: Time, in seconds, that is added to each player's timer after they execute a movement.
+  host_color:
+    type: string
+    default: RANDOM
+    description: Color of host player's pieces.
+    enum: 
+      - RANDOM
+      - LIGHT
+      - DARK

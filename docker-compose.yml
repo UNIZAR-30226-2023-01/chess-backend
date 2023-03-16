@@ -3,4 +3,10 @@ services:
   express:
     build: ./
     ports:
-      - 80:4000
+      - 4000:4000
+      - 4001:4001
+  nginx:
+    build: ./nginx
+    ports:
+      - 443:443
+      - 4043:4043

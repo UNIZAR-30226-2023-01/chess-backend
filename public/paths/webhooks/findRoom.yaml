@@ -1,0 +1,18 @@
+post:
+  tags: 
+    -  Room
+  summary: Find Room
+  operationId: findRoom
+  security: []
+  requestBody:
+    description: Allows you to search for a game against an opponent.
+    content:
+      application/json:
+        schema: 
+          discriminator: 
+            propertyName: game_type
+            mapping: 
+              AI: ../../components/schemas/createIA.yaml
+              COMPETITIVE: ../../components/schemas/createCompetitive.yaml
+              CREATE CUSTOM: ../../components/schemas/createCustom.yaml
+              JOIN CUSTOM: ../../components/schemas/createCustom2.yaml

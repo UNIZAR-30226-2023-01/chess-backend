@@ -1,0 +1,18 @@
+post:
+  tags: 
+    -  Game
+  summary: Surrender
+  operationId: surrender
+  security: []
+  requestBody:
+    description: Allows you to search for a game against an opponent
+    content:
+      application/json:
+        schema:
+          required:
+            - id
+            - name
+          properties:
+            roomID:
+              type: string
+              description: Id of the room you want to watch.
