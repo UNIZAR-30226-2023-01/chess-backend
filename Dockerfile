@@ -16,4 +16,7 @@ RUN npm install
 COPY ./.env .
 COPY ./build .
 
+EXPOSE 4000
+EXPOSE 4001
+
 CMD [ "node", "app.js" ]
