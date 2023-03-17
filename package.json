@@ -11,8 +11,7 @@
     "start": "node build/app.js",
     "dev": "ts-node-dev app.ts",
     "tsc": "tsc",
-    "lint": "ts-standard --fix",
-    "eslint": "eslint . --ext .ts --fix",
+    "lint": "eslint . --ext .ts --fix",
     "prepare": "husky install",
     "test": "nyc mocha --exit --timeout 5000"
   },
