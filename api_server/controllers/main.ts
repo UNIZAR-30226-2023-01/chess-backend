@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { setStatus } from '../../lib/status'
+import { setStatus } from '@lib/status'
 
 export const pong = (req: Request, res: Response): void => {
   res

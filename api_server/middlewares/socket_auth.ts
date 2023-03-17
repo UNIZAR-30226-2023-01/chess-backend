@@ -1,8 +1,8 @@
 import { Socket } from 'socket.io'
 import { ExtendedError } from 'socket.io/dist/namespace'
 import jwt from 'jsonwebtoken'
-import { guestUser } from '../models/user'
-import { validateToken } from '../../lib/token_blacklist'
+import { guestUser } from '@models/user'
+import { validateToken } from '@lib/token_blacklist'
 
 export const socketAuth = async (
   socket: Socket,

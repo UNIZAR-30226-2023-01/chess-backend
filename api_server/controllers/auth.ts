@@ -2,9 +2,9 @@ import { Request, Response } from 'express'
 import { pbkdf2, randomBytes, timingSafeEqual } from 'crypto'
 import dayjs from 'dayjs'
 import jwt from 'jsonwebtoken'
-import UserModel from '../models/user'
-import { setStatus } from '../../lib/status'
-import { invalidateToken } from '../../lib/token_blacklist'
+import UserModel from '@models/user'
+import { setStatus } from '@lib/status'
+import { invalidateToken } from '@lib/token_blacklist'
 
 export const signIn = (req: Request, res: Response): void => {
   UserModel.getUser(req.body.username)
