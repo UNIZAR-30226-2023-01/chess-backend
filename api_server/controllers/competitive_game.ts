@@ -22,6 +22,8 @@ export const findGame = async (
     socket.emit('error', 'Missing parameters')
     return
   }
+  const i = 23
+  console.log(i)
 
   if (!socket.data.authenticated) {
     socket.emit('error', 'Must be authenticated to find a game')
