@@ -1,10 +1,11 @@
 openapi: 3.1.0
 info:
-  version: 1.0.0
   title: REIGN
-  termsOfService: 'https://reign.com/terms'
+  description:
+    $ref: description.md
+  termsOfService: 'https://reign.gracehopper.xyz/terms'
   contact:
-    email: contact@reign.com
+    email: contact@gracehopper.xyz
   license:
     name: MIT
     url: 'https://github.com/UNIZAR-30226-2023-01/chess-backend/blob/main/LICENCE'
