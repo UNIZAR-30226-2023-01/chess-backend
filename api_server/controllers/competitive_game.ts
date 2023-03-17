@@ -16,12 +16,17 @@ const increments = [0, 0, 0] // seconds
 export const findGame = async (
   socket: Socket,
   io: Server,
+
+
+
   data: FindGameMsg
 ): Promise<void> => {
   if (!data.time) {
     socket.emit('error', 'Missing parameters')
     return
   }
+  let i = 23
+  console.log(i)
 
   if (!socket.data.authenticated) {
     socket.emit('error', 'Must be authenticated to find a game')
