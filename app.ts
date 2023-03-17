@@ -1,20 +1,20 @@
 import express from 'express'
-import { connectDB } from './config/database'
+import { connectDB } from '@config/database'
 import path from 'path'
 import helmet from 'helmet'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import { stamp } from './api_server/middlewares/timestamp'
-import indexRouter from './api_server/routes/index'
-import authRouter from './api_server/routes/auth'
+import { stamp } from '@middlewares/timestamp'
+import indexRouter from '@routes/index'
+import authRouter from '@routes/auth'
 import cors from 'cors'
 import * as dotenv from 'dotenv'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
-import server from './server'
+import server from '@server'
 dotenv.config()
-require('./auth/passport')
-require('./auth/passportGoogle')
+require('@/auth/passport')
+require('@/auth/passportGoogle')
 
 const app = express()
 app.use(express.json())

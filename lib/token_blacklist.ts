@@ -1,4 +1,4 @@
-import { client, redlock } from '../config/database'
+import { client, redlock } from '@config/database'
 
 export const invalidateToken = async (
   username: string,

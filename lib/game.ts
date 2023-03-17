@@ -1,9 +1,9 @@
 import { Server } from 'socket.io'
-import { EndState, GameModel, GameState, GameType, PlayerColor } from '../api_server/models/game'
-import { client, redlock } from '../config/database'
-import { roomLockPrefix, roomPrefix } from './room'
-import { chessTimers } from './timer'
-import { GameOverMessage } from './messages.types'
+import { EndState, GameModel, GameState, GameType, PlayerColor } from '@models/game'
+import { client, redlock } from '@config/database'
+import { roomLockPrefix, roomPrefix } from '@lib/room'
+import { chessTimers } from '@lib/timer'
+import { GameOverMessage } from '@lib/messages.types'
 
 // 2 minutes after a game is over, it is deleted from redis
 export const gameOverTTL = 2 * 60

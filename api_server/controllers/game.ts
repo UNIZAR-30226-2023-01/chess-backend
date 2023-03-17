@@ -1,8 +1,8 @@
 import { Server, Socket } from 'socket.io'
-import { GameState } from '../models/game'
-import * as match from './match_game'
-import { chessTimers } from '../../lib/timer'
-import * as gameCtl from '../../lib/game'
+import { GameState } from '@models/game'
+import * as match from '@controllers/match_game'
+import { chessTimers } from '@lib/timer'
+import * as gameCtl from '@lib/game'
 const _ = require('lodash')
 
 interface RoomMessage {

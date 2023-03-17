@@ -1,7 +1,7 @@
 import * as chai from 'chai'
 import chaiHttp from 'chai-http'
 import request from 'supertest'
-import app from '../app'
+import app from '@app'
 
 chai.use(chaiHttp)
 

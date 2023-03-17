@@ -1,6 +1,6 @@
 import express from 'express'
-import * as authCtrl from '../controllers/auth'
-import * as userMiddleware from '../middlewares/user'
+import * as authCtrl from '@controllers/auth'
+import * as userMiddleware from '@middlewares/user'
 import passport from 'passport'
 
 const router = express.Router()

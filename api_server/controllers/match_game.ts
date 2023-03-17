@@ -2,15 +2,15 @@ import { Server, Socket } from 'socket.io'
 import {
   PlayerColor, EndState, /* GameDocument, */
   GameState /* GameModel, */
-} from '../models/game'
-import * as gameCtl from '../../lib/game'
-import { chessTimers } from '../../lib/timer'
+} from '@models/game'
+import * as gameCtl from '@lib/game'
+import { chessTimers } from '@lib/timer'
 import { Chess } from 'chess.ts'
-import * as competitive from './competitive_game'
+import * as competitive from '@controllers/competitive_game'
 import {
   GameOverMessage, MoveMessage,
   MoveResponse, RoomMessage
-} from '../../lib/messages.types'
+} from '@lib/messages.types'
 
 export const findGame = competitive.findGame
 
@@ -25,7 +25,7 @@ export const surrender = async (
   }
 
   let exit = false
-  const roomID = data.roomID
+  const roomID: string = data.roomID
   const game = await gameCtl.getGame(roomID, async (game: GameState) => {
     if (game.finished) {
       socket.emit('error', 'Game has already been finished')
@@ -98,7 +98,8 @@ export const move = async (
 ): Promise<void> => {
   console.log('move', data)
 
-  let { roomID, move } = data
+  const roomID = data.roomID
+  let move = data.move
 
   if (!(roomID && move)) {
     socket.emit('error', 'Missing parameters')

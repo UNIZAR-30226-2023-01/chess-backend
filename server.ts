@@ -1,8 +1,8 @@
-import App from './app'
+import App from '@app'
 import http from 'http'
 import { Server, Socket } from 'socket.io'
-import * as gameCtrl from './api_server/controllers/game'
-import { socketAuth } from './api_server/middlewares/socket_auth'
+import * as gameCtrl from '@controllers/game'
+import { socketAuth } from '@middlewares/socket_auth'
 
 const server = http.createServer(App)
 

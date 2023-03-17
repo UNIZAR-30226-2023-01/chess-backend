@@ -1,7 +1,7 @@
 import { Request } from 'express'
 import passport from 'passport'
 import { Strategy as JWTStrategy, VerifiedCallback } from 'passport-jwt'
-import UserModel from '../api_server/models/user'
+import UserModel from '@models/user'
 
 const cookieExtractor = (req: Request): string | null => {
   let token = null
@@ -24,6 +24,7 @@ passport.use('jwt',
     },
 
     async (_req: Request, payload: any, done: VerifiedCallback) => {
+      // eslint-disable-next-line @typescript-eslint/return-await
       return await UserModel.findOne({ username: payload.username })
         .then(async (user) => {
           if (user != null) done(null, user)
