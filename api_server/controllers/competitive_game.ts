@@ -16,7 +16,6 @@ const increments = [0, 0, 0] // seconds
 export const findGame = async (
   socket: Socket,
   io: Server,
-
   data: FindGameMsg
 ): Promise<void> => {
   if (!data.time) {
