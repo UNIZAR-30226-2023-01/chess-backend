@@ -9,4 +9,4 @@ services:
     build: ./nginx
     ports:
       - 443:443
-      - 4043:4043
+      - 8443:8443

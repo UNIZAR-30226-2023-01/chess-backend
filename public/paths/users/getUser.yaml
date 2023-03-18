@@ -1,0 +1,220 @@
+get:
+  servers: 
+    - url: 'http://localhost:4000/api/v1'
+    - url: 'https://api.gracehopper.xyz/api/v1'
+  tags:
+    - User
+  summary: Get User
+  description: Retrieves information from a single user
+  operationId: getUser
+  security:
+    - api_key: []
+  parameters:
+    - in: path
+      name: id
+      schema:
+        type: string
+      required: true
+      description: ID of the user to get
+  responses:
+    '200':
+      description: Authorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              data:
+                type: object
+                properties: 
+                  id:
+                    type: string
+                    example: 507f1f77bcf86cd799439011
+                  avatar:
+                    type: string
+                    format: url 
+                    example: https://api.gracehopper.xyz/...
+                  username:
+                    type: string
+                    example: johndoe
+                  email:
+                    type: string
+                    example: johndoe@example.com
+                  google:
+                    type: boolean
+                  stats:
+                    type: object
+                    properties: 
+                      bulletWins:
+                        type: integer
+                        default: 0
+                      bulletDefeats:
+                        type: integer
+                        default: 0
+                      blitzWins:
+                        type: integer
+                        default: 0
+                      blitzDefeats:
+                        type: integer
+                        default: 0
+                      fastWins:
+                        type: integer
+                        default: 0
+                      fastDefeats:
+                        type: integer
+                        default: 0
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: Authorized
+                  elapsed:
+                    type: number
+    401:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: Unauthorized
+                  elapsed:
+                    type: number
+  x-codeSamples:
+    - lang: cURL
+      source: ""
+    - lang: JavaScript
+      source: ""
+    - lang: Dart
+      source: ""
+
+patch:
+  servers: 
+    - url: 'http://localhost:4000/api/v1'
+    - url: 'https://api.gracehopper.xyz/api/v1'
+  tags:
+    - User
+  summary: Update User
+  description: allows you to update the desired part of the user's profile
+  operationId: updateUser
+  security:
+    - api_key: []
+  parameters:
+    - in: path
+      name: id
+      schema:
+        type: string
+      required: true
+      description: ID of the user to get
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            avatar:
+              type: string
+              format: url 
+              example: https://api.gracehopper.xyz/...
+              description: profile picture 
+            username: 
+              type: string
+              example: johndoe
+              uniqueItems: true
+              description: Nickname with which the user will be identified within the platform
+            email: 
+              type: string
+              example: johndoe@example.com
+              uniqueItems: true
+              description: e-mail address with which the user registers
+            password: 
+              type: string
+              format: password
+              example: qwerty
+              description: Password to protect the user's profile
+  responses:
+    '200':
+      description: Authorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              data:
+                type: object
+                properties: 
+                  id:
+                    type: string
+                    example: 507f1f77bcf86cd799439011
+                  avatar:
+                    type: string
+                    format: url 
+                    example: https://api.gracehopper.xyz/...
+                  username:
+                    type: string
+                    example: johndoe
+                  email:
+                    type: string
+                    example: johndoe@example.com
+                  google:
+                    type: boolean
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: Authorized
+                  elapsed:
+                    type: number
+    401:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: Unauthorized
+                  elapsed:
+                    type: number
+  x-codeSamples:
+    - lang: cURL
+      source: ""
+    - lang: JavaScript
+      source: ""
+    - lang: Dart
+      source: ""

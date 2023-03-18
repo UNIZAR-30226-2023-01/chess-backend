@@ -1,4 +1,7 @@
 post:
+  servers: 
+    - url: 'http://localhost:4000/api/v1'
+    - url: 'https://api.gracehopper.xyz/api/v1'
   tags:
     - Auth
   summary: Sign Out
@@ -52,10 +55,10 @@ post:
   x-codeSamples:
     - lang: cURL
       source:
-        $ref: "../code_samples/curl/signOut.sh"
+        $ref: "../../code_samples/curl/signOut.sh"
     - lang: JavaScript
       source:
-         $ref: "../code_samples/javascript/signOut.js"
+         $ref: "../../code_samples/javascript/signOut.js"
     - lang: Dart
       source:
-         $ref: "../code_samples/dart/signOut.dart"
+         $ref: "../../code_samples/dart/signOut.dart"

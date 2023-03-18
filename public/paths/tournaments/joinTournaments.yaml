@@ -1,0 +1,68 @@
+get:
+  servers: 
+    - url: 'http://localhost:4000/api/v1'
+    - url: 'https://api.gracehopper.xyz/api/v1'
+  tags:
+    - Tournament
+  summary: Join Tournament
+  description: Allows you to join a tournament by simply navigating to this endpoint
+  operationId: joinTournament
+  security:
+    - api_key: []
+  parameters:
+    - in: path
+      name: id
+      schema:
+        type: string
+      required: true
+      description: ID of the tournament to join
+  responses:
+    '200':
+      description: Authorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: Authorized
+                  elapsed:
+                    type: number
+    401:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: 
+              status:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    format: date
+                    example: 2023-02-18T14:51:41.370Z
+                  error_code:
+                    type: number
+                  error_message:
+                    type: string
+                    example: Unauthorized
+                  elapsed:
+                    type: number
+  x-codeSamples:
+    - lang: cURL
+      source: ""
+    - lang: JavaScript
+      source: ""
+    - lang: Dart
+      source: ""
