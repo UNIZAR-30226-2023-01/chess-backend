@@ -1,4 +1,7 @@
 get:
+  servers: 
+    - url: 'http://localhost:4000/api/v1'
+    - url: 'https://api.gracehopper.xyz/api/v1'
   tags:
     - OAuth 2.0
   summary: Google
