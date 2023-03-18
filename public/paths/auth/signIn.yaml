@@ -1,4 +1,7 @@
 post:
+  servers: 
+    - url: 'http://localhost:4000/api/v1'
+    - url: 'https://api.gracehopper.xyz/api/v1'
   tags:
     - Auth
   summary: Sign In
@@ -112,10 +115,10 @@ post:
   x-codeSamples:
     - lang: cURL
       source:
-        $ref: "../code_samples/curl/signIn.sh"
+        $ref: "../../code_samples/curl/signIn.sh"
     - lang: JavaScript
       source:
-         $ref: "../code_samples/javascript/signIn.js"
+         $ref: "../../code_samples/javascript/signIn.js"
     - lang: Dart
       source:
-         $ref: "../code_samples/dart/signIn.dart"
+         $ref: "../../code_samples/dart/signIn.dart"

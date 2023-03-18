@@ -1,4 +1,4 @@
-import { StockfishStream } from './stockfish'
+import { StockfishStream } from '@lib/stockfish'
 
 const tablero1: string = '8/8/8/4p1K1/2k1P3/8/8/8 b - - 0 1'
 const tablero2: string =

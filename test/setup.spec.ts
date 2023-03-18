@@ -1,4 +1,4 @@
-import User from '../api_server/models/user'
+import User from '@models/user'
 
 beforeEach((done) => {
   User.deleteMany({})

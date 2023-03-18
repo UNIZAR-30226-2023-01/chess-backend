@@ -1,6 +1,6 @@
 import passport from 'passport'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
-import UserModel from '../api_server/models/user'
+import UserModel from '@models/user'
 
 const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL ?? 'http://localhost:4000/api/v1/auth/google/callback'
 
@@ -19,6 +19,7 @@ async (_req: any, _accessToken: any, _refreshToken: any, profile: any, done: any
     avatar: profile.photos[0].value
   }
 
+  // eslint-disable-next-line @typescript-eslint/return-await
   return await UserModel.findOneAndUpdate(
     { email: defaultUser.email },
     defaultUser,

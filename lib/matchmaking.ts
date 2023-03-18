@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io'
-import { client, redlock } from '../config/database'
-import * as roomGen from './room'
+import { client, redlock } from '@config/database'
+import * as roomGen from '@lib/room'
 
 const playerQueuePrefix = 'player-queue-'
 

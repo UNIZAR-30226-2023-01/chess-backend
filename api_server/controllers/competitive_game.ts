@@ -2,12 +2,12 @@ import { Server, Socket } from 'socket.io'
 import {
   GameType, PlayerColor, /* GameDocument, */
   GameState, /* GameModel, */ newBoard
-} from '../models/game'
-import * as matchmaking from '../../lib/matchmaking'
-import { chessTimers, ChessTimer } from '../../lib/timer'
-import * as gameCtl from '../../lib/game'
-import { FindGameMsg, FoundGameMsg } from '../../lib/messages.types'
-import UserModel from '../models/user'
+} from '@models/game'
+import * as matchmaking from '@lib/matchmaking'
+import { chessTimers, ChessTimer } from '@lib/timer'
+import * as gameCtl from '@lib/game'
+import { FindGameMsg, FoundGameMsg } from '@lib/messages.types'
+import UserModel from '@models/user'
 const _ = require('lodash')
 
 const initialTimes = [3 * 60, 5 * 60, 10 * 60] // seconds

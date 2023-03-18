@@ -16,6 +16,12 @@ tags:
     description: Allows interacting with the session service to achieve objectives such as identifying users, registering them, etc.
   - name: OAuth 2.0
     description: OAuth 2.0, which stands for (open authorization), is a standard designed to allow a website or application to access resources hosted by other web applications on behalf of a user. In our case, it allows identification by the methods listed below.
+  - name: User
+    description: Allows to query and manipulate the user object information.
+  - name: History
+    description: Allows you to query the history of games with filters by different fields.
+  - name: Tournament
+    description: Allows to query and manipulate the information of the tournament type objects.
   - name: Room
     description: Under this category are defined the methods/messages that allow to interact with the different rooms that define the games.
   - name: Game
@@ -25,24 +31,54 @@ x-tagGroups:
     tags:
       - Auth
       - OAuth 2.0
+  - name: User
+    tags:
+      - User
+      - History
+  - name: Tournament
+    tags:
+      - Tournament
   - name: Game
     tags:
       - Room
       - Game
 servers:
   - url: 'http://localhost:4000/api/v1'
-  - url: 'https://example.com/api/v1'
+    description: Sandbox server (REST API)
+  - url: 'http://localhost:4001'
+    description: Sandbox server (WS API)
+  - url: 'https://api.gracehopper.xyz/api/v1'
+    description: Production server (REST API)
+  - url: 'https://api.gracehopper.xyz:8443'
+    description: Production server (WS API)
+  
 paths:
   /auth/sign-up:
-    $ref: 'paths/signUp.yaml'
+    $ref: 'paths/auth/signUp.yaml'
   /auth/sign-in:
-    $ref: 'paths/signIn.yaml'
+    $ref: 'paths/auth/signIn.yaml'
   /auth/sign-in/google:
-    $ref: 'paths/signInGoogle.yaml'
+    $ref: 'paths/auth/signInGoogle.yaml'
   /auth/sign-out:
-    $ref: 'paths/signOut.yaml'
+    $ref: 'paths/auth/signOut.yaml'
   /auth/verify:
-    $ref: paths/verify.yaml
+    $ref: paths/auth/verify.yaml
+  /users:
+    $ref: paths/users/getAllUsers.yaml
+  /users/{id}:
+    $ref: paths/users/getUser.yaml
+  /history:
+    $ref: paths/history/getAllHistory.yaml
+  /history/{id}:
+    $ref: paths/history/getHistory.yaml
+  /tournaments:
+    $ref: paths/tournaments/allTournaments.yaml
+  /tournaments/{id}:
+    $ref: paths/tournaments/tournaments.yaml
+  /tournaments/join/{id}:
+    $ref: paths/tournaments/joinTournaments.yaml
+  /tournaments/leave/{id}:
+    $ref: paths/tournaments/leaveTournaments.yaml
 webhooks:
   findRoom:
     $ref: paths/webhooks/findRoom.yaml

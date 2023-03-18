@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
-import { setStatus } from '../../lib/status'
-import UserModel from '../models/user'
+import { setStatus } from '@lib/status'
+import UserModel from '@models/user'
 import passport from 'passport'
-import { validateToken } from '../../lib/token_blacklist'
+import { validateToken } from '@lib/token_blacklist'
 
 export const userExists = (req: Request, res: Response, next: NextFunction): void => {
   UserModel.doesUserExist(req.body.username, req.body.email)

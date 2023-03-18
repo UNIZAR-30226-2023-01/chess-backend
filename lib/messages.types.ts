@@ -1,4 +1,4 @@
-import { EndState, GameState, PlayerColor } from '../api_server/models/game'
+import { EndState, GameState, PlayerColor } from '@models/game'
 
 export interface RoomMessage {
   roomID: string
