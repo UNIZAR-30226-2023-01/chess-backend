@@ -1,89 +1,75 @@
 import { Server, Socket } from 'socket.io'
-import {
-  PlayerColor, EndState, /* GameDocument, */
-  GameState /* GameModel, */
-} from '@models/game'
 import * as gameCtl from '@lib/game'
 import { chessTimers } from '@lib/timer'
 import { Chess } from 'chess.ts'
-import * as competitive from '@controllers/competitive_game'
 import {
-  GameOverMessage, MoveMessage,
-  MoveResponse, RoomMessage
-} from '@lib/messages.types'
-
-export const findGame = competitive.findGame
+  GameOverMsg, MoveMsg,
+  MovedMsg, RoomIDMsg
+} from '@lib/types/socket-msg'
+import { PlayerColor, EndState } from '@lib/types/game'
 
 export const surrender = async (
   socket: Socket,
   io: Server,
-  data: RoomMessage
+  data: RoomIDMsg
 ): Promise<void> => {
   if (!data.roomID) {
     socket.emit('error', 'Missing parameters')
     return
   }
 
-  let exit = false
   const roomID: string = data.roomID
-  const game = await gameCtl.getGame(roomID, async (game: GameState) => {
+  const game = await gameCtl.getGame(roomID, async (game) => {
+    if (!game) {
+      socket.emit('error', `No game with roomID: ${roomID}`)
+      return
+    }
+
     if (game.finished) {
       socket.emit('error', 'Game has already been finished')
-      exit = true
       return
     }
 
-    if (game.light_socket_id !== socket.id &&
-      game.dark_socket_id !== socket.id) {
+    if (!gameCtl.isPlayerOfGame(socket, game)) {
       socket.emit('error', 'You are not a player of this game')
-      exit = true
       return
     }
 
-    const color = socket.id === game.light_socket_id
-      ? PlayerColor.LIGHT
-      : PlayerColor.DARK
-    game.winner = color === PlayerColor.DARK
-      ? PlayerColor.LIGHT
-      : PlayerColor.DARK
+    const color = gameCtl.getColor(socket, game)
+    game.winner = gameCtl.alternativeColor(color)
 
     if (color === PlayerColor.DARK) {
-      game.dark_surrended = true
+      game.darkSurrended = true
     } else {
-      game.light_surrended = true
+      game.lightSurrended = true
     }
 
     game.finished = true
-    game.end_state = EndState.SURRENDER
+    game.endState = EndState.SURRENDER
 
-    if (game.use_timer) {
+    if (game.useTimer) {
       const gameTimer = chessTimers.get(roomID)
       if (!gameTimer) {
         socket.emit('error', 'Internal server error')
-        exit = true
         return
       }
-      game.timer_dark = gameTimer.getTimeDark()
-      game.timer_light = gameTimer.getTimeLight()
+      game.timerDark = gameTimer.getTimeDark()
+      game.timerLight = gameTimer.getTimeLight()
     }
 
     await gameCtl.setGame(roomID, game, true)
+    return game
   })
-  if (exit) return
+  if (!game) return
 
-  if (!game) {
-    socket.emit('error', `No game with roomID: ${roomID}`)
-    return
-  }
-
-  if (!game.winner || !game.end_state) {
+  if (!game.winner || !game.endState) {
     socket.emit('error', 'Internal server error')
     return
   }
 
-  const message: GameOverMessage = {
+  const message: GameOverMsg = {
     winner: game.winner,
-    end_state: game.end_state
+    endState: game.endState
   }
 
   void gameCtl.endProtocol(io, roomID, game)
@@ -94,7 +80,7 @@ export const surrender = async (
 export const move = async (
   socket: Socket,
   io: Server,
-  data: MoveMessage
+  data: MoveMsg
 ): Promise<void> => {
   console.log('move', data)
 
@@ -106,25 +92,25 @@ export const move = async (
     return
   }
 
-  let exit = false
-  const game = await gameCtl.getGame(roomID, async (game: GameState) => {
+  const game = await gameCtl.getGame(roomID, async (game) => {
+    if (!game) {
+      socket.emit('error', `No game with roomID: ${roomID}`)
+      return
+    }
+
     if (game.finished) {
       socket.emit('error', 'Game has already been finished')
-      exit = true
       return
     }
-    if (game.light_socket_id !== socket.id &&
-      game.dark_socket_id !== socket.id) {
+
+    if (!gameCtl.isPlayerOfGame(socket, game)) {
       socket.emit('error', 'You are not a player of this game')
-      exit = true
       return
     }
-    if ((game.dark_socket_id === socket.id &&
-        game.turn === PlayerColor.LIGHT) ||
-      (game.light_socket_id === socket.id &&
-        game.turn === PlayerColor.DARK)) {
+
+    const color = gameCtl.getColor(socket, game)
+    if (color !== game.turn) {
       socket.emit('error', 'It is not your turn')
-      exit = true
       return
     }
 
@@ -132,37 +118,33 @@ export const move = async (
     const moveRes = chess.move(move, { sloppy: true })
     if (moveRes === null) {
       socket.emit('error', 'Illegal move')
-      exit = true
       return
     }
 
-    if (game.use_timer) {
+    if (game.useTimer) {
       // Switch timers
       const gameTimer = chessTimers.get(roomID)
       if (!gameTimer) {
         socket.emit('error', 'Internal server error')
-        exit = true
         return
       }
 
       gameTimer.switchCountDown()
-      game.timer_dark = gameTimer.getTimeDark()
-      game.timer_light = gameTimer.getTimeLight()
+      game.timerDark = gameTimer.getTimeDark()
+      game.timerLight = gameTimer.getTimeLight()
     }
 
     if (chess.inCheckmate()) {
-      game.end_state = EndState.CHECKMATE
+      game.endState = EndState.CHECKMATE
       game.winner = game.turn
     } else if (chess.inDraw()) {
-      game.end_state = EndState.DRAW
+      game.endState = EndState.DRAW
     } else {
       game.finished = false
     }
 
     game.board = chess.fen()
-    game.turn = game.turn === PlayerColor.DARK
-      ? PlayerColor.LIGHT
-      : PlayerColor.DARK
+    game.turn = gameCtl.alternativeColor(game.turn)
 
     if (moveRes.promotion) {
       move = moveRes.from + moveRes.to + moveRes.promotion
@@ -172,32 +154,28 @@ export const move = async (
     game.moves.push(move)
 
     await gameCtl.setGame(roomID, game, game.finished)
+    return game
   })
-  if (exit) return
+  if (!game) return
 
-  if (!game) {
-    socket.emit('error', `No game with roomID: ${roomID}`)
-    return
-  }
-
-  const returnMessage: MoveResponse = {
+  const returnMessage: MovedMsg = {
     move,
     turn: game.turn,
     finished: game.finished
   }
 
   if (game.finished) {
-    returnMessage.end_state = game.end_state
-    if (game.end_state === EndState.CHECKMATE) {
+    returnMessage.endState = game.endState
+    if (game.endState === EndState.CHECKMATE) {
       returnMessage.winner = game.winner
     }
 
     void gameCtl.endProtocol(io, roomID, game)
   }
 
-  if (game.use_timer) {
-    returnMessage.timer_dark = game.timer_dark
-    returnMessage.timer_light = game.timer_light
+  if (game.useTimer) {
+    returnMessage.timerDark = game.timerDark
+    returnMessage.timerLight = game.timerLight
   }
 
   io.to(roomID).emit('move', returnMessage)

@@ -1,4 +1,4 @@
-import { PlayerColor } from '@models/game'
+import { PlayerColor } from '@lib/types/game'
 
 export class ChessTimer {
   private lastTimestamp: number

@@ -7,14 +7,15 @@ import cookieParser from 'cookie-parser'
 import { stamp } from '@middlewares/timestamp'
 import indexRouter from '@routes/index'
 import authRouter from '@routes/auth'
+import usersRouter from '@routes/users'
 import cors from 'cors'
 import * as dotenv from 'dotenv'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
 import server from '@server'
 dotenv.config()
-require('@/auth/passport')
-require('@/auth/passportGoogle')
+require('@auth/passport')
+require('@auth/passportGoogle')
 
 const app = express()
 app.use(express.json())
@@ -49,6 +50,7 @@ app.listen(PORT, () => {
 app.use('/api/v1', stamp)
 app.use('/api/v1', indexRouter)
 app.use('/api/v1/auth', authRouter)
+app.use('/api/v1/users', usersRouter)
 
 server.listen(Number(PORT) + 1, () => {
   console.log(`Socket.IO is running → PORT ${String(Number(PORT) + 1)}`)

@@ -9,5 +9,5 @@ get:
   operationId: google
   security: []
   responses:
-    '200':
+    200:
       description: OK

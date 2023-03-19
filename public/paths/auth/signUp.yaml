@@ -34,7 +34,7 @@ post:
               example: qwerty
               description: Password to protect the user's profile
   responses:
-    '201':
+    201:
       description: Created
       content:
         application/json:
@@ -119,11 +119,4 @@ post:
                     type: number
   x-codeSamples:
     - lang: cURL
-      source:
-        $ref: "../../code_samples/curl/signUp.sh"
-    - lang: JavaScript
-      source:
-         $ref: "../../code_samples/javascript/signUp.js"
-    - lang: Dart
-      source:
-         $ref: "../../code_samples/dart/signUp.dart"
+      source: ""

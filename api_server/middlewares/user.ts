@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { setStatus } from '@lib/status'
 import UserModel from '@models/user'
 import passport from 'passport'
-import { validateToken } from '@lib/token_blacklist'
+import { TokenValidationResult, validateToken } from '@lib/token-blacklist'
 
 export const userExists = (req: Request, res: Response, next: NextFunction): void => {
   UserModel.doesUserExist(req.body.username, req.body.email)
@@ -35,11 +35,11 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
           req.cookies['api-auth']
         )
 
-        if (status === 500) {
+        if (status === TokenValidationResult.ERROR) {
           res
             .status(500)
             .json({ message: 'Internal server error' })
-        } else if (status === 401) {
+        } else if (status === TokenValidationResult.INVALID_TOKEN) {
           res.clearCookie('api-auth')
           res
             .status(401)
@@ -50,7 +50,6 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
         }
       })(req, res, next)
   } catch (err) {
-    console.log('Error: ', err)
     res
       .status(500)
       .json({ message: 'Internal server error' })
