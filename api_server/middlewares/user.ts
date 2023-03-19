@@ -50,7 +50,6 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
         }
       })(req, res, next)
   } catch (err) {
-    console.log('Error: ', err)
     res
       .status(500)
       .json({ message: 'Internal server error' })

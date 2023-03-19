@@ -53,8 +53,6 @@ export const signUp = (req: Request, res: Response): void => {
   pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
     if (err != null) console.error(err)
 
-    console.log('User created', req.body)
-
     UserModel.create({
       username: req.body.username,
       email: req.body.email,
@@ -85,7 +83,6 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
       .status(200)
       .json({ message: 'Good Bye!' })
   } catch (err) {
-    console.log('Error: ', err)
     res
       .status(500)
       .json({ message: 'Internal Server Error!' })
@@ -93,7 +90,6 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
 }
 
 export const verify = (req: Request, res: Response): void => {
-  console.log(req.body.user)
   res
     .status(200)
     .json(setStatus(req, 200, 'User Authorized'))

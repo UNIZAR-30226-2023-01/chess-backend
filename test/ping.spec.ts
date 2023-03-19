@@ -31,7 +31,7 @@ describe('GET /api/v1/ping', () => {
   })
 })
 
-describe('GET /api/v1/ping-v2', () => {
+describe('GET /api/v1/secure-ping', () => {
   it('El servidor hace pong', async () => {
     await request(app)
       .post('/api/v1/auth/sign-up')
@@ -44,7 +44,7 @@ describe('GET /api/v1/ping-v2', () => {
           .expect(200)
           .then(async res => {
             const response = await request(app)
-              .get('/api/v1/ping-v2')
+              .get('/api/v1/secure-ping')
               .set('Cookie', res.headers['set-cookie'])
               .expect('Content-Type', /json/)
               .expect(200)
@@ -63,7 +63,7 @@ describe('GET /api/v1/ping-v2', () => {
 
   it('El usuario no tiene permiso', async () => {
     await request(app)
-      .get('/api/v1/ping-v2')
+      .get('/api/v1/secure-ping')
       .expect(401)
   })
 })

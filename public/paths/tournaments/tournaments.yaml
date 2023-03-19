@@ -1,12 +1,12 @@
-patch: 
+get:
   servers: 
     - url: 'http://localhost:4000/api/v1'
     - url: 'https://api.gracehopper.xyz/api/v1'
   tags:
     - Tournament
-  summary: Edit Tournament
-  description: Allows you to edit the configuration of a tournament
-  operationId: updateTournament
+  summary: Get Tournament
+  description: Allows to consult the information of a specific tournament
+  operationId: getTournament
   security:
     - api_key: []
   parameters:
@@ -67,15 +67,15 @@ patch:
     - lang: Dart
       source: ""
 
-get:
+patch: 
   servers: 
     - url: 'http://localhost:4000/api/v1'
     - url: 'https://api.gracehopper.xyz/api/v1'
   tags:
     - Tournament
-  summary: Get Tournament
-  description: Allows to consult the information of a specific tournament
-  operationId: getTournament
+  summary: Edit Tournament
+  description: Allows you to edit the configuration of a tournament
+  operationId: updateTournament
   security:
     - api_key: []
   parameters:

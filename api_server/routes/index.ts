@@ -5,6 +5,6 @@ import * as userMiddleware from '@middlewares/user'
 const router = express.Router()
 
 router.get('/ping', indexCtrl.pong)
-router.get('/ping-v2', userMiddleware.isAuthenticated, indexCtrl.protectedPong)
+router.get('/secure-ping', userMiddleware.isAuthenticated, indexCtrl.protectedPong)
 
 export default router

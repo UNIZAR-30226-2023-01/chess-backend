@@ -114,11 +114,4 @@ post:
                     type: number
   x-codeSamples:
     - lang: cURL
-      source:
-        $ref: "../../code_samples/curl/signIn.sh"
-    - lang: JavaScript
-      source:
-         $ref: "../../code_samples/javascript/signIn.js"
-    - lang: Dart
-      source:
-         $ref: "../../code_samples/dart/signIn.dart"
+      source: ""

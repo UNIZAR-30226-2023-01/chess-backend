@@ -27,6 +27,9 @@ tags:
   - name: Game
     description: This section defines the methods that allow you to interact with a specific room as well as the game logic.
 x-tagGroups:
+  - name: Health
+    tags:
+      - Health
   - name: Auth
     tags:
       - Auth
@@ -53,6 +56,10 @@ servers:
     description: Production server (WS API)
   
 paths:
+  /ping:
+    $ref: 'paths/ping/ping.yaml'
+  /secure-ping:
+    $ref: 'paths/ping/securePing.yaml'
   /auth/sign-up:
     $ref: 'paths/auth/signUp.yaml'
   /auth/sign-in:

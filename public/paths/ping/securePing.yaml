@@ -1,16 +1,17 @@
-post:
+get:
   servers: 
     - url: 'http://localhost:4000/api/v1'
     - url: 'https://api.gracehopper.xyz/api/v1'
   tags:
-    - Auth
-  summary: Verify
-  description: Check that the user is logged in
-  operationId: verify
-  security: []
+    - Health
+  summary: Secure Ping
+  description: Check if I have access permissions
+  operationId: securePing
+  security: 
+    - api_key: []
   responses:
     200:
-      description: Authorized
+      description: OK
       content:
         application/json:
           schema:
@@ -27,7 +28,7 @@ post:
                     type: number
                   error_message:
                     type: string
-                    example: Authorized
+                    example: pong (protected)
                   elapsed:
                     type: number
     401:
@@ -48,7 +49,7 @@ post:
                     type: number
                   error_message:
                     type: string
-                    example: Unauthorized
+                    example: User not authenticated!
                   elapsed:
                     type: number
   x-codeSamples:
