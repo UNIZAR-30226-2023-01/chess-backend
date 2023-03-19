@@ -5,7 +5,7 @@ info:
     $ref: description.md
   termsOfService: 'https://reign.gracehopper.xyz/terms'
   contact:
-    email: contact@gracehopper.xyz
+    email: help@gracehopper.xyz
   license:
     name: MIT
     url: 'https://github.com/UNIZAR-30226-2023-01/chess-backend/blob/main/LICENCE'
