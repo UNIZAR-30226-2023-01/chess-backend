@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import jwt from 'jsonwebtoken'
 import UserModel from '@models/user'
 import { setStatus } from '@lib/status'
-import { invalidateToken } from '@lib/token_blacklist'
+import { invalidateToken } from '@lib/token-blacklist'
 
 export const signIn = (req: Request, res: Response): void => {
   UserModel.getUser(req.body.username)

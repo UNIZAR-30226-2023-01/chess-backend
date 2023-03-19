@@ -13,9 +13,9 @@ post:
       application/json:
         schema: 
           discriminator: 
-            propertyName: game_type
+            propertyName: gameType
             mapping: 
               AI: ../../components/schemas/createIA.yaml
               COMPETITIVE: ../../components/schemas/createCompetitive.yaml
-              CREATE CUSTOM: ../../components/schemas/createCustom.yaml
-              JOIN CUSTOM: ../../components/schemas/createCustom2.yaml
+              CREATE_CUSTOM: ../../components/schemas/createCustom.yaml
+              JOIN_CUSTOM: ../../components/schemas/createCustom2.yaml

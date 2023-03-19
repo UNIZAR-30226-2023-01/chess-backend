@@ -13,8 +13,8 @@ import passport from 'passport'
 import cookieSession from 'cookie-session'
 import server from '@server'
 dotenv.config()
-require('@/auth/passport')
-require('@/auth/passportGoogle')
+require('@auth/passport')
+require('@auth/passportGoogle')
 
 const app = express()
 app.use(express.json())

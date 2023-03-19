@@ -1,6 +1,6 @@
 type: object
 properties:
-  game_type:
+  gameType:
     type: string
     enum: 
       - AI
