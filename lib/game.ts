@@ -1,32 +1,34 @@
-import { Server } from 'socket.io'
-import { EndState, GameModel, GameState, GameType, PlayerColor } from '@models/game'
+import { Server, Socket } from 'socket.io'
+import { EndState, GameState, GameType, PlayerColor } from '@lib/types/game'
 import { client, redlock } from '@config/database'
-import { roomLockPrefix, roomPrefix } from '@lib/room'
 import { chessTimers } from '@lib/timer'
-import { GameOverMessage } from '@lib/messages.types'
+import { FindRoomMsg, GameOverMsg } from '@lib/types/socket-msg'
+import { GameModel } from '@models/game'
+import { composeLock, compose, ResourceName } from '@lib/namespaces'
 
 // 2 minutes after a game is over, it is deleted from redis
-export const gameOverTTL = 2 * 60
+export const GAME_OVER_TTL = 2 * 60
 
 export const getGame = async (
   roomID: string,
-  action?: (game: GameState) => Promise<void>
+  action?: (game?: GameState) => Promise<GameState | undefined>
 ): Promise<GameState | undefined> => {
-  let game: GameState
-  let lock = await redlock.acquire([roomLockPrefix + roomID], 5000) // LOCK
+  const lockName = composeLock(ResourceName.ROOM, roomID)
+  const resource = compose(ResourceName.ROOM, roomID)
+
+  let game: GameState | undefined
+  let lock = await redlock.acquire([lockName], 5000) // LOCK
   try {
-    const rawGame = await client.get(roomPrefix + roomID)
-    if (!rawGame) {
-      return undefined
-    }
+    const rawGame = await client.get(resource)
+    if (!rawGame) game = undefined
+    else game = JSON.parse(rawGame)
 
     lock = await lock.extend(5000) // EXTEND
-
-    game = JSON.parse(rawGame)
-
     if (action) {
-      await action(game)
+      game = await action(game)
     }
+  } catch (err) {
+    game = undefined
   } finally {
     // This block executes even if a return statement is called
     await lock.release() // UNLOCK
@@ -39,10 +41,11 @@ export const setGame = async (
   game: GameState,
   end?: boolean
 ): Promise<void> => {
+  const resource = compose(ResourceName.ROOM, roomID)
   if (end) {
-    await client.setex(roomPrefix + roomID, gameOverTTL, JSON.stringify(game))
+    await client.setex(resource, GAME_OVER_TTL, JSON.stringify(game))
   } else {
-    await client.set(roomPrefix + roomID, JSON.stringify(game))
+    await client.set(resource, JSON.stringify(game))
   }
 }
 
@@ -50,8 +53,8 @@ export const saveGame = async (
   io: Server,
   game: GameState
 ): Promise<boolean> => {
-  const darkSocket = io.sockets.sockets.get(game.dark_socket_id)
-  const lightSocket = io.sockets.sockets.get(game.light_socket_id)
+  const darkSocket = io.sockets.sockets.get(game.darkSocketId)
+  const lightSocket = io.sockets.sockets.get(game.lightSocketId)
 
   const darkIsAuth: boolean = darkSocket?.data.authenticated
   const lightIsAuth: boolean = lightSocket?.data.authenticated
@@ -64,23 +67,23 @@ export const saveGame = async (
     await GameModel.create({
       dark: game.dark,
       light: game.light,
-      dark_id: game.dark_id,
-      light_id: game.light_id,
+      darkId: game.darkId,
+      lightId: game.lightId,
 
       board: game.board,
       moves: game.moves,
 
-      use_timer: game.use_timer,
-      initial_timer: game.initial_timer,
-      timer_increment: game.timer_increment,
-      timer_dark: game.timer_dark,
-      timer_light: game.timer_light,
+      useTimer: game.useTimer,
+      initialTimer: game.initialTimer,
+      timerIncrement: game.timerIncrement,
+      timerDark: game.timerDark,
+      timerLight: game.timerLight,
 
       finished: game.finished,
-      end_state: game.end_state,
+      endState: game.endState,
       winner: game.winner,
 
-      game_type: game.game_type
+      gameType: game.gameType
     })
   } catch (error: any) {
     console.log(error)
@@ -98,7 +101,7 @@ export const endProtocol = async (
   // After some time every socket in the room is forced to leave
   setTimeout(() => {
     io.in(roomID).socketsLeave(roomID)
-  }, gameOverTTL * 1000)
+  }, GAME_OVER_TTL * 1000)
 
   // and timer is removed
   const gameTimer = chessTimers.get(roomID)
@@ -106,7 +109,7 @@ export const endProtocol = async (
   chessTimers.delete(roomID)
 
   // Then save in database
-  if (game.game_type === GameType.COMPETITIVE) {
+  if (game.gameType === GameType.COMPETITIVE) {
     if (!await saveGame(io, game)) {
       console.error('Error al guardar la partida')
     }
@@ -118,28 +121,30 @@ export const timeoutProtocol = (
   roomID: string
 ): (winner: PlayerColor) => Promise<void> => {
   return async (winner: PlayerColor) => {
-    const game = await getGame(roomID, async (game: GameState) => {
+    const game = await getGame(roomID, async (game) => {
+      if (!game) {
+        console.log('Error at timeoutProtocol: No game with roomID:', roomID)
+        return
+      }
+
       if (winner === PlayerColor.LIGHT) {
-        game.timer_dark = 0
+        game.timerDark = 0
       } else {
-        game.timer_light = 0
+        game.timerLight = 0
       }
       game.finished = true
-      game.end_state = EndState.TIMEOUT
+      game.endState = EndState.TIMEOUT
 
       await setGame(roomID, game, true)
+      return game
     })
-
-    if (!game) {
-      console.log('Error at timeoutProtocol: No game with roomID:', roomID)
-      return
-    }
+    if (!game) return
 
     void endProtocol(io, roomID, game)
 
-    const message: GameOverMessage = {
+    const message: GameOverMsg = {
       winner,
-      end_state: EndState.TIMEOUT
+      endState: EndState.TIMEOUT
     }
 
     io.to(roomID).emit('game_over', message)
@@ -147,22 +152,88 @@ export const timeoutProtocol = (
 }
 
 export const filterGameState = (msg: any): any => {
-  delete msg.dark_socket_id
-  delete msg.dark_id
-  delete msg.light_socket_id
-  delete msg.light_id
+  delete msg.darkSocketId
+  delete msg.darkId
+  delete msg.lightSocketId
+  delete msg.lightId
 
-  if (!msg.use_timer) {
-    delete msg.initial_timer
+  if (!msg.useTimer) {
+    delete msg.initialTimer
     delete msg.increment
-    delete msg.timer_dark
-    delete msg.timer_light
+    delete msg.timerDark
+    delete msg.timerLight
   }
 
   if (!msg.finished) {
-    delete msg.end_state
+    delete msg.endState
     delete msg.winner
   }
 
   return msg
+}
+
+export const isPlayerOfGame = (
+  socket: Socket,
+  game: GameState
+): boolean => {
+  return (game.lightSocketId === socket.id ||
+    game.darkSocketId === socket.id)
+}
+
+export const getColor = (
+  socket: Socket,
+  game: GameState
+): PlayerColor => {
+  return socket.id === game.lightSocketId
+    ? PlayerColor.LIGHT
+    : PlayerColor.DARK
+}
+
+export const alternativeColor = (
+  color: PlayerColor
+): PlayerColor => {
+  return color === PlayerColor.DARK
+    ? PlayerColor.LIGHT
+    : PlayerColor.DARK
+}
+
+interface CheckResult {
+  useTimer: boolean
+  error?: string
+}
+
+export const checkFindRoomMsgParameters = (
+  data: FindRoomMsg
+): CheckResult => {
+  const res: CheckResult = { useTimer: true }
+
+  if (!data.hostColor || data.hostColor === 'RANDOM') {
+    if (Math.random() >= 0.5) {
+      data.hostColor = PlayerColor.LIGHT
+    } else {
+      data.hostColor = PlayerColor.DARK
+    }
+  }
+
+  if (!data.time) {
+    data.time = 300 // default
+  } else if (data.time === 0) {
+    data.increment = undefined
+    res.useTimer = false
+  } else if (data.time < 0) {
+    res.error = 'Initial timer value cannot be negative'
+  } else {
+    data.time = Math.trunc(data.time)
+  }
+
+  if (res.useTimer) {
+    if (!data.increment) {
+      data.increment = 5 // default
+    } else if (data.increment < 0) {
+      res.error = 'Timer increment value cannot be negative'
+    } else {
+      data.increment = Math.trunc(data.increment)
+    }
+  }
+  return res
 }

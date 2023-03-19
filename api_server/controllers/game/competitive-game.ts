@@ -1,13 +1,10 @@
 import { Server, Socket } from 'socket.io'
-import {
-  GameType, PlayerColor, /* GameDocument, */
-  GameState, /* GameModel, */ newBoard
-} from '@models/game'
 import * as matchmaking from '@lib/matchmaking'
 import { chessTimers, ChessTimer } from '@lib/timer'
 import * as gameCtl from '@lib/game'
-import { FindGameMsg, FoundGameMsg } from '@lib/messages.types'
+import { FindRoomMsg, FoundRoomMsg } from '@lib/types/socket-msg'
 import UserModel from '@models/user'
+import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 const _ = require('lodash')
 
 const initialTimes = [3 * 60, 5 * 60, 10 * 60] // seconds
@@ -16,14 +13,12 @@ const increments = [0, 0, 0] // seconds
 export const findGame = async (
   socket: Socket,
   io: Server,
-  data: FindGameMsg
+  data: FindRoomMsg
 ): Promise<void> => {
   if (!data.time) {
     socket.emit('error', 'Missing parameters')
     return
   }
-  const i = 23
-  console.log(i)
 
   if (!socket.data.authenticated) {
     socket.emit('error', 'Must be authenticated to find a game')
@@ -87,38 +82,38 @@ export const findGame = async (
 
   const game: GameState = {
     turn: PlayerColor.LIGHT,
-    dark_socket_id: darkSocketId,
-    light_socket_id: lightSocketId,
-    dark_id: darkUser._id,
-    light_id: lightUser._id,
+    darkSocketId,
+    lightSocketId,
+    darkId: darkUser._id,
+    lightId: lightUser._id,
 
     dark,
     light,
-    board: newBoard,
+    board: START_BOARD,
     moves: [],
 
-    use_timer: true,
-    initial_timer: data.time,
-    timer_increment: increment,
-    timer_dark: data.time * 1000,
-    timer_light: data.time * 1000,
+    useTimer: true,
+    initialTimer: data.time,
+    timerIncrement: increment,
+    timerDark: data.time * 1000,
+    timerLight: data.time * 1000,
 
     finished: false,
-    end_state: undefined,
+    endState: undefined,
     winner: undefined,
 
     spectators: [],
 
-    dark_voted_draw: false,
-    light_voted_draw: false,
+    darkVotedDraw: false,
+    lightVotedDraw: false,
 
-    dark_voted_save: false,
-    light_voted_save: false,
+    darkVotedSave: false,
+    lightVotedSave: false,
 
-    dark_surrended: false,
-    light_surrended: false,
+    darkSurrended: false,
+    lightSurrended: false,
 
-    game_type: GameType.COMPETITIVE
+    gameType: GameType.COMPETITIVE
   }
 
   console.log(game)
@@ -126,8 +121,8 @@ export const findGame = async (
   const roomID = match.roomID.toString()
   await gameCtl.setGame(roomID, game)
 
-  const res1 = createFoundGameMsg(match.socket1, roomID, game)
-  const res2 = createFoundGameMsg(match.socket2, roomID, game)
+  const res1 = createFoundRoomMsg(match.socket1, roomID, game)
+  const res2 = createFoundRoomMsg(match.socket2, roomID, game)
 
   io.to(match.socket1).emit('game_state', res1)
   io.to(match.socket2).emit('game_state', res2)
@@ -141,14 +136,14 @@ export const findGame = async (
   chessTimers.set(match.roomID, gameTimer)
 }
 
-const createFoundGameMsg = (
-  playerID: string,
+const createFoundRoomMsg = (
+  socketID: string,
   roomID: string,
   game: GameState
-): FoundGameMsg => {
-  const msg: FoundGameMsg = Object.assign({
+): FoundRoomMsg => {
+  const msg: FoundRoomMsg = Object.assign({
     roomID,
-    color: playerID === game.dark_socket_id
+    color: socketID === game.darkSocketId
       ? PlayerColor.DARK
       : PlayerColor.LIGHT
   }, game)

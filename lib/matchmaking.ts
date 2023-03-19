@@ -1,8 +1,7 @@
 import { Socket } from 'socket.io'
 import { client, redlock } from '@config/database'
 import * as roomGen from '@lib/room'
-
-const playerQueuePrefix = 'player-queue-'
+import { ResourceName, compose, composeLock } from '@lib/namespaces'
 
 interface QueuePlayer {
   roomID: string
@@ -18,12 +17,13 @@ export interface Match extends QueuePlayer {
 export async function findCompetitiveGame (
   player: string, time: number, socket: Socket
 ): Promise<Match> {
-  const queueName = playerQueuePrefix + time.toString()
+  const lockName = composeLock(ResourceName.PLAYER_Q, time.toString())
+  const resource = compose(ResourceName.PLAYER_Q, time.toString())
 
   let match: Match
-  let lock = await redlock.acquire(['player-queue-lock'], 5000) // LOCK
+  let lock = await redlock.acquire([lockName], 5000) // LOCK
   try {
-    const awaiting = await client.get(queueName)
+    const awaiting = await client.get(resource)
     lock = await lock.extend(5000) // EXTEND
 
     if (awaiting !== null) { // match
@@ -35,7 +35,7 @@ export async function findCompetitiveGame (
         player2: player,
         roomID: parsedData.roomID
       }
-      await client.del(queueName)
+      await client.del(resource)
     } else {
       const roomID = await roomGen.generateUniqueRoomCode()
       const queuePlayer = { socket1: socket.id, player1: player, roomID }
@@ -46,13 +46,13 @@ export async function findCompetitiveGame (
         player2: undefined,
         roomID
       }
-      await client.set(queueName, JSON.stringify(queuePlayer))
+      await client.set(resource, JSON.stringify(queuePlayer))
     }
   } finally {
     await lock.release() // UNLOCK
   }
 
-  console.log('roomID: ', match.roomID)
+  console.log('Game matched roomID: ', match.roomID)
 
   return match
 }

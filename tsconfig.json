@@ -27,12 +27,11 @@
     // "moduleResolution": "node",                       /* Specify how TypeScript looks up a file from a given module specifier. */
     "baseUrl": ".", /* Specify the base directory to resolve non-relative module names. */
     "paths": {
-      "@/*": ["./*"],
       "@app": ["./app"],
       "@server": ["./server"],
       "@lib/*": ["./lib/*"],
       "@config/*": ["./config/*"],
-      "@auth/*": ["./api_server/auth/*"],
+      "@auth/*": ["./auth/*"],
       "@routes/*": ["./api_server/routes/*"],
       "@models/*": ["./api_server/models/*"],
       "@middlewares/*": ["./api_server/middlewares/*"],
