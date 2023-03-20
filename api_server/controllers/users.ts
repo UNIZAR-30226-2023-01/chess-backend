@@ -14,7 +14,13 @@ export const getAll = (req: Request, res: Response): void => {
 export const getOne = (req: Request, res: Response): void => {
   UserModel.findById(req.params.id)
     .then((user) => {
-      res
+      if (!user) {
+        return res
+          .status(404)
+          .json(setStatus(req, 404, 'Not Found'))
+      }
+
+      return res
         .status(200)
         .json({
           data: user,
@@ -22,7 +28,7 @@ export const getOne = (req: Request, res: Response): void => {
         })
     })
     .catch(_err => {
-      res
+      return res
         .status(500)
         .json(setStatus(req, 500, 'Internal Server Error'))
     })

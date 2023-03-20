@@ -24,6 +24,7 @@ interface UserModel extends Model<User> {
   doesUserExist: (username: string, email: string) => Promise<Boolean>
   getUser: (username: string) => Promise<User | null>
   getUserByEmail: (email: string) => Promise<User | null>
+  getUserById: (id: string) => Promise<User | null>
 }
 
 const userSchema = new Schema<User, UserModel>({
@@ -87,6 +88,16 @@ userSchema.static('getUserByEmail',
   async function (email: string): Promise<User | null> {
     try {
       return await this.findOne({ email })
+    } catch (error: any) {
+      console.error(error)
+      return null
+    }
+  })
+
+userSchema.static('getUserById',
+  async function (id: string): Promise<User | null> {
+    try {
+      return await this.findById({ _id: id })
     } catch (error: any) {
       console.error(error)
       return null

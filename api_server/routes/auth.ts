@@ -13,6 +13,10 @@ router.post('/sign-up', userMiddleware.userExists, authCtrl.signUp)
 router.post('/sign-out', userMiddleware.isAuthenticated, authCtrl.signOut)
 router.post('/verify', userMiddleware.isAuthenticated, authCtrl.verify)
 
+router.post('/forgot-password', authCtrl.forgotPassword)
+router.get('/reset-password/:id/:token', authCtrl.resetPassword)
+router.post('/reset-password/:id/:token', authCtrl.changePassword)
+
 router.get('/sign-in/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
 router.get('/auth/google/callback', passport.authenticate('google', {
   failureMessage: 'Invalid credentials',
