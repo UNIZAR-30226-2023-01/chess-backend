@@ -70,3 +70,21 @@ export class StockfishStream {
     }
   }
 }
+
+export const bestMove = async (
+  board: string,
+  level: number,
+  timeout: number
+): Promise<string | null> => {
+  const sf = new StockfishStream()
+  await sf.init(level, timeout)
+  try {
+    const move = await sf.bestMove(board)
+    return move
+  } catch (error) {
+    console.error('Error at bestMove: ', error)
+  } finally {
+    await sf.close()
+  }
+  return null
+}
