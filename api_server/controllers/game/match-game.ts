@@ -47,14 +47,8 @@ export const surrender = async (
     game.finished = true
     game.endState = EndState.SURRENDER
 
-    if (game.useTimer) {
-      const gameTimer = chessTimers.get(roomID)
-      if (!gameTimer) {
-        socket.emit('error', 'Internal server error')
-        return
-      }
-      game.timerDark = gameTimer.getTimeDark()
-      game.timerLight = gameTimer.getTimeLight()
+    if (!gameCtl.updateGameTimer(roomID, game)) {
+      socket.emit('error', 'Internal server error')
     }
 
     await gameCtl.setGame(roomID, game, true)
@@ -75,6 +69,71 @@ export const surrender = async (
   void gameCtl.endProtocol(io, roomID, game)
 
   io.to(roomID).emit('game_over', message)
+}
+
+export const voteDraw = async (
+  socket: Socket,
+  io: Server,
+  data: RoomIDMsg
+): Promise<void> => {
+  if (!data.roomID) {
+    socket.emit('error', 'Missing parameters')
+    return
+  }
+
+  const roomID: string = data.roomID
+  const game = await gameCtl.getGame(roomID, async (game) => {
+    if (!game) {
+      socket.emit('error', `No game with roomID: ${roomID}`)
+      return
+    }
+
+    if (game.finished) {
+      socket.emit('error', 'Game has already been finished')
+      return
+    }
+
+    if (!gameCtl.isPlayerOfGame(socket, game)) {
+      socket.emit('error', 'You are not a player of this game')
+      return
+    }
+
+    const color = gameCtl.getColor(socket, game)
+
+    if (color === PlayerColor.DARK) {
+      game.darkVotedDraw = true
+    } else {
+      game.lightVotedDraw = true
+    }
+
+    if (game.darkVotedDraw && game.lightVotedDraw) {
+      game.finished = true
+      game.endState = EndState.DRAW
+    }
+
+    if (!gameCtl.updateGameTimer(roomID, game)) {
+      socket.emit('error', 'Internal server error')
+    }
+
+    await gameCtl.setGame(roomID, game, true)
+    return game
+  })
+  if (!game) return
+
+  if (game.finished) {
+    if (!game.endState) {
+      socket.emit('error', 'Internal server error')
+      return
+    }
+
+    const message: GameOverMsg = {
+      endState: game.endState
+    }
+
+    void gameCtl.endProtocol(io, roomID, game)
+
+    io.to(roomID).emit('game_over', message)
+  }
 }
 
 export const move = async (

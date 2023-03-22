@@ -6,7 +6,7 @@ export interface RoomIDMsg {
 
 export interface GameOverMsg {
   endState: EndState
-  winner: PlayerColor
+  winner?: PlayerColor
 }
 
 export interface MoveMsg {

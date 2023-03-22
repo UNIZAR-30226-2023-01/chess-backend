@@ -237,3 +237,18 @@ export const checkFindRoomMsgParameters = (
   }
   return res
 }
+
+export const updateGameTimer = (
+  roomID: string,
+  game: GameState
+): boolean => {
+  if (game.useTimer) {
+    const gameTimer = chessTimers.get(roomID)
+    if (!gameTimer) {
+      return false
+    }
+    game.timerDark = gameTimer.getTimeDark()
+    game.timerLight = gameTimer.getTimeLight()
+  }
+  return true
+}
