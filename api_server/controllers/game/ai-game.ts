@@ -7,7 +7,7 @@ export const findGame = async (
   _io: Server,
   data: FindRoomMsg
 ): Promise<void> => {
-  const check = gameCtl.checkFindRoomMsgParameters(data)
+  const check = gameCtl.checkRoomCreationMsg(data)
   if (check.error) {
     socket.emit('error', check.error)
   }

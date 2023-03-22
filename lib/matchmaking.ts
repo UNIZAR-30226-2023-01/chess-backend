@@ -2,20 +2,21 @@ import { Socket } from 'socket.io'
 import { client, redlock } from '@config/database'
 import * as roomGen from '@lib/room'
 import { ResourceName, compose, composeLock } from '@lib/namespaces'
+import { Types } from 'mongoose'
 
 interface QueuePlayer {
   roomID: string
-  player1: string | undefined
+  player1: Types.ObjectId | undefined
   socket1: string | undefined
 }
 
 export interface Match extends QueuePlayer {
-  player2: string | undefined
+  player2: Types.ObjectId | undefined
   socket2: string | undefined
 }
 
 export async function findCompetitiveGame (
-  player: string, time: number, socket: Socket
+  player: Types.ObjectId, time: number, socket: Socket
 ): Promise<Match> {
   const lockName = composeLock(ResourceName.PLAYER_Q, time.toString())
   const resource = compose(ResourceName.PLAYER_Q, time.toString())

@@ -2,7 +2,7 @@ import { Server, Socket } from 'socket.io'
 import { EndState, GameState, GameType, PlayerColor } from '@lib/types/game'
 import { client, redlock } from '@config/database'
 import { chessTimers } from '@lib/timer'
-import { FindRoomMsg, GameOverMsg } from '@lib/types/socket-msg'
+import { FindRoomMsg, FoundRoomMsg, GameOverMsg } from '@lib/types/socket-msg'
 import { GameModel } from '@models/game'
 import { composeLock, compose, ResourceName } from '@lib/namespaces'
 
@@ -202,37 +202,50 @@ interface CheckResult {
   error?: string
 }
 
-export const checkFindRoomMsgParameters = (
-  data: FindRoomMsg
+type Any<T> = {
+  [P in keyof T]: any
+}
+
+export const checkRoomCreationMsg = (
+  data: Any<FindRoomMsg>
 ): CheckResult => {
   const res: CheckResult = { useTimer: true }
 
-  if (!data.hostColor || data.hostColor === 'RANDOM') {
+  if (data.hostColor === undefined || data.hostColor === 'RANDOM') {
     if (Math.random() >= 0.5) {
       data.hostColor = PlayerColor.LIGHT
     } else {
       data.hostColor = PlayerColor.DARK
     }
+  } else if (!Object.values(PlayerColor).includes(data.hostColor)) {
+    const value: string = data.hostColor.toString()
+    res.error = `Host color "${value}" is not a valid option`
   }
 
-  if (!data.time) {
+  if (data.time === undefined) {
     data.time = 300 // default
-  } else if (data.time === 0) {
-    data.increment = undefined
-    res.useTimer = false
-  } else if (data.time < 0) {
-    res.error = 'Initial timer value cannot be negative'
   } else {
-    data.time = Math.trunc(data.time)
+    data.time = parseInt(data.time)
+    if (isNaN(data.time)) {
+      res.error = 'Initial timer is not a number'
+    } else if (data.time === 0) {
+      data.increment = undefined
+      res.useTimer = false
+    } else if (data.time < 0) {
+      res.error = 'Initial timer value cannot be negative'
+    }
   }
 
   if (res.useTimer) {
-    if (!data.increment) {
+    if (data.increment === undefined) {
       data.increment = 5 // default
-    } else if (data.increment < 0) {
-      res.error = 'Timer increment value cannot be negative'
     } else {
-      data.increment = Math.trunc(data.increment)
+      data.increment = parseInt(data.increment)
+      if (isNaN(data.increment)) {
+        res.error = 'Timer increment is not a number'
+      } else if (data.increment < 0) {
+        res.error = 'Timer increment value cannot be negative'
+      }
     }
   }
   return res
@@ -242,7 +255,7 @@ export const updateGameTimer = (
   roomID: string,
   game: GameState
 ): boolean => {
-  if (game.useTimer) {
+  if (game.useTimer && !game.finished) {
     const gameTimer = chessTimers.get(roomID)
     if (!gameTimer) {
       return false
@@ -251,4 +264,39 @@ export const updateGameTimer = (
     game.timerLight = gameTimer.getTimeLight()
   }
   return true
+}
+
+export const isSocketInGame = async (
+  socket: Socket
+): Promise<boolean> => {
+  for (const roomID of socket.rooms.values()) {
+    const game = await getGame(roomID)
+    console.log('roomID: ', roomID)
+    console.log('game: ', game)
+    if (game && !game.finished) {
+      return true
+    }
+  }
+  return false
+}
+
+export const createFoundRoomMsg = (
+  socketID: string,
+  roomID: string,
+  game: GameState
+): FoundRoomMsg => {
+  const msg: FoundRoomMsg = Object.assign({
+    roomID,
+    color: socketID === game.darkSocketId
+      ? PlayerColor.DARK
+      : PlayerColor.LIGHT
+  }, game)
+
+  return filterGameState(msg)
+}
+
+export const isGameStarted = (
+  game: GameState
+): boolean => {
+  return game.darkSocketId !== '' && game.lightSocketId !== ''
 }

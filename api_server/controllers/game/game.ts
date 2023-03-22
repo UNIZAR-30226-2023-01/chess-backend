@@ -107,8 +107,12 @@ export const findRoom = async (
   io: Server,
   data: FindRoomMsg
 ): Promise<void> => {
-  const findRoomFunction = findRoomFunctions.get(data.gameType)
+  if (await gameCtl.isSocketInGame(socket)) {
+    socket.emit('error', 'This socket is already playing or in queue')
+    return
+  }
 
+  const findRoomFunction = findRoomFunctions.get(data.gameType)
   if (findRoomFunction) findRoomFunction(socket, io, data)
   else socket.emit('error', 'Not supported game type')
 }

@@ -1,5 +1,4 @@
 import { Server, Socket } from 'socket.io'
-import { chessTimers } from '@lib/timer'
 import * as gameCtl from '@lib/game'
 const _ = require('lodash')
 
@@ -11,23 +10,21 @@ const gameState = async (
   socket: Socket,
   roomID: string,
   join?: boolean
-): Promise<void> => {
+): Promise<boolean> => {
   const game = await gameCtl.getGame(roomID, async (game) => {
     if (!game) {
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
     }
 
-    if (game.useTimer && !game.finished) {
-      const gameTimer = chessTimers.get(roomID)
+    if (!gameCtl.isGameStarted(game)) {
+      socket.emit('error', 'This game has not started yet')
+      return
+    }
 
-      if (!gameTimer) {
-        socket.emit('error', 'Internal server error')
-        return
-      } else {
-        game.timerDark = gameTimer.getTimeDark()
-        game.timerLight = gameTimer.getTimeLight()
-      }
+    if (!gameCtl.updateGameTimer(roomID, game)) {
+      socket.emit('error', 'Internal server error')
+      return
     }
 
     if (join) {
@@ -37,9 +34,10 @@ const gameState = async (
     await gameCtl.setGame(roomID, game)
     return game
   })
-  if (!game) return
+  if (!game) return false
 
-  socket.emit('game_state', gameCtl.filterGameState(game))
+  socket.emit('room', gameCtl.filterGameState(game))
+  return true
 }
 
 export const joinRoom = async (
@@ -63,7 +61,9 @@ export const joinRoom = async (
     return
   }
 
-  await gameState(socket, roomID, true)
+  if (!await gameState(socket, roomID, true)) {
+    return
+  }
 
   console.log('join_room', data.roomID)
   await socket.join(data.roomID)
@@ -101,14 +101,9 @@ export const leaveRoom = async (
       return
     }
 
-    if (game.useTimer) {
-      const gameTimer = chessTimers.get(roomID)
-      if (!gameTimer) {
-        socket.emit('error', 'Internal server error')
-        return
-      }
-      game.timerDark = gameTimer.getTimeDark()
-      game.timerLight = gameTimer.getTimeLight()
+    if (!gameCtl.updateGameTimer(roomID, game)) {
+      socket.emit('error', 'Internal server error')
+      return
     }
 
     _.pullAt(

@@ -2,8 +2,10 @@ import { Server, Socket } from 'socket.io'
 import * as matchmaking from '@lib/matchmaking'
 import { chessTimers, ChessTimer } from '@lib/timer'
 import * as gameCtl from '@lib/game'
-import { FindRoomMsg, FoundRoomMsg } from '@lib/types/socket-msg'
+import { FindRoomMsg } from '@lib/types/socket-msg'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
+import { Types } from 'mongoose'
+import { UserModel } from '@models/user'
 const _ = require('lodash')
 
 const initialTimes = [3 * 60, 5 * 60, 10 * 60] // seconds
@@ -22,17 +24,6 @@ export const findGame = async (
   if (!socket.data.authenticated) {
     socket.emit('error', 'Must be authenticated to find a game')
     return
-  }
-
-  console.log('rooms:', socket.rooms.values())
-  for (const roomID of socket.rooms.values()) {
-    const game = await gameCtl.getGame(roomID)
-    console.log('roomID: ', roomID)
-    console.log('game: ', game)
-    if (game && !game.finished) {
-      socket.emit('error', 'This socket is already playing or in queue')
-      return
-    }
   }
 
   const index = _.indexOf(initialTimes, data.time)
@@ -56,16 +47,16 @@ export const findGame = async (
   await socket.join(match.roomID)
   if (!match.player2 || !match.socket2) return // jugador que espera
 
-  let dark: string, light: string
+  let darkId: Types.ObjectId, lightId: Types.ObjectId
   let darkSocketId: string, lightSocketId: string
   if (Math.random() >= 0.5) {
-    dark = match.player1
-    light = match.player2
+    darkId = match.player1
+    lightId = match.player2
     darkSocketId = match.socket1
     lightSocketId = match.socket2
   } else {
-    dark = match.player2
-    light = match.player1
+    darkId = match.player2
+    lightId = match.player1
     darkSocketId = match.socket2
     lightSocketId = match.socket1
   }
@@ -74,11 +65,11 @@ export const findGame = async (
     turn: PlayerColor.LIGHT,
     darkSocketId,
     lightSocketId,
-    darkId: io.sockets.sockets.get(darkSocketId)?.data.userID,
-    lightId: io.sockets.sockets.get(lightSocketId)?.data.userID,
+    darkId,
+    lightId,
 
-    dark,
-    light,
+    dark: (await UserModel.findById(darkId))?.username ?? 'ErrorUser',
+    light: (await UserModel.findById(lightId))?.username ?? 'ErrorUser',
     board: START_BOARD,
     moves: [],
 
@@ -111,8 +102,8 @@ export const findGame = async (
   const roomID = match.roomID.toString()
   await gameCtl.setGame(roomID, game)
 
-  const res1 = createFoundRoomMsg(match.socket1, roomID, game)
-  const res2 = createFoundRoomMsg(match.socket2, roomID, game)
+  const res1 = gameCtl.createFoundRoomMsg(match.socket1, roomID, game)
+  const res2 = gameCtl.createFoundRoomMsg(match.socket2, roomID, game)
 
   io.to(match.socket1).emit('room', res1)
   io.to(match.socket2).emit('room', res2)
@@ -124,19 +115,4 @@ export const findGame = async (
   )
 
   chessTimers.set(match.roomID, gameTimer)
-}
-
-const createFoundRoomMsg = (
-  socketID: string,
-  roomID: string,
-  game: GameState
-): FoundRoomMsg => {
-  const msg: FoundRoomMsg = Object.assign({
-    roomID,
-    color: socketID === game.darkSocketId
-      ? PlayerColor.DARK
-      : PlayerColor.LIGHT
-  }, game)
-
-  return gameCtl.filterGameState(msg)
 }
