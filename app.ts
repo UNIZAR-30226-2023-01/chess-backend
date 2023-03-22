@@ -8,6 +8,8 @@ import { stamp } from '@middlewares/timestamp'
 import indexRouter from '@routes/index'
 import authRouter from '@routes/auth'
 import usersRouter from '@routes/users'
+import historyRouter from '@routes/history'
+import tournamentsRouter from '@routes/tournaments'
 import cors from 'cors'
 import * as dotenv from 'dotenv'
 import passport from 'passport'
@@ -51,6 +53,8 @@ app.use('/api/v1', stamp)
 app.use('/api/v1', indexRouter)
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', usersRouter)
+app.use('/api/v1/history', historyRouter)
+app.use('/api/v1/tournaments', tournamentsRouter)
 
 server.listen(Number(PORT) + 1, () => {
   console.log(`Socket.IO is running → PORT ${String(Number(PORT) + 1)}`)

@@ -8,7 +8,7 @@ on:
 
 env:
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
-  DATABASE_URI: ${{ secrets.DATABASE_URI }}
+  MONGO_URI: ${{ secrets.MONGO_URI }}
   REDIS_URI: ${{ secrets.REDIS_URI }}
 
 concurrency:

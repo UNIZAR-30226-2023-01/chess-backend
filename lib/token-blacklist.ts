@@ -20,14 +20,11 @@ export const invalidateToken = async (
   try {
     const record = await client.get(resource)
     lock = await lock.extend(5000) // EXTEND
-    console.log('Record: ', record)
 
     if (record !== null) {
       const parsedData = JSON.parse(record)
       parsedData.push(token)
       await client.setex(resource, expTime, JSON.stringify(parsedData))
-
-      console.log('Data: ', parsedData)
     } else {
       const blacklistedData = [token]
 

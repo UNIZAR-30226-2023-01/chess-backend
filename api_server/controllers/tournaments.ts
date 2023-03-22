@@ -10,7 +10,10 @@ export const create = (req: Request, res: Response): void => {
 export const getAll = (req: Request, res: Response): void => {
   res
     .status(200)
-    .json(setStatus(req, 0, 'pong'))
+    .json({
+      ...res.locals,
+      status: setStatus(req, 0, 'OK')
+    })
 }
 
 export const updateOne = (req: Request, res: Response): void => {

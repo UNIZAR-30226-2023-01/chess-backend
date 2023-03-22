@@ -1,8 +1,8 @@
 import { Socket } from 'socket.io'
 import { ExtendedError } from 'socket.io/dist/namespace'
 import jwt from 'jsonwebtoken'
-import { guestUser } from '@models/user'
 import { validateToken } from '@lib/token-blacklist'
+import { UserModel } from '@models/user'
 
 export const socketAuth = async (
   socket: Socket,
@@ -16,9 +16,10 @@ export const socketAuth = async (
     try {
       const user: any = jwt.verify(token, process.env.JWT_SECRET)
       const status = await validateToken(user.username, token)
-      if (status === 0) {
+      const userData = await UserModel.findOne({ username: user.username })
+      if (status === 0 && userData !== null) {
         socket.data.authenticated = true
-        socket.data.username = user.username
+        socket.data.userID = userData._id
       } else {
         return next(new Error('Invalid token'))
       }
@@ -27,8 +28,7 @@ export const socketAuth = async (
     }
   } else {
     socket.data.authenticated = false
-    socket.data.username = guestUser
   }
-  console.log('user connected using socket: ', socket.data.username)
+  console.log('user connected using socket: ', socket.data.userID)
   return next()
 }

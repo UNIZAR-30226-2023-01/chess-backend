@@ -1,7 +1,7 @@
 import { Request } from 'express'
 import passport from 'passport'
 import { Strategy as JWTStrategy, VerifiedCallback } from 'passport-jwt'
-import UserModel from '@models/user'
+import { UserModel } from '@models/user'
 
 const cookieExtractor = (req: Request): string | null => {
   let token = null

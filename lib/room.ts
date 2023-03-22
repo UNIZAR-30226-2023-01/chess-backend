@@ -1,5 +1,6 @@
 import { client, redlock } from '@config/database'
 import { ResourceName, compose, composeLock } from '@lib/namespaces'
+import { Socket } from 'socket.io'
 
 /**
  * Generates a random 6-digit room code that is not currently in use.
@@ -30,4 +31,13 @@ export const generateUniqueRoomCode = async (): Promise<string> => {
     }
   }
   return code
+}
+
+export const getGameRoom = (socket: Socket): string | null => {
+  for (const roomID of socket.rooms.values()) {
+    if (roomID !== socket.id) {
+      return roomID
+    }
+  }
+  return null
 }

@@ -7,7 +7,7 @@ dotenv.config()
 
 mongoose.set('strictQuery', true)
 export const connectDB = async (): Promise<void> => {
-  await mongoose.connect(String(process.env.DATABASE_URI))
+  await mongoose.connect(String(process.env.MONGO_URI))
     .catch((err) => console.error(err))
 }
 mongoose.Promise = global.Promise

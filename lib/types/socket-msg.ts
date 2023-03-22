@@ -6,7 +6,7 @@ export interface RoomIDMsg {
 
 export interface GameOverMsg {
   endState: EndState
-  winner: PlayerColor
+  winner?: PlayerColor
 }
 
 export interface MoveMsg {
@@ -34,6 +34,6 @@ export interface FindRoomMsg {
   gameType: GameType
   roomID?: string
   time?: number // seconds
-  increment?: number
+  increment?: number // seconds
   hostColor?: PlayerColor | 'RANDOM'
 }

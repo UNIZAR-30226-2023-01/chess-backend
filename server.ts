@@ -1,7 +1,8 @@
 import App from '@app'
 import http from 'http'
 import { Server, Socket } from 'socket.io'
-import * as gameCtrl from '@controllers/game/game'
+import * as game from '@controllers/game/game'
+import * as spectator from '@controllers/game/spectator'
 import { socketAuth } from '@middlewares/socket_auth'
 
 const server = http.createServer(App)
@@ -21,11 +22,13 @@ const io = new Server(server, {
 io.use(socketAuth)
 
 function onConnection (socket: Socket): void {
-  socket.on('join_room', gameCtrl.joinRoom.bind(null, socket, io))
-  socket.on('leave_room', gameCtrl.leaveRoom.bind(null, socket, io))
-  socket.on('find_room', gameCtrl.findRoom.bind(null, socket, io))
-  socket.on('move', gameCtrl.move.bind(null, socket, io))
-  socket.on('surrender', gameCtrl.surrender.bind(null, socket, io))
+  socket.on('join_room', spectator.joinRoom.bind(null, socket, io))
+  socket.on('leave_room', spectator.leaveRoom.bind(null, socket))
+
+  socket.on('find_room', game.findRoom.bind(null, socket, io))
+  socket.on('move', game.move.bind(null, socket, io))
+  socket.on('surrender', game.surrender.bind(null, socket, io))
+  socket.on('vote_draw', game.voteDraw.bind(null, socket, io))
 }
 
 io.on('connection', onConnection)
