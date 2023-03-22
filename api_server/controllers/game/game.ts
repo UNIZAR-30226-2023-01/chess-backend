@@ -13,6 +13,13 @@ interface RoomMessage {
   roomID: string
 }
 
+const moveFunctions = new Map<GameType, Function>([
+  // [GameType.AI, ai.move],
+  [GameType.CUSTOM, match.move],
+  [GameType.COMPETITIVE, match.move],
+  [GameType.TOURNAMENT, match.move]
+])
+
 export const move = async (
   socket: Socket,
   io: Server,
@@ -32,17 +39,16 @@ export const move = async (
     return
   }
 
-  switch (game.gameType) {
-    case GameType.AI:
-      // TODO
-      break
-    case GameType.COMPETITIVE:
-    case GameType.CUSTOM:
-    case GameType.TOURNAMENT:
-      await match.move(socket, io, data)
-      break
-  }
+  const moveFunction = moveFunctions.get(game.gameType)
+  if (moveFunction) moveFunction(socket, io, data)
 }
+
+const surrenderFunctions = new Map<GameType, Function>([
+  // [GameType.AI, ai.surrender],
+  [GameType.CUSTOM, match.surrender],
+  [GameType.COMPETITIVE, match.surrender],
+  [GameType.TOURNAMENT, match.surrender]
+])
 
 export const surrender = async (
   socket: Socket,
@@ -62,38 +68,26 @@ export const surrender = async (
     return
   }
 
-  switch (game.gameType) {
-    case GameType.AI:
-      // TODO
-      break
-    case GameType.COMPETITIVE:
-    case GameType.CUSTOM:
-    case GameType.TOURNAMENT:
-      await match.surrender(socket, io, data)
-      break
-  }
+  const surrenderFunction = surrenderFunctions.get(game.gameType)
+  if (surrenderFunction) surrenderFunction(socket, io, data)
 }
+
+const findRoomFunctions = new Map<GameType, Function>([
+  [GameType.AI, ai.findGame],
+  [GameType.CUSTOM, custom.findGame],
+  [GameType.COMPETITIVE, competitive.findGame]
+  // [GameType.TOURNAMENT, tournament.findRoom]
+])
 
 export const findRoom = async (
   socket: Socket,
   io: Server,
   data: FindRoomMsg
 ): Promise<void> => {
-  switch (data.gameType) {
-    case GameType.AI:
-      await ai.findGame(socket, io, data)
-      break
-    case GameType.COMPETITIVE:
-      await competitive.findGame(socket, io, data)
-      return
-    case GameType.CUSTOM:
-      await custom.findGame(socket, io, data)
-      break
-    case GameType.TOURNAMENT:
-      // TODO
-      break
-  }
-  socket.emit('error', 'Not supported game type')
+  const findRoomFunction = findRoomFunctions.get(data.gameType)
+
+  if (findRoomFunction) findRoomFunction(socket, io, data)
+  else socket.emit('error', 'Not supported game type')
 }
 
 const gameState = async (

@@ -3,7 +3,6 @@ import * as matchmaking from '@lib/matchmaking'
 import { chessTimers, ChessTimer } from '@lib/timer'
 import * as gameCtl from '@lib/game'
 import { FindRoomMsg, FoundRoomMsg } from '@lib/types/socket-msg'
-import { UserModel } from '@models/user'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 const _ = require('lodash')
 
@@ -36,8 +35,6 @@ export const findGame = async (
     }
   }
 
-  const username = socket.data.username
-
   const index = _.indexOf(initialTimes, data.time)
   if (index === -1) {
     socket.emit('error', 'Specified time is not available')
@@ -49,7 +46,7 @@ export const findGame = async (
   console.log('Matching...')
 
   const match = await matchmaking
-    .findCompetitiveGame(username, data.time, socket)
+    .findCompetitiveGame(socket.data.userID, data.time, socket)
 
   if (!match.player1 || !match.socket1) {
     socket.emit('error', 'Internal server error')
@@ -73,19 +70,12 @@ export const findGame = async (
     lightSocketId = match.socket1
   }
 
-  const darkUser = await UserModel.findOne({ username: dark })
-  const lightUser = await UserModel.findOne({ username: light })
-  if (!darkUser || !lightUser) {
-    io.to(match.roomID).emit('error', 'Internal server error')
-    return
-  }
-
   const game: GameState = {
     turn: PlayerColor.LIGHT,
     darkSocketId,
     lightSocketId,
-    darkId: darkUser._id,
-    lightId: lightUser._id,
+    darkId: io.sockets.sockets.get(darkSocketId)?.data.userID,
+    lightId: io.sockets.sockets.get(lightSocketId)?.data.userID,
 
     dark,
     light,
@@ -124,8 +114,8 @@ export const findGame = async (
   const res1 = createFoundRoomMsg(match.socket1, roomID, game)
   const res2 = createFoundRoomMsg(match.socket2, roomID, game)
 
-  io.to(match.socket1).emit('game_state', res1)
-  io.to(match.socket2).emit('game_state', res2)
+  io.to(match.socket1).emit('room', res1)
+  io.to(match.socket2).emit('room', res2)
 
   const gameTimer = new ChessTimer(
     data.time * 1000,

@@ -178,5 +178,5 @@ export const move = async (
     returnMessage.timerLight = game.timerLight
   }
 
-  io.to(roomID).emit('move', returnMessage)
+  io.to(roomID).emit('moved', returnMessage)
 }

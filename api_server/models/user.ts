@@ -1,6 +1,9 @@
 import { model, Schema, Document } from 'mongoose'
 
-export const guestUser = 'guest'
+export enum ReservedUsernames {
+  GUEST_USER = 'Guest',
+  AI_USER = 'AI'
+}
 
 export interface UserDocument extends Document {
   googleId: string
