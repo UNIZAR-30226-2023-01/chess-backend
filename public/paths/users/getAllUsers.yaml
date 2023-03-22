@@ -96,11 +96,8 @@ get:
                     type: number
   x-codeSamples:
     - lang: cURL
-      source:
-        $ref: "../../code_samples/curl/signUp.sh"
+      source: ""
     - lang: JavaScript
-      source:
-         $ref: "../../code_samples/javascript/signUp.js"
+      source: ""
     - lang: Dart
-      source:
-         $ref: "../../code_samples/dart/signUp.dart"
+      source: ""

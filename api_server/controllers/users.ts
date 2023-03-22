@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { setStatus } from '@lib/status'
-import UserModel from '@models/user'
+import { UserModel } from '@models/user'
 
 export const getAll = (req: Request, res: Response): void => {
   res

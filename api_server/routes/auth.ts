@@ -9,7 +9,7 @@ const SUCCESS_REDIRECT = process.env.SUCCESS_REDIRECT ?? 'http://localhost:3000/
 const FAILURE_REDIRECT = process.env.FAILURE_REDIRECT ?? 'http://localhost:3000/login?success=false'
 
 router.post('/sign-in', authCtrl.signIn)
-router.post('/sign-up', userMiddleware.userExists, authCtrl.signUp)
+router.post('/sign-up', authCtrl.signUp)
 router.post('/sign-out', userMiddleware.isAuthenticated, authCtrl.signOut)
 router.post('/verify', userMiddleware.isAuthenticated, authCtrl.verify)
 

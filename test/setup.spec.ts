@@ -1,13 +1,13 @@
-import User from '@models/user'
+import { UserModel } from '@models/user'
 
 beforeEach((done) => {
-  User.deleteMany({})
+  UserModel.deleteMany({})
     .catch((err) => console.log(err))
   done()
 })
 
 afterEach((done) => {
-  User.deleteMany({})
+  UserModel.deleteMany({})
     .catch((err) => console.log(err))
   done()
 })

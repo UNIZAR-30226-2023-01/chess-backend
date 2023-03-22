@@ -3,7 +3,7 @@ import * as matchmaking from '@lib/matchmaking'
 import { chessTimers, ChessTimer } from '@lib/timer'
 import * as gameCtl from '@lib/game'
 import { FindRoomMsg, FoundRoomMsg } from '@lib/types/socket-msg'
-import UserModel from '@models/user'
+import { UserModel } from '@models/user'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 const _ = require('lodash')
 

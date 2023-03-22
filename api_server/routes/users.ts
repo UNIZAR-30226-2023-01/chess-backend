@@ -2,7 +2,7 @@ import express from 'express'
 import * as userCtrl from '@controllers/users'
 import * as userMiddleware from '@middlewares/user'
 import { paginate } from '@middlewares/paginate'
-import UserModel from '@models/user'
+import { UserModel } from '@models/user'
 
 const router = express.Router()
 
