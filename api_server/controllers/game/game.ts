@@ -4,7 +4,8 @@ import * as competitive from '@controllers/game/competitive-game'
 import * as ai from '@controllers/game/ai-game'
 import * as custom from '@controllers/game/custom-game'
 import * as gameCtl from '@lib/game'
-import { FindRoomMsg, MoveMsg, RoomIDMsg } from '@lib/types/socket-msg'
+import * as roomCtl from '@lib/room'
+import { FindRoomMsg, MoveMsg } from '@lib/types/socket-msg'
 import { GameType } from '@lib/types/game'
 
 const moveFunctions = new Map<GameType, Function>([
@@ -19,10 +20,14 @@ export const move = async (
   io: Server,
   data: MoveMsg
 ): Promise<void> => {
-  const roomID = data.roomID
-  const move = data.move
+  const roomID = roomCtl.getGameRoom(socket)
+  if (!roomID) {
+    socket.emit('error', 'This socket is not playing any game')
+    return
+  }
 
-  if (!(roomID && move)) {
+  const move = data.move
+  if (!move) {
     socket.emit('error', 'Missing parameters')
     return
   }
@@ -34,7 +39,7 @@ export const move = async (
   }
 
   const moveFunction = moveFunctions.get(game.gameType)
-  if (moveFunction) moveFunction(socket, io, data)
+  if (moveFunction) moveFunction(socket, io, roomID, move)
 }
 
 const surrenderFunctions = new Map<GameType, Function>([
@@ -46,13 +51,11 @@ const surrenderFunctions = new Map<GameType, Function>([
 
 export const surrender = async (
   socket: Socket,
-  io: Server,
-  data: RoomIDMsg
+  io: Server
 ): Promise<void> => {
-  const roomID = data.roomID
-
+  const roomID = roomCtl.getGameRoom(socket)
   if (!roomID) {
-    socket.emit('error', 'Missing parameters')
+    socket.emit('error', 'This socket is not playing any game')
     return
   }
 
@@ -63,7 +66,7 @@ export const surrender = async (
   }
 
   const surrenderFunction = surrenderFunctions.get(game.gameType)
-  if (surrenderFunction) surrenderFunction(socket, io, data)
+  if (surrenderFunction) surrenderFunction(socket, io, roomID)
 }
 
 const voteDrawFunctions = new Map<GameType, Function>([
@@ -75,13 +78,11 @@ const voteDrawFunctions = new Map<GameType, Function>([
 
 export const voteDraw = async (
   socket: Socket,
-  io: Server,
-  data: RoomIDMsg
+  io: Server
 ): Promise<void> => {
-  const roomID = data.roomID
-
+  const roomID = roomCtl.getGameRoom(socket)
   if (!roomID) {
-    socket.emit('error', 'Missing parameters')
+    socket.emit('error', 'This socket is not playing any game')
     return
   }
 
@@ -92,7 +93,7 @@ export const voteDraw = async (
   }
 
   const voteDrawFunction = voteDrawFunctions.get(game.gameType)
-  if (voteDrawFunction) voteDrawFunction(socket, io, data)
+  if (voteDrawFunction) voteDrawFunction(socket, io, roomID)
 }
 
 const findRoomFunctions = new Map<GameType, Function>([
@@ -107,7 +108,9 @@ export const findRoom = async (
   io: Server,
   data: FindRoomMsg
 ): Promise<void> => {
-  if (await gameCtl.isSocketInGame(socket)) {
+  console.log('ROOMSS: ', socket.rooms)
+
+  if (gameCtl.isSocketInGame(socket)) {
     socket.emit('error', 'This socket is already playing or in queue')
     return
   }

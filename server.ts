@@ -23,7 +23,7 @@ io.use(socketAuth)
 
 function onConnection (socket: Socket): void {
   socket.on('join_room', spectator.joinRoom.bind(null, socket, io))
-  socket.on('leave_room', spectator.leaveRoom.bind(null, socket, io))
+  socket.on('leave_room', spectator.leaveRoom.bind(null, socket))
 
   socket.on('find_room', game.findRoom.bind(null, socket, io))
   socket.on('move', game.move.bind(null, socket, io))

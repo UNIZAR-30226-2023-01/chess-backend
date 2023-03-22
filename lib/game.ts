@@ -5,6 +5,7 @@ import { chessTimers } from '@lib/timer'
 import { FindRoomMsg, FoundRoomMsg, GameOverMsg } from '@lib/types/socket-msg'
 import { GameModel } from '@models/game'
 import { composeLock, compose, ResourceName } from '@lib/namespaces'
+import * as roomCtl from '@lib/room'
 
 // 2 minutes after a game is over, it is deleted from redis
 export const GAME_OVER_TTL = 2 * 60
@@ -98,10 +99,8 @@ export const endProtocol = async (
   roomID: string,
   game: GameState
 ): Promise<void> => {
-  // After some time every socket in the room is forced to leave
-  setTimeout(() => {
-    io.in(roomID).socketsLeave(roomID)
-  }, GAME_OVER_TTL * 1000)
+  // After a game is over every socket in the room is forced to leave
+  io.in(roomID).socketsLeave(roomID)
 
   // and timer is removed
   const gameTimer = chessTimers.get(roomID)
@@ -111,7 +110,7 @@ export const endProtocol = async (
   // Then save in database
   if (game.gameType === GameType.COMPETITIVE) {
     if (!await saveGame(io, game)) {
-      console.error('Error al guardar la partida')
+      console.error('Error at saveGame')
     }
   }
 }
@@ -123,7 +122,7 @@ export const timeoutProtocol = (
   return async (winner: PlayerColor) => {
     const game = await getGame(roomID, async (game) => {
       if (!game) {
-        console.log('Error at timeoutProtocol: No game with roomID:', roomID)
+        console.error('Error at timeoutProtocol: No game with roomID:', roomID)
         return
       }
 
@@ -140,14 +139,14 @@ export const timeoutProtocol = (
     })
     if (!game) return
 
-    void endProtocol(io, roomID, game)
-
     const message: GameOverMsg = {
       winner,
       endState: EndState.TIMEOUT
     }
 
     io.to(roomID).emit('game_over', message)
+
+    await endProtocol(io, roomID, game)
   }
 }
 
@@ -266,18 +265,8 @@ export const updateGameTimer = (
   return true
 }
 
-export const isSocketInGame = async (
-  socket: Socket
-): Promise<boolean> => {
-  for (const roomID of socket.rooms.values()) {
-    const game = await getGame(roomID)
-    console.log('roomID: ', roomID)
-    console.log('game: ', game)
-    if (game && !game.finished) {
-      return true
-    }
-  }
-  return false
+export const isSocketInGame = (socket: Socket): boolean => {
+  return roomCtl.getGameRoom(socket) !== null
 }
 
 export const createFoundRoomMsg = (

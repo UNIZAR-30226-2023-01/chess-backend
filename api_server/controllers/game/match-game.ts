@@ -2,25 +2,16 @@ import { Server, Socket } from 'socket.io'
 import * as gameCtl from '@lib/game'
 import { chessTimers } from '@lib/timer'
 import { Chess } from 'chess.ts'
-import {
-  GameOverMsg, MoveMsg,
-  MovedMsg, RoomIDMsg
-} from '@lib/types/socket-msg'
+import { GameOverMsg, MovedMsg } from '@lib/types/socket-msg'
 import { PlayerColor, EndState } from '@lib/types/game'
 
 export const surrender = async (
   socket: Socket,
   io: Server,
-  data: RoomIDMsg
+  roomID: string
 ): Promise<void> => {
-  if (!data.roomID) {
-    socket.emit('error', 'Missing parameters')
-    return
-  }
-
-  const roomID: string = data.roomID
   const game = await gameCtl.getGame(roomID, async (game) => {
-    if (!game) {
+    if (!game) { // TODO: Internal server error
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
     }
@@ -66,24 +57,17 @@ export const surrender = async (
     endState: game.endState
   }
 
-  void gameCtl.endProtocol(io, roomID, game)
-
   io.to(roomID).emit('game_over', message)
+  await gameCtl.endProtocol(io, roomID, game)
 }
 
 export const voteDraw = async (
   socket: Socket,
   io: Server,
-  data: RoomIDMsg
+  roomID: string
 ): Promise<void> => {
-  if (!data.roomID) {
-    socket.emit('error', 'Missing parameters')
-    return
-  }
-
-  const roomID: string = data.roomID
   const game = await gameCtl.getGame(roomID, async (game) => {
-    if (!game) {
+    if (!game) { // TODO: Internal server error
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
     }
@@ -130,29 +114,21 @@ export const voteDraw = async (
       endState: game.endState
     }
 
-    void gameCtl.endProtocol(io, roomID, game)
-
     io.to(roomID).emit('game_over', message)
+    await gameCtl.endProtocol(io, roomID, game)
   }
 }
 
 export const move = async (
   socket: Socket,
   io: Server,
-  data: MoveMsg
+  roomID: string,
+  move: string
 ): Promise<void> => {
-  console.log('move', data)
-
-  const roomID = data.roomID
-  let move = data.move
-
-  if (!(roomID && move)) {
-    socket.emit('error', 'Missing parameters')
-    return
-  }
+  console.log('move:', move)
 
   const game = await gameCtl.getGame(roomID, async (game) => {
-    if (!game) {
+    if (!game) { // TODO: Internal server error
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
     }
@@ -228,8 +204,6 @@ export const move = async (
     if (game.endState === EndState.CHECKMATE) {
       returnMessage.winner = game.winner
     }
-
-    void gameCtl.endProtocol(io, roomID, game)
   }
 
   if (game.useTimer) {
@@ -238,4 +212,7 @@ export const move = async (
   }
 
   io.to(roomID).emit('moved', returnMessage)
+  if (game.finished) {
+    await gameCtl.endProtocol(io, roomID, game)
+  }
 }

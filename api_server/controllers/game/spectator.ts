@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io'
 import * as gameCtl from '@lib/game'
+import * as roomCtl from '@lib/room'
 const _ = require('lodash')
 
 interface RoomMessage {
@@ -70,28 +71,16 @@ export const joinRoom = async (
 }
 
 export const leaveRoom = async (
-  socket: Socket,
-  io: Server,
-  data: RoomMessage
+  socket: Socket
 ): Promise<void> => {
-  if (!data.roomID) {
-    socket.emit('error', 'Missing parameters')
-    return
-  }
-
-  const roomID = data.roomID
-  if (io.sockets.adapter.rooms.get(data.roomID) == null) {
-    socket.emit('error', `No game with roomID: ${roomID}`)
-    return
-  }
-
-  if (!socket.rooms.has(roomID)) {
-    socket.emit('error', 'You have not joined this room')
+  const roomID = roomCtl.getGameRoom(socket)
+  if (!roomID) {
+    socket.emit('error', 'This socket is not watching any game')
     return
   }
 
   const game = await gameCtl.getGame(roomID, async (game) => {
-    if (!game) {
+    if (!game) { // TODO: Internal server error
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
     }
@@ -118,5 +107,5 @@ export const leaveRoom = async (
   })
   if (!game) return
 
-  await socket.leave(data.roomID)
+  await socket.leave(roomID)
 }

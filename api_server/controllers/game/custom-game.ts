@@ -102,6 +102,11 @@ const joinGame = async (
       return
     }
 
+    if (game.finished) {
+      socket.emit('error', 'Game has already been finished')
+      return
+    }
+
     if (game.darkSocketId === '') {
       game.darkSocketId = socket.id
     } else {
