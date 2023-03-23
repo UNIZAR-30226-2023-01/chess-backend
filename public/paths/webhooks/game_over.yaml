@@ -7,8 +7,9 @@ post:
   summary: Game Over
   operationId: gameOver
   security: []
+  description: |
+    Allows to search for a game against an opponent.
   requestBody:
-    description: Allows you to search for a game against an opponent
     content:
       application/json:
         schema:

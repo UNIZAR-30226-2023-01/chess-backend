@@ -1,4 +1,4 @@
-post:
+get:
   servers: 
     - url: 'http://localhost:4001'
     - url: 'https://api.gracehopper.xyz:8443'
@@ -6,15 +6,6 @@ post:
     -  Room
   summary: Leave Room
   operationId: leaveRoom
+  description: |
+    Allows an spectator to leave the game room.
   security: []
-  requestBody:
-    description: Allows you to leave a room which you joined as spectator.
-    content:
-      application/json:
-        schema:
-          required: 
-            - roomID
-          properties:
-            roomID:
-              type: string
-              description: Id of the room you want to stop watching.

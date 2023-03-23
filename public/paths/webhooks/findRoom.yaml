@@ -7,15 +7,22 @@ post:
   summary: Find Room
   operationId: findRoom
   security: []
+  description: |
+      Allows a user to search for a match against a random opponent
+      or create a custom game against AI or a friend.
   requestBody:
-    description: Allows you to search for a game against an opponent.
     content:
       application/json:
-        schema: 
-          discriminator: 
-            propertyName: gameType
-            mapping: 
-              AI: ../../components/schemas/createIA.yaml
-              COMPETITIVE: ../../components/schemas/createCompetitive.yaml
-              CREATE_CUSTOM: ../../components/schemas/createCustom.yaml
-              JOIN_CUSTOM: ../../components/schemas/createCustom2.yaml
+        schema:
+          oneOf:
+            - $ref: ../../components/schemas/AI.yaml
+            - $ref: ../../components/schemas/competitive.yaml
+            - $ref: ../../components/schemas/createCustom.yaml
+            - $ref: ../../components/schemas/joinCustom.yaml
+          #discriminator: 
+            #propertyName: gameType
+            #mapping:
+              #"\"AI\"": ../../components/schemas/AI.yaml
+              #"\"COMPETITIVE\"": ../../components/schemas/competitive.yaml
+              #"\"CUSTOM\" (create a game)": ../../components/schemas/createCustom.yaml
+              #"\"CUSTOM\" (join a game)": ../../components/schemas/joinCustom.yaml
