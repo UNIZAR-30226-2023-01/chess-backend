@@ -27,3 +27,18 @@ post:
                 **e7e8q** (for promotion).
         example:
           move: "e2e4"
+  responses:
+    '515':
+      description: event(moved) 
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 777
+              message:
+                type: string
+                example: Lorem ipsum
+
