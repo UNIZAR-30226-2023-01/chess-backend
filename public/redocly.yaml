@@ -1,0 +1,18 @@
+organization: gracehopper
+
+extends:
+  - recommended
+
+apis:
+  chess@v1:
+    root: openapi.yaml
+    theme:
+      openapi:
+        hideLogo: true
+
+theme:
+  openapi:
+    schemaExpansionLevel: 2
+    generateCodeSamples:
+      languages:
+        - lang: curl

@@ -43,4 +43,7 @@ waitForElements().then(() => {
   for (const webhook of webhooks) {
     webhook.innerText = 'Event'
   }
+
+  var redoclySidebar = document.getElementsByClassName('sc-kYPZxB')[0];
+  redoclySidebar.hidden = true;
 })
