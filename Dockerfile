@@ -1,5 +1,12 @@
-FROM node:16
+FROM alpine:latest
 
+# Compile Stockfish and move it to /bin
+RUN apk upgrade && apk add git gcc g++ make
+RUN git clone https://github.com/official-stockfish/Stockfish.git
+RUN cd Stockfish/src && make -j build ARCH=x86-64-modern && mv stockfish /bin
+
+
+RUN apk upgrade && apk add nodejs npm
 # Create app directory
 WORKDIR /usr/src/app
 
