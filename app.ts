@@ -18,13 +18,14 @@ import server from '@server'
 dotenv.config()
 require('@auth/passport')
 require('@auth/passportGoogle')
+console.log('process.env.NODE_ENV', process.env.NODE_ENV)
 
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(cors({
-  origin: ['https://cdn.redoc.ly', 'http://localhost:3000'],
+  origin: ['https://cdn.redoc.ly', 'https://reign.gracehopper.xyz'],
   credentials: true
 }))
 app.use(helmet({
@@ -34,7 +35,11 @@ app.use(cookieParser())
 app.use(cookieSession({
   name: 'api-auth',
   secret: String(process.env.JWT_SECRET),
-  maxAge: 7 * 24 * 60 * 60 * 1000
+  maxAge: 24 * 60 * 60 * 1000,
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  domain: '.gracehopper.xyz'
 }))
 app.use(passport.initialize())
 app.use(passport.session())

@@ -7,15 +7,95 @@ post:
   summary: Move Piece
   operationId: move
   security: []
+  description: | 
+    Allows player to execute a chess move.
+    Only legal movements can be accepted.
   requestBody:
-    description: Allows you to search for a game against an opponent
     content:
       application/json:
         schema:
           required:
-            - id
-            - name
+            - move
           properties:
-            roomID:
+            move:
               type: string
-              description: Id of the room you want to watch.
+              description: |
+                Chess move to execute.
+                The move format is in long algebraic notation.
+
+                *Examples:* **e2e4**, **e7e5**, **e1g1** (white short castling),
+                **e7e8q** (for promotion).
+        example:
+          move: "e2e4"
+  responses:
+    '200':
+      description: event(moved) 
+        Emits the move to every socket in the room.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              move:
+                type: string
+                description: Last move executed.
+              turn:
+                type: string
+                description: Next player to move.
+                enum: 
+                  - LIGHT
+                  - DARK
+              timerLight:
+                type: integer
+                description: |
+                  Time remaining, in milliseconds, for the light player to move
+                  *(only sent if the game uses timer)*.
+              timerDark:
+                type: integer
+                description: |
+                  Time remaining, in milliseconds, for the dark player to move
+                  *(only sent if the game uses timer)*.
+          example:
+            move: "e2e4"
+            turn: "DARK"
+            timerLight: 282042
+            timerDark: 300000
+    '300':
+      description: event(game_over) 
+        Emits that the game has been finished because of this move event.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              endState:
+                type: string
+                description: |
+                  Reason why the game is over.
+                enum:
+                  - CHECKMATE
+                  - DRAW
+              winner:
+                type: string
+                description: |
+                  Winner of the game 
+                  *(only if the game ended with checkmate)*.
+          examples:
+            checkmate:
+              value:
+                endState: "CHECKMATE"
+                winner: "LIGHT"
+            draw:
+              value:
+                endState: "DRAW"
+    '400':
+      description: event(error)
+        Illegal move.
+      content:
+        text/plain:
+          schema:
+            type: string
+          example: Illegal move.
+
+              
+

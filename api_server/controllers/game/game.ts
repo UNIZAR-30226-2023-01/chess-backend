@@ -9,7 +9,7 @@ import { FindRoomMsg, MoveMsg } from '@lib/types/socket-msg'
 import { GameType } from '@lib/types/game'
 
 const moveFunctions = new Map<GameType, Function>([
-  // [GameType.AI, ai.move],
+  [GameType.AI, ai.move],
   [GameType.CUSTOM, match.move],
   [GameType.COMPETITIVE, match.move],
   [GameType.TOURNAMENT, match.move]
@@ -43,7 +43,7 @@ export const move = async (
 }
 
 const surrenderFunctions = new Map<GameType, Function>([
-  // [GameType.AI, ai.surrender],
+  [GameType.AI, match.surrender],
   [GameType.CUSTOM, match.surrender],
   [GameType.COMPETITIVE, match.surrender],
   [GameType.TOURNAMENT, match.surrender]
@@ -70,7 +70,6 @@ export const surrender = async (
 }
 
 const voteDrawFunctions = new Map<GameType, Function>([
-  // [GameType.AI, ai.voteDraw],
   [GameType.CUSTOM, match.voteDraw],
   [GameType.COMPETITIVE, match.voteDraw],
   [GameType.TOURNAMENT, match.voteDraw]
@@ -93,7 +92,11 @@ export const voteDraw = async (
   }
 
   const voteDrawFunction = voteDrawFunctions.get(game.gameType)
-  if (voteDrawFunction) voteDrawFunction(socket, io, roomID)
+  if (voteDrawFunction) {
+    voteDrawFunction(socket, io, roomID)
+  } else {
+    socket.emit('error', `Not supported action in game type ${game.gameType}`)
+  }
 }
 
 const findRoomFunctions = new Map<GameType, Function>([
@@ -116,6 +119,9 @@ export const findRoom = async (
   }
 
   const findRoomFunction = findRoomFunctions.get(data.gameType)
-  if (findRoomFunction) findRoomFunction(socket, io, data)
-  else socket.emit('error', 'Not supported game type')
+  if (findRoomFunction) {
+    findRoomFunction(socket, io, data)
+  } else {
+    socket.emit('error', 'Not supported game type')
+  }
 }

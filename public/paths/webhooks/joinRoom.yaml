@@ -7,15 +7,19 @@ post:
   summary: Join Room
   operationId: joinRoom
   security: []
+  description: |
+      Allows a user to join as spectator of a game in progress.
+      Once the socket has joined a room it should be able to receive all the
+      incoming game events of the room.
   requestBody:
-    description: Allows you to join as spectator in the lobby of a game in progress.
     content:
       application/json:
         schema:
-          required:
-            - id
-            - name
+          required: 
+            - roomID
           properties:
             roomID:
               type: string
-              description: Id of the room you want to watch.
+              description: Id of the game room you want to spectate.
+        example:
+          roomID: "123456"

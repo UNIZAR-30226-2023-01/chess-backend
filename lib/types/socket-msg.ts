@@ -20,9 +20,6 @@ export interface MovedMsg {
 
   move: string
   turn: PlayerColor
-  finished: boolean
-  endState?: EndState
-  winner?: PlayerColor
 }
 
 export type FoundRoomMsg = Partial<GameState> & {

@@ -1,4 +1,4 @@
-post:
+get:
   servers: 
     - url: 'http://localhost:4001'
     - url: 'https://api.gracehopper.xyz:8443'
@@ -6,16 +6,9 @@ post:
     -  Game
   summary: Vote Save
   operationId: voteSave
+  description: |
+    Allows voting for saving the game if this socket
+    is currently a player of a **custom**
+    game room. If both players have voted, then the game is saved
+    and can be resumed in a future.
   security: []
-  requestBody:
-    description: Allows you to search for a game against an opponent
-    content:
-      application/json:
-        schema:
-          required:
-            - id
-            - name
-          properties:
-            roomID:
-              type: string
-              description: Id of the room you want to watch.

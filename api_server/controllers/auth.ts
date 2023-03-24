@@ -30,13 +30,15 @@ export const signIn = (req: Request, res: Response): void => {
           const token = jwt.sign(
             { id, username },
             String(process.env.JWT_SECRET),
-            { expiresIn: '1h' }
+            { expiresIn: 24 * 60 * 60 * 1000 }
           )
 
           res.cookie('api-auth', token, {
             httpOnly: true,
-            secure: false,
-            expires: dayjs().add(7, 'days').toDate()
+            secure: process.env.NODE_ENV === 'production',
+            expires: dayjs().add(1, 'day').toDate(),
+            domain: '.gracehopper.xyz',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
           })
 
           return res
@@ -57,9 +59,9 @@ export const signIn = (req: Request, res: Response): void => {
 export const signUp = (req: Request, res: Response): void => {
   const salt = randomBytes(16)
   pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
-    if (err != null) console.error('cosa rara', err)
+    if (err != null) return res.status(500).json({ status: setStatus(req, 409, 'User already exists') })
 
-    UserModel.create({
+    return UserModel.create({
       username: req.body.username,
       email: req.body.email,
       password: derivedKey,

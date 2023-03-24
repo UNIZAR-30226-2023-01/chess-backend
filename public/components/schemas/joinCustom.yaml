@@ -1,12 +1,15 @@
 type: object
+required:
+  - gameType
+  - roomID
 properties:
   gameType:
     type: string
     enum: 
-      - AI
-      - COMPETITIVE
-      - CREATE CUSTOM
-      - JOIN CUSTOM
+      - "CUSTOM"
   roomID:
     type: string
     description: Id of the room another player has created.
+example:
+  gameType: "CUSTOM"
+  roomID: "123456"

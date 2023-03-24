@@ -169,6 +169,7 @@ export const move = async (
       game.timerLight = gameTimer.getTimeLight()
     }
 
+    game.finished = true
     if (chess.inCheckmate()) {
       game.endState = EndState.CHECKMATE
       game.winner = game.turn
@@ -195,15 +196,7 @@ export const move = async (
 
   const returnMessage: MovedMsg = {
     move,
-    turn: game.turn,
-    finished: game.finished
-  }
-
-  if (game.finished) {
-    returnMessage.endState = game.endState
-    if (game.endState === EndState.CHECKMATE) {
-      returnMessage.winner = game.winner
-    }
+    turn: game.turn
   }
 
   if (game.useTimer) {
@@ -212,7 +205,14 @@ export const move = async (
   }
 
   io.to(roomID).emit('moved', returnMessage)
-  if (game.finished) {
+  if (game.finished && game.endState) {
+    const gameOverMessage: GameOverMsg = {
+      endState: game.endState
+    }
+    if (game.endState === EndState.CHECKMATE) {
+      gameOverMessage.winner = game.winner
+    }
+    io.to(roomID).emit('game_over', gameOverMessage)
     await gameCtl.endProtocol(io, roomID, game)
   }
 }

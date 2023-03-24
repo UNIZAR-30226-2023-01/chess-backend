@@ -11,8 +11,6 @@ export const findGame = async (
   io: Server,
   data: FindRoomMsg
 ): Promise<void> => {
-  console.log('data: ', data)
-
   if (data.roomID) {
     await joinGame(socket, io, data.roomID)
     return
@@ -24,12 +22,11 @@ export const findGame = async (
     return
   }
 
-  await createGame(socket, io, data, check.useTimer)
+  await createGame(socket, data, check.useTimer)
 }
 
 const createGame = async (
   socket: Socket,
-  _io: Server,
   data: FindRoomMsg,
   useTimer: boolean
 ): Promise<void> => {

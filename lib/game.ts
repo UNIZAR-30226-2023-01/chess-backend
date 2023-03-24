@@ -87,7 +87,7 @@ export const saveGame = async (
       gameType: game.gameType
     })
   } catch (error: any) {
-    console.log(error)
+    console.error(error)
     return false
   }
 

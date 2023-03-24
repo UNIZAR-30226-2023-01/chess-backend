@@ -1,4 +1,4 @@
-post:
+get:
   servers: 
     - url: 'http://localhost:4001'
     - url: 'https://api.gracehopper.xyz:8443'
@@ -6,16 +6,9 @@ post:
     -  Game
   summary: Vote Draw
   operationId: voteDraw
+  description: |
+    Allows voting for a draw to the opponent if this socket
+    is currently a player of a **competitive**, **custom** or **tournament**
+    game room. If both players have voted for a draw, then the game is over
+    with a surrender end state.
   security: []
-  requestBody:
-    description: Allows you to search for a game against an opponent
-    content:
-      application/json:
-        schema:
-          required:
-            - id
-            - name
-          properties:
-            roomID:
-              type: string
-              description: Id of the room you want to watch.
