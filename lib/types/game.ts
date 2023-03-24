@@ -69,4 +69,5 @@ export interface GameState {
   lightSurrended: boolean
 
   gameType: GameType
+  difficulty?: number
 }

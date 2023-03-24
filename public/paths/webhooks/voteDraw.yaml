@@ -6,9 +6,56 @@ get:
     -  Game
   summary: Vote Draw
   operationId: voteDraw
-  description: |
+  description: event(vote_draw) 
     Allows voting for a draw to the opponent if this socket
     is currently a player of a **competitive**, **custom** or **tournament**
     game room. If both players have voted for a draw, then the game is over
     with a surrender end state.
   security: []
+  responses:
+    '100':
+      description: event(voted_draw) 
+        Emits that this socket has voted for a draw.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              color:
+                type: string
+                description: |
+                  Color of the player that has voted.
+                enum:
+                  - LIGHT
+                  - DARK
+          example:
+            color: "LIGHT"
+    '300':
+      description: event(game_over) 
+        Emits that the game has been finished because of this event.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              endState:
+                type: string
+                description: |
+                  Reason why the game is over.
+                enum:
+                  - DRAW
+          example:
+            endState: "DRAW"
+    '400':
+      description: event(error)
+        Something went wrong.
+      content:
+        text/plain:
+          schema:
+            description: Details of what caused the error.
+            type: string
+          examples:
+            not currently playing:
+              value: This socket is not playing any game
+            not a player of this game:
+              value: You are not a player of this game

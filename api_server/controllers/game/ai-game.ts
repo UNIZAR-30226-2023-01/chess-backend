@@ -9,6 +9,12 @@ import { Chess } from 'chess.ts'
 import { Types } from 'mongoose'
 import { Server, Socket } from 'socket.io'
 
+const skillLevel = [1, 3, 7, 20]
+
+const randomTimeToThink = (): number => {
+  return Math.floor(Math.random() * (1 - 1000 + 1) + 4000)
+}
+
 export const findGame = async (
   socket: Socket,
   io: Server,
@@ -17,6 +23,16 @@ export const findGame = async (
   const check = gameCtl.checkRoomCreationMsg(data)
   if (check.error) {
     socket.emit('error', check.error)
+    return
+  }
+
+  if (data.difficulty) {
+    if (data.difficulty < 0 || data.difficulty > 3) {
+      socket.emit('error', 'Specified difficulty is out of range')
+      return
+    }
+  } else {
+    data.difficulty = 1
   }
 
   const roomID = await roomCtl.generateUniqueRoomCode()
@@ -75,7 +91,8 @@ export const findGame = async (
     darkSurrended: false,
     lightSurrended: false,
 
-    gameType: GameType.AI
+    gameType: GameType.AI,
+    difficulty: data.difficulty
   }
 
   console.log(game)
@@ -101,7 +118,11 @@ export const findGame = async (
 
   // AI starts if player moves dark pieces
   if (data.hostColor === PlayerColor.DARK) {
-    const move = await bestMove(game.board, 20, 1500)
+    const move = await bestMove(
+      game.board,
+      skillLevel[game.difficulty ?? 1],
+      randomTimeToThink()
+    )
     if (move) {
       await moveAI(socket, io, roomID, move)
     }
@@ -210,7 +231,11 @@ export const move = async (
   // Execute AI's move if game is not over and
   // this move was executed by a player
   if (!aiMove && !game.finished) {
-    const move = await bestMove(game.board, 20, 1500)
+    const move = await bestMove(
+      game.board,
+      skillLevel[game.difficulty ?? 1],
+      randomTimeToThink()
+    )
     if (move) {
       await moveAI(socket, io, roomID, move)
     }

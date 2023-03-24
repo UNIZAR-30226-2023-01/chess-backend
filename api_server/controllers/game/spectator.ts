@@ -57,8 +57,8 @@ export const joinRoom = async (
     return
   }
 
-  if (socket.rooms.has(roomID)) {
-    socket.emit('error', 'You have already joined this room')
+  if (gameCtl.isSocketInGame(socket)) {
+    socket.emit('error', 'You have already joined a room')
     return
   }
 

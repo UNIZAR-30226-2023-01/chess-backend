@@ -33,4 +33,5 @@ export interface FindRoomMsg {
   time?: number // seconds
   increment?: number // seconds
   hostColor?: PlayerColor | 'RANDOM'
+  difficulty?: number
 }

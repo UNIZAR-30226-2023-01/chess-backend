@@ -16,7 +16,7 @@ properties:
     type: integer
     default: 5
     description: Time, in seconds, that is added to each player's timer after
-      they execute a movement.
+      they execute a move.
   hostColor:
     type: string
     default: RANDOM
@@ -27,15 +27,19 @@ properties:
       - DARK
   difficulty:
     type: integer
-    default: 3
+    default: 1
     description: |
       Skill level of AI opponent.
-      This is property is equivalent to Stockfish' option "Skill Level".
-      * Levels from 1 to 3 are considered easy modes.
-      * Levels from 4 to 6 are perfect for more intermediate players.
-      * Levels 7 and 8 are the hardest a human should be able to beat.
+
+      * `0` is equivalent to Stockfish's skill level **1** and
+        is considered the easy mode.
+      * `1` is equivalent to Stockfish's skill level **4**, which is perfect
+        for more intermediate players.
+      * `2` is equivalent to Stockfish's skill level **7**, which is the hardest
+        a human should be able to beat.
+      * `3` is equivalent to Stockfish's highest skill level.
     minimum: 1
-    maximum: 20
+    maximum: 4
 example:
   gameType: "AI"
   time: 300

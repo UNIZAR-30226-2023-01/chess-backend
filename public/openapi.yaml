@@ -105,14 +105,6 @@ webhooks:
     $ref: paths/webhooks/voteDraw.yaml
   voteSave:
     $ref: paths/webhooks/voteSave.yaml
-  gameOver:
-    $ref: paths/webhooks/game_over.yaml
-  moved:
-    $ref: paths/webhooks/moved.yaml
-  room:
-    $ref: paths/webhooks/room.yaml
-  error:
-    $ref: paths/webhooks/error.yaml
 components:
   securitySchemes:
     api_key:

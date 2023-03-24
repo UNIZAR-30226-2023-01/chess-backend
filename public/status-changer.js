@@ -1,8 +1,13 @@
-var sections = document.getElementsByClassName('sc-eCApnc')
-
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+function getEvent(text) {
+  return text.match(/event\((.+)\)/)[1]
+}
+
+
+var sections = document.getElementsByClassName('sc-eCApnc')
 
 async function waitForElements() {
   while (sections.length == 0) {
@@ -20,7 +25,7 @@ waitForElements().then(() => {
       const code = button.getElementsByClassName('sc-fWWYYk').item(0)
       const desc = button.getElementsByClassName('sc-jcwpoC').item(0)
       try {
-        const event = desc.innerText.match(/event\((.+)\)/)[1]
+        const event = getEvent(desc.innerText)
         // Add to map
         map.set(code.innerText.replace(' ', ''), event)
         // Change text inside button
@@ -28,6 +33,19 @@ waitForElements().then(() => {
         code.innerText = event + ' '
       } catch (error) {}
     }
+
+    const description = section.getElementsByClassName('sc-iJCRrE sc-ciSkZP').item(0)
+    let text
+    if (description) text = description.firstChild
+    console.log(text)
+    try {
+      const event = getEvent(text.innerText)
+      text.innerText = text.innerText.replace(`event(${event})`, '');
+      map.set('Payload', event)
+
+      const webhook = section.getElementsByClassName('sc-bqGGPW').item(0)
+      webhook.innerText = event
+    } catch (error) {}
 
     const tabList = section.querySelectorAll('[role="tab"]')
     for (const tab of tabList) {
@@ -39,11 +57,14 @@ waitForElements().then(() => {
   }
 
   // Change Webhooks tags for Event tags
+  /*
   const webhooks = document.getElementsByClassName('sc-bqGGPW')
   for (const webhook of webhooks) {
     webhook.innerText = 'Event'
   }
+  */
 
-  var redoclySidebar = document.getElementsByClassName('sc-kYPZxB')[0];
+  // Remove Redocly Sidebar
+  const redoclySidebar = document.getElementsByClassName('sc-kYPZxB')[0];
   redoclySidebar.hidden = true;
 })

@@ -116,6 +116,8 @@ export const voteDraw = async (
 
     io.to(roomID).emit('game_over', message)
     await gameCtl.endProtocol(io, roomID, game)
+  } else {
+    io.to(roomID).emit('voted_draw', { color: gameCtl.getColor(socket, game) })
   }
 }
 
