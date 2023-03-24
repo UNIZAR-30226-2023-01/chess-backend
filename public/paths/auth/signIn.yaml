@@ -37,22 +37,7 @@ post:
             type: object
             properties:
               data:
-                type: object
-                properties:
-                  id: 
-                    type: string
-                  username:
-                    type: string
-                  email:
-                    type: string
-                    format: email
-                  createdAt:
-                    type: string
-                    format: date
-                  updatedAt:
-                    type: string
-                    format: date
-                  
+                $ref: "../../components/schemas/user.yaml"
               status:
                 $ref: "../../components/schemas/status.yaml"
           examples:
