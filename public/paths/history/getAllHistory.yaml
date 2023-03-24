@@ -7,6 +7,7 @@ get:
   summary: History
   description: Returns information concerning all games that have been played until now.
   operationId: getAllHistory
+  security: []
   parameters:
     - in: query
       name: gameType

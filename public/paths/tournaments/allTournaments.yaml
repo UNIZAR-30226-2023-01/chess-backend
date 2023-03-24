@@ -65,6 +65,7 @@ get:
   summary: All Tournaments
   description: Allows to query the information of all tournaments
   operationId: getAllTournament
+  security: []
   responses:
     200:
       description: Authorized

@@ -7,6 +7,7 @@ get:
   summary: Get Game
   description: Returns information about one of the games that have been played till date.
   operationId: getHistory
+  security: []
   parameters:
     - in: path
       name: id

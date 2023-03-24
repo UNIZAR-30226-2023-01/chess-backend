@@ -7,6 +7,7 @@ get:
   summary: Get User
   description: Retrieves information from a single user
   operationId: getUser
+  security: []
   parameters:
     - in: path
       name: id
