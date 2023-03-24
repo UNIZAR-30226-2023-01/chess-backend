@@ -43,13 +43,13 @@ else
   if [ "$SERVICE_NAME" = "express" ]; then
     echo "Usage: ./deploy.sh [EXPRESS_SERVER]"
     echo "Cleaning up old image"
-    docker rm $(docker stop $(docker ps -a -q --filter ancestor=chess-backend-express --format="{{.ID}}")) >/dev/null 2>&1 && docker rmi chess-backend-express >/dev/null 2>&1
+    docker rm $(docker stop $(docker ps -a -q --filter ancestor=${EXPRESS_SERVER} --format="{{.ID}}")) >/dev/null 2>&1 && docker rmi chess-backend-express >/dev/null 2>&1
     echo "Deploying new image"
     docker-compose up -d ${SERVICE_NAME} >/dev/null 2>&1
   elif [ "$SERVICE_NAME" = "nginx" ]; then
     echo "Usage: ./deploy.sh [PROXY_SERVER]"
     echo "Cleaning up old image"
-    docker rm $(docker stop $(docker ps -a -q --filter ancestor=chess-backend-nginx --format="{{.ID}}")) >/dev/null 2>&1 && docker rmi chess-backend-nginx >/dev/null 2>&1
+    docker rm $(docker stop $(docker ps -a -q --filter ancestor=${PROXY_SERVER} --format="{{.ID}}")) >/dev/null 2>&1 && docker rmi chess-backend-nginx >/dev/null 2>&1
     echo "Deploying new image"
     docker-compose up -d ${SERVICE_NAME} >/dev/null 2>&1
   fi
@@ -57,3 +57,6 @@ fi
 
 echo "Done"
 exit 0
+
+
+docker rm $(docker stop $(docker ps -a -q --filter ancestor="chess-backend-nginx" --format="{{.ID}}")) >/dev/null 2>&1 && docker rmi chess-backend-nginx >/dev/null 2>&1

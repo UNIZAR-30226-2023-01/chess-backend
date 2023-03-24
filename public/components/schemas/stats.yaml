@@ -1,0 +1,27 @@
+type: object
+description: Stats object definition
+properties: 
+  bulletWins:
+    type: integer
+    default: 0
+    description: number of 1-minute games won
+  bulletDefeats:
+    type: integer
+    default: 0
+    description: number of 1-minute games lost
+  blitzWins: 
+    type: integer
+    default: 0
+    description: number of 3-minute games won
+  blitzDefeats:
+    type: integer
+    default: 0
+    description: number of 3-minute games lost
+  fastWins:
+    type: integer
+    default: 0
+    description: number of 5-minute games won
+  fastDefeats:
+    type: integer
+    default: 0
+    description: number of 5-minute games lost

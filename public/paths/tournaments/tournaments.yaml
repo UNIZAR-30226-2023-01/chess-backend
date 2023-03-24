@@ -7,8 +7,6 @@ get:
   summary: Get Tournament
   description: Allows to consult the information of a specific tournament
   operationId: getTournament
-  security:
-    - api_key: []
   parameters:
     - in: path
       name: id
@@ -61,10 +59,6 @@ get:
                     type: number
   x-codeSamples:
     - lang: cURL
-      source: ""
-    - lang: JavaScript
-      source: ""
-    - lang: Dart
       source: ""
 
 patch: 
@@ -131,10 +125,6 @@ patch:
   x-codeSamples:
     - lang: cURL
       source: ""
-    - lang: JavaScript
-      source: ""
-    - lang: Dart
-      source: ""
       
 delete:
   servers: 
@@ -199,8 +189,4 @@ delete:
                     type: number
   x-codeSamples:
     - lang: cURL
-      source: ""
-    - lang: JavaScript
-      source: ""
-    - lang: Dart
       source: ""

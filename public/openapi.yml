@@ -70,6 +70,10 @@ paths:
     $ref: 'paths/auth/signOut.yaml'
   /auth/verify:
     $ref: paths/auth/verify.yaml
+  /auth/forgot-password:
+    $ref: paths/auth/forgotPassword.yaml
+  /auth/reset-password/{id}/{token}:
+      $ref: paths/auth/resetPassword.yaml
   /users:
     $ref: paths/users/getAllUsers.yaml
   /users/{id}:

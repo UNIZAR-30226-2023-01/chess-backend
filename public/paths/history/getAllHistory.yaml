@@ -7,8 +7,6 @@ get:
   summary: History
   description: Returns information concerning all games that have been played until now.
   operationId: getAllHistory
-  security:
-    - api_key: []
   parameters:
     - in: query
       name: gameType
@@ -29,44 +27,34 @@ get:
             type: object
             properties:
               status:
-                type: object
-                properties: 
-                  timestamp:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.370Z
-                  error_code:
-                    type: number
-                  error_message:
-                    type: string
-                    example: Authorized
-                  elapsed:
-                    type: number
+                $ref: '../../components/schemas/status.yaml'
+          examples:
+            example:
+              summary: ""
+              value:
+                status:
+                  timestamp: 2023-02-18T14:51:41.370Z
+                  error_code: 200
+                  error_message: ""
+                  elapsed: 0
     401:
       description: Unauthorized
       content:
         application/json:
           schema:
             type: object
-            properties: 
+            properties:
               status:
-                type: object
-                properties: 
-                  timestamp:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.370Z
-                  error_code:
-                    type: number
-                  error_message:
-                    type: string
-                    example: Unauthorized
-                  elapsed:
-                    type: number
+                $ref: '../../components/schemas/status.yaml'
+          examples:
+            example:
+              summary: ""
+              value:
+                status:
+                  timestamp: 2023-02-18T14:51:41.370Z
+                  error_code: 401
+                  error_message: ""
+                  elapsed: 0
   x-codeSamples:
     - lang: cURL
-      source: ""
-    - lang: JavaScript
-      source: ""
-    - lang: Dart
       source: ""

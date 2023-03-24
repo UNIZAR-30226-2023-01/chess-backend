@@ -62,7 +62,3 @@ get:
   x-codeSamples:
     - lang: cURL
       source: ""
-    - lang: JavaScript
-      source: ""
-    - lang: Dart
-      source: ""

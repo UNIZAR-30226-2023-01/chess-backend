@@ -10,7 +10,7 @@ post:
   security:
     - api_key: []
   responses:
-    '200':
+    200:
       description: Authorized
       content:
         application/json:
@@ -54,10 +54,6 @@ post:
                     type: number
   x-codeSamples:
     - lang: cURL
-      source: ""
-    - lang: JavaScript
-      source: ""
-    - lang: Dart
       source: ""
 
 get:
@@ -69,10 +65,8 @@ get:
   summary: All Tournaments
   description: Allows to query the information of all tournaments
   operationId: getAllTournament
-  security:
-    - api_key: []
   responses:
-    '200':
+    200:
       description: Authorized
       content:
         application/json:
@@ -116,8 +110,4 @@ get:
                     type: number
   x-codeSamples:
     - lang: cURL
-      source: ""
-    - lang: JavaScript
-      source: ""
-    - lang: Dart
       source: ""
