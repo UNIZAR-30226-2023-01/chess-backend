@@ -21,10 +21,7 @@ get:
                 items:
                   $ref: '../../components/schemas/user_detail.yaml'
               status:
-                type: object
-                properties:
-                  status:
-                    $ref: '../../components/schemas/status.yaml'
+                  $ref: '../../components/schemas/status.yaml'
           examples:
             example:
               summary: ""

@@ -31,28 +31,43 @@ post:
   responses:
     200: 
       description: Login ok
+      headers:
+        Set-Cookie:
+          description: Cookie containing the session information to use the api
+          schema:
+            type: object
+            properties:
+              httpOnly: 
+                type: boolean
+                default: true
+                description: "Prevents JavaScript code from accessing the cookie."
+              secure: 
+                type: boolean
+                default: true
+                description: "The secure cookie is only sent to servers when a request is sent with the https scheme."
+              expires: 
+                type: string
+                format: date
+                description: "The maximum lifetime of a cookie as a HTTP-date timestamp."
+              domain: 
+                type: 
+                description: "Hosts where the cookie will be sent."
+                enum: 
+                  - .gracehopper.xyz
+                  - default
+              sameSite: 
+                type: string
+                description: "Controls whether or not a cookie is sent with cross-site requests, providing some protection against cross-site request forgery attacks"
+                enum: 
+                  - lax
+                  - none
       content:
         application/json:
           schema:
             type: object
             properties:
               data:
-                type: object
-                properties:
-                  id: 
-                    type: string
-                  username:
-                    type: string
-                  email:
-                    type: string
-                    format: email
-                  createdAt:
-                    type: string
-                    format: date
-                  updatedAt:
-                    type: string
-                    format: date
-                  
+                $ref: "../../components/schemas/user.yaml"
               status:
                 $ref: "../../components/schemas/status.yaml"
           examples:

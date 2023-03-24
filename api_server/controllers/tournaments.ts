@@ -92,11 +92,65 @@ export const deleteOne = (req: Request, res: Response): void => {
 export const join = (req: Request, res: Response): void => {
   res
     .status(200)
-    .json(setStatus(req, 0, 'pong'))
+    .json({ status: setStatus(req, 0, 'pong') })
+  // // Busca el modelo de torneos con el id especificado.
+  // const tournament = await TournamentModel.findById(req.params.id)
+
+  // if (!tournament) {
+  //   return res
+  //     .status(500)
+  //     .json({ status: setStatus(req, 500, `Could not find the tournament with the id ${req.params.id}.`) })
+  // }
+
+  // // Verifica si el usuario actual ya está en la lista de participantes.
+  // const isAlreadyJoined = tournament.participants.some(p => p.username === currentUser)
+
+  // if (isAlreadyJoined) {
+  //   return res
+  //     .status(500)
+  //     .json({ status: setStatus(req, 500, `The user ${currentUser} has already joined this tournament.`) })
+  // }
+
+  // // Agrega al usuario actual a la lista de participantes.
+  // tournament.participants.push({ username: currentUser })
+
+  // // Guarda el modelo de torneos actualizado en la base de datos.
+  // await tournament.save()
+
+  // return res
+  //   .status(201)
+  //   .json({ status: setStatus(req, 201, `User ${currentUser} has joined the tournament.`) })
 }
 
 export const leave = (req: Request, res: Response): void => {
   res
     .status(200)
-    .json(setStatus(req, 0, 'pong'))
+    .json({ status: setStatus(req, 0, 'pong') })
+  // // Busca el modelo de torneos con el id especificado.
+  // const tournament = await TournamentModel.findById(req.params.id)
+
+  // if (!tournament) {
+  //   return res
+  //     .status(500)
+  //     .json({ status: setStatus(req, 500, `Could not find the tournament with the id ${req.params.id}.`) })
+  // }
+
+  // // Verifica si el usuario actual ya está en la lista de participantes.
+  // const isAlreadyJoined = tournament.participants.some(p => p.username === currentUser)
+
+  // if (!isAlreadyJoined) {
+  //   return res
+  //     .status(500)
+  //     .json({ status: setStatus(req, 500, `The user ${currentUser} does not belong to this tournament.`) })
+  // }
+
+  // // Agrega al usuario actual a la lista de participantes.
+  // tournament.participants.filter(p => p.username !== currentUser)
+
+  // // Guarda el modelo de torneos actualizado en la base de datos.
+  // await tournament.save()
+
+  // return res
+  //   .status(201)
+  //   .json({ status: setStatus(req, 201, `User ${currentUser} has joined the tournament.`) })
 }
