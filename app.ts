@@ -39,7 +39,7 @@ app.use(cookieSession({
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  domain: '.gracehopper.xyz'
+  domain: process.env.NODE_ENV === 'production' ? '.gracehopper.xyz' : undefined
 }))
 app.use(passport.initialize())
 app.use(passport.session())

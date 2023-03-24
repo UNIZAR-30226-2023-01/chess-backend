@@ -7,8 +7,7 @@ get:
   summary: Get User
   description: Retrieves information from a single user
   operationId: getUser
-  security:
-    - api_key: []
+  security: []
   parameters:
     - in: path
       name: id
@@ -23,87 +22,55 @@ get:
         application/json:
           schema:
             type: object
-            properties: 
+            properties:
               data:
-                type: object
-                properties: 
-                  id:
-                    type: string
-                    example: 507f1f77bcf86cd799439011
-                  avatar:
-                    type: string
-                    format: url 
-                    example: https://api.gracehopper.xyz/...
-                  username:
-                    type: string
-                    example: johndoe
-                  email:
-                    type: string
-                    example: johndoe@example.com
-                  google:
-                    type: boolean
-                  stats:
-                    type: object
-                    properties: 
-                      bulletWins:
-                        type: integer
-                        default: 0
-                      bulletDefeats:
-                        type: integer
-                        default: 0
-                      blitzWins:
-                        type: integer
-                        default: 0
-                      blitzDefeats:
-                        type: integer
-                        default: 0
-                      fastWins:
-                        type: integer
-                        default: 0
-                      fastDefeats:
-                        type: integer
-                        default: 0
+                $ref: '../../components/schemas/user_detail.yaml'
               status:
-                type: object
-                properties: 
-                  timestamp:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.370Z
-                  error_code:
-                    type: number
-                  error_message:
-                    type: string
-                    example: Authorized
-                  elapsed:
-                    type: number
+                $ref: '../../components/schemas/status.yaml'
+          examples:
+            example:
+              summary: ""
+              value:
+                data:
+                  id: 507f1f77bcf86cd799439011
+                  avatar: "https://api.gracehopper.xyz/..."
+                  username: johndoe
+                  email: "johndoe@example.com"
+                  google: true
+                  createdAt: 2023-02-18T14:51:41.370Z
+                  updatedAt: 2023-02-18T14:51:41.370Z
+                  stats: 
+                    bulletWins: 0
+                    bulletDefeats: 0
+                    blitzWins: 0
+                    blitzDefeats: 0
+                    fastWins: 0
+                    fastDefeats: 0
+                status:
+                  timestamp: 2023-02-18T14:51:41.370Z
+                  error_code: 200
+                  error_message: ""
+                  elapsed: 0
     401:
       description: Unauthorized
       content:
         application/json:
           schema:
             type: object
-            properties: 
+            properties:
               status:
-                type: object
-                properties: 
-                  timestamp:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.370Z
-                  error_code:
-                    type: number
-                  error_message:
-                    type: string
-                    example: Unauthorized
-                  elapsed:
-                    type: number
+                $ref: '../../components/schemas/status.yaml'
+          examples:
+            example:
+              summary: ""
+              value:
+                status:
+                  timestamp: 2023-02-18T14:51:41.370Z
+                  error_code: 401
+                  error_message: ""
+                  elapsed: 0
   x-codeSamples:
     - lang: cURL
-      source: ""
-    - lang: JavaScript
-      source: ""
-    - lang: Dart
       source: ""
 
 patch:
@@ -134,22 +101,26 @@ patch:
               type: string
               format: url 
               example: https://api.gracehopper.xyz/...
-              description: profile picture 
+              description: New address of the user's profile image.
             username: 
               type: string
               example: johndoe
               uniqueItems: true
-              description: Nickname with which the user will be identified within the platform
+              description: New user name for the user to log in to the system.
             email: 
               type: string
               example: johndoe@example.com
               uniqueItems: true
-              description: e-mail address with which the user registers
+              description: New email address for a user.
+            google:
+              type: boolean
+              example: false 
+              description: Change the google link status
             password: 
               type: string
               format: password
               example: qwerty
-              description: Password to protect the user's profile
+              description: New Password
   responses:
     200:
       description: Authorized
@@ -157,66 +128,48 @@ patch:
         application/json:
           schema:
             type: object
-            properties: 
+            properties:
               data:
-                type: object
-                properties: 
-                  id:
-                    type: string
-                    example: 507f1f77bcf86cd799439011
-                  avatar:
-                    type: string
-                    format: url 
-                    example: https://api.gracehopper.xyz/...
-                  username:
-                    type: string
-                    example: johndoe
-                  email:
-                    type: string
-                    example: johndoe@example.com
-                  google:
-                    type: boolean
+                $ref: "../../components/schemas/user.yaml"
               status:
-                type: object
-                properties: 
-                  timestamp:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.370Z
-                  error_code:
-                    type: number
-                  error_message:
-                    type: string
-                    example: Authorized
-                  elapsed:
-                    type: number
+                $ref: "../../components/schemas/status.yaml"
+          examples:
+            example:
+              summary: ""
+              value:
+                data:
+                  id: 507f1f77bcf86cd799439011
+                  avatar: "https://api.gracehopper.xyz/..."
+                  username: johndoe
+                  email: "johndoe@example.com"
+                  google: true
+                  createdAt: 2023-02-18T14:51:41.370Z
+                  updatedAt: 2023-02-18T14:51:41.370Z
+                status:
+                  timestamp: 2023-02-18T14:51:41.370Z
+                  error_code: 200
+                  error_message: ""
+                  elapsed: 0
     401:
       description: Unauthorized
       content:
         application/json:
           schema:
             type: object
-            properties: 
+            properties:
               status:
-                type: object
-                properties: 
-                  timestamp:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.370Z
-                  error_code:
-                    type: number
-                  error_message:
-                    type: string
-                    example: Unauthorized
-                  elapsed:
-                    type: number
+                $ref: '../../components/schemas/status.yaml'
+          examples:
+            example:
+              summary: ""
+              value:
+                status:
+                  timestamp: 2023-02-18T14:51:41.370Z
+                  error_code: 401
+                  error_message: ""
+                  elapsed: 0
   x-codeSamples:
     - lang: cURL
-      source: ""
-    - lang: JavaScript
-      source: ""
-    - lang: Dart
       source: ""
 
 delete:
@@ -244,46 +197,36 @@ delete:
         application/json:
           schema:
             type: object
-            properties: 
+            properties:
               status:
-                type: object
-                properties: 
-                  timestamp:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.370Z
-                  error_code:
-                    type: number
-                  error_message:
-                    type: string
-                    example: Account successfully deleted
-                  elapsed:
-                    type: number
+                $ref: '../../components/schemas/status.yaml'
+          examples:
+            example:
+              summary: ""
+              value:
+                status:
+                  timestamp: 2023-02-18T14:51:41.370Z
+                  error_code: 200
+                  error_message: ""
+                  elapsed: 0
     401:
       description: Unauthorized
       content:
         application/json:
           schema:
             type: object
-            properties: 
+            properties:
               status:
-                type: object
-                properties: 
-                  timestamp:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.370Z
-                  error_code:
-                    type: number
-                  error_message:
-                    type: string
-                    example: Unauthorized
-                  elapsed:
-                    type: number
+                $ref: '../../components/schemas/status.yaml'
+          examples:
+            example:
+              summary: ""
+              value:
+                status:
+                  timestamp: 2023-02-18T14:51:41.370Z
+                  error_code: 401
+                  error_message: ""
+                  elapsed: 0
   x-codeSamples:
     - lang: cURL
-      source: ""
-    - lang: JavaScript
-      source: ""
-    - lang: Dart
       source: ""

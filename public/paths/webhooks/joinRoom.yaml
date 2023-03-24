@@ -7,10 +7,10 @@ post:
   summary: Join Room
   operationId: joinRoom
   security: []
-  description: |
-      Allows a user to join as spectator of a game in progress.
-      Once the socket has joined a room it should be able to receive all the
-      incoming game events of the room.
+  description: event(join_room) 
+    Allows a user to join as spectator of a game in progress.
+    Once the socket has joined a room it should be able to receive all the
+    incoming game events of the room.
   requestBody:
     content:
       application/json:
@@ -23,3 +23,123 @@ post:
               description: Id of the game room you want to spectate.
         example:
           roomID: "123456"
+  responses:
+    '200':
+      description: event(room) 
+        Emits to this socket the current state of the game.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              turn:
+                type: string
+                description: Next player to move.
+                enum: 
+                  - LIGHT
+                  - DARK
+              light:
+                type: string
+                description: |
+                  Name of light side player.
+              dark:
+                type: string
+                description: |
+                  Name of dark side player.
+              board:
+                type: string
+                description: |
+                  Current state of this game's board, in FEN notation.
+              moves:
+                type: string[]
+                description: |
+                  List of all the moves executed, in long algebraic notation.
+              useTimer:
+                type: boolean
+                description: |
+                  `true` only if players have limited time to play.
+              initialTimer:
+                type: integer
+                description: |
+                  `time` property with which this game was created
+                  *(only sent if the game uses timer)*.
+              timerIncrement:
+                type: integer
+                description: |
+                  `increment` property with which this game was created
+                  *(only sent if the game uses timer)*.
+              timerLight:
+                type: integer
+                description: | 
+                  Time remaining, in milliseconds, for the light player to move
+                  *(only sent if the game uses timer)*.
+              timerDark:
+                type: integer
+                description: | 
+                  Time remaining, in milliseconds, for the dark player to move
+                  *(only sent if the game uses timer)*.
+              lightVotedDraw:
+                type: boolean
+                description: | 
+                  `true` if light player has voted for a draw.
+              darkVotedDraw:
+                type: boolean
+                description: | 
+                  `true` if dark player has voted for a draw.
+              lightVotedSave:
+                type: boolean
+                description: | 
+                  `true` if light player has voted for saving the game.
+              darkVotedSave:
+                type: boolean
+                description: | 
+                  `true` if dark player has voted for saving the game.
+              gameType:
+                type: string
+                enum: 
+                  - "AI"
+                  - "COMPETITIVE"
+                  - "CUSTOM"
+                  - "TOURNAMENT"
+          examples:
+            "spectate AI game":
+              value:
+                "turn": "DARK"
+                "dark": "Guest"
+                "light": "AI"
+                "board": "rnbqkbnr/ppp1pppp/8/3P4/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2"
+                "moves": [
+                  "e2e4",
+                  "d7d5",
+                  "e4d5"
+                ]
+                "useTimer": true
+                "initialTimer": 180
+                "timerIncrement": 3
+                "timerDark": 159974
+                "timerLight": 182846
+                "finished": false
+                "spectators": [ "Guest" ]
+                "darkVotedDraw": false
+                "lightVotedDraw": false
+                "darkVotedSave": false
+                "lightVotedSave": false
+                "gameType": "AI"
+    '400':
+      description: event(error)
+        Something went wrong.
+      content:
+        text/plain:
+          schema:
+            description: Details of what caused the error.
+            type: string
+          examples:
+            missing parameters:
+              value: Missing parameters
+            non existing game:
+              value: No game with roomID "123456"
+            already watching a game: 
+              value: You have already joined a room
+            game has not started:
+              value: This game has not started yet
+              

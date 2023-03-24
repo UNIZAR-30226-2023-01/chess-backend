@@ -31,87 +31,97 @@ post:
   responses:
     200: 
       description: Login ok
+      headers:
+        Set-Cookie:
+          description: Cookie containing the session information to use the api
+          schema:
+            type: object
+            properties:
+              httpOnly: 
+                type: boolean
+                default: true
+                description: "Prevents JavaScript code from accessing the cookie."
+              secure: 
+                type: boolean
+                default: true
+                description: "The secure cookie is only sent to servers when a request is sent with the https scheme."
+              expires: 
+                type: string
+                format: date
+                description: "The maximum lifetime of a cookie as a HTTP-date timestamp."
+              domain: 
+                type: 
+                description: "Hosts where the cookie will be sent."
+                enum: 
+                  - .gracehopper.xyz
+                  - default
+              sameSite: 
+                type: string
+                description: "Controls whether or not a cookie is sent with cross-site requests, providing some protection against cross-site request forgery attacks"
+                enum: 
+                  - lax
+                  - none
       content:
         application/json:
           schema:
             type: object
-            properties: 
+            properties:
               data:
-                type: object
-                properties: 
-                  id:
-                    type: string
-                    example: 63f0e5fd3b2d2904b0915fa8
-                  username:
-                    type: string
-                    example: johndoe
-                  email:
-                    type: string
-                    example: johndoe@example.com
-                  createdAt:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.307Z
-                  updatedAt:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.307Z
+                $ref: "../../components/schemas/user.yaml"
               status:
-                type: object
-                properties: 
-                  timestamp:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.370Z
-                  error_code:
-                    type: number
-                  error_message:
-                    type: string
-                    example: User logged in successfully
-                  elapsed:
-                    type: number
+                $ref: "../../components/schemas/status.yaml"
+          examples:
+            example:
+              summary: ""
+              value:
+                data:
+                  id: 507f1f77bcf86cd799439011
+                  username: johndoe
+                  email: "johndoe@example.com"
+                  createdAt: 2023-02-18T14:51:41.370Z
+                  updatedAt: 2023-02-18T14:51:41.370Z
+                status:
+                  timestamp: 2023-02-18T14:51:41.370Z
+                  error_code: 200
+                  error_message: ""
+                  elapsed: 0
+                
     401:
       description: Invalid credentials
       content:
         application/json:
           schema:
             type: object
-            properties: 
+            properties:
               status:
-                type: object
-                properties: 
-                  timestamp:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.370Z
-                  error_code:
-                    type: number
-                  error_message:
-                    type: string
-                    example: Invalid credentials
-                  elapsed:
-                    type: number
+                $ref: '../../components/schemas/status.yaml'
+          examples:
+            example:
+              summary: ""
+              value:
+                status:
+                  timestamp: 2023-02-18T14:51:41.370Z
+                  error_code: 401
+                  error_message: ""
+                  elapsed: 0
     500:
       description: Internal server error
       content:
         application/json:
           schema:
             type: object
-            properties: 
+            properties:
               status:
-                type: object
-                properties: 
-                  timestamp:
-                    type: string
-                    format: date
-                    example: 2023-02-18T14:51:41.370Z
-                  error_code:
-                    type: number
-                  error_message:
-                    type: string
-                    example: Internal server error
-                  elapsed:
-                    type: number
+                $ref: '../../components/schemas/status.yaml'
+          examples:
+            example:
+              summary: ""
+              value:
+                status:
+                  timestamp: 2023-02-18T14:51:41.370Z
+                  error_code: 500
+                  error_message: ""
+                  elapsed: 0
   x-codeSamples:
     - lang: cURL
       source: ""

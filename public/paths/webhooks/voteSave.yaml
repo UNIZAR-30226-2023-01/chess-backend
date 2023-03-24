@@ -6,9 +6,12 @@ get:
     -  Game
   summary: Vote Save
   operationId: voteSave
-  description: |
+  description: event(vote_save) 
     Allows voting for saving the game if this socket
-    is currently a player of a **custom**
-    game room. If both players have voted, then the game is saved
+    is currently a player of a **custom** game room.
+    If both players have voted, then the game is saved
     and can be resumed in a future.
+    
+    
+    NOT IMPLEMENTED YET
   security: []

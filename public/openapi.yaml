@@ -70,6 +70,10 @@ paths:
     $ref: 'paths/auth/signOut.yaml'
   /auth/verify:
     $ref: paths/auth/verify.yaml
+  /auth/forgot-password:
+    $ref: paths/auth/forgotPassword.yaml
+  /auth/reset-password/{id}/{token}:
+      $ref: paths/auth/resetPassword.yaml
   /users:
     $ref: paths/users/getAllUsers.yaml
   /users/{id}:
@@ -101,14 +105,6 @@ webhooks:
     $ref: paths/webhooks/voteDraw.yaml
   voteSave:
     $ref: paths/webhooks/voteSave.yaml
-  gameOver:
-    $ref: paths/webhooks/game_over.yaml
-  moved:
-    $ref: paths/webhooks/moved.yaml
-  room:
-    $ref: paths/webhooks/room.yaml
-  error:
-    $ref: paths/webhooks/error.yaml
 components:
   securitySchemes:
     api_key:

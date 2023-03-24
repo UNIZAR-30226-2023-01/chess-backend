@@ -30,7 +30,7 @@ export const getOne = (req: Request, res: Response): void => {
     .catch(_err => {
       return res
         .status(500)
-        .json(setStatus(req, 500, 'Internal Server Error'))
+        .json({ status: setStatus(req, 500, 'Internal Server Error') })
     })
 }
 
@@ -47,7 +47,7 @@ export const updateOne = (req: Request, res: Response): void => {
     .catch(_err => {
       res
         .status(500)
-        .json(setStatus(req, 500, 'Internal Server Error'))
+        .json({ status: setStatus(req, 500, 'Internal Server Error') })
     })
 }
 
@@ -63,6 +63,6 @@ export const deleteOne = (req: Request, res: Response): void => {
     .catch(_err => {
       res
         .status(500)
-        .json(setStatus(req, 500, 'Internal Server Error'))
+        .json({ status: setStatus(req, 500, 'Internal Server Error') })
     })
 }

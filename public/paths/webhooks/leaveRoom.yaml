@@ -6,6 +6,20 @@ get:
     -  Room
   summary: Leave Room
   operationId: leaveRoom
-  description: |
+  description: event(leave_room) 
     Allows an spectator to leave the game room.
   security: []
+  responses:
+    '400':
+      description: event(error)
+        Something went wrong.
+      content:
+        text/plain:
+          schema:
+            description: Details of what caused the error.
+            type: string
+          examples:
+            not watching any game:
+              value: This socket is not watching any game
+            players cannot leave:
+              value: Players cannot leave a room

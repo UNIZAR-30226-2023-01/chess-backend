@@ -7,7 +7,7 @@ post:
   summary: Move Piece
   operationId: move
   security: []
-  description: | 
+  description: event(move) 
     Allows player to execute a chess move.
     Only legal movements can be accepted.
   requestBody:
@@ -28,7 +28,7 @@ post:
         example:
           move: "e2e4"
   responses:
-    '200':
+    '100':
       description: event(moved) 
         Emits the move to every socket in the room.
       content:
@@ -90,12 +90,18 @@ post:
                 endState: "DRAW"
     '400':
       description: event(error)
-        Illegal move.
+        Something went wrong.
       content:
         text/plain:
           schema:
+            description: Details of what caused the error.
             type: string
-          example: Illegal move.
-
-              
-
+          examples:
+            not currently playing:
+              value: This socket is not playing any game
+            not a player of this game:
+              value: You are not a player of this game
+            illegal move:
+              value: Illegal move
+            not your turn:
+              value: It is not your turn

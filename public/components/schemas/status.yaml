@@ -1,0 +1,16 @@
+type: object
+description: Standardized status object for API calls.
+properties: 
+  timestamp:
+    type: string
+    format: date
+    description: Current timestamp (ISO 8601) on the server.
+  error_code:
+    type: integer
+    description: An internal error code for the current error. If a unique platform error code is not available the HTTP status code is returned. null is returned if there is no error.
+  error_message:
+    type: string
+    description: An error message to go along with the error code.
+  elapsed:
+    type: number
+    description: Number of milliseconds taken to generate this response.

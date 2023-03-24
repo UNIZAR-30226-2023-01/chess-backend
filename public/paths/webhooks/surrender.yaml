@@ -6,7 +6,41 @@ get:
     -  Game
   summary: Surrender
   operationId: surrender
-  description: |
+  description: event(surrender) 
     Allows player to surrender and grant victory to the opponent.
   security: []
-
+  responses:
+    '300':
+      description: event(game_over) 
+        Emits that the game has been finished because of this event.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              endState:
+                type: string
+                description: |
+                  Reason why the game is over.
+                enum:
+                  - SURRENDER
+              winner:
+                type: string
+                description: |
+                  Winner of the game.
+          example:
+            endState: "SURRENDER"
+            winner: "LIGHT"
+    '400':
+      description: event(error)
+        Something went wrong.
+      content:
+        text/plain:
+          schema:
+            description: Details of what caused the error.
+            type: string
+          examples:
+            not currently playing:
+              value: This socket is not playing any game
+            not a player of this game:
+              value: You are not a player of this game
