@@ -37,7 +37,7 @@ export const signIn = (req: Request, res: Response): void => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             expires: dayjs().add(1, 'day').toDate(),
-            domain: '.gracehopper.xyz',
+            domain: process.env.NODE_ENV === 'production' ? '.gracehopper.xyz' : undefined,
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
           })
 
