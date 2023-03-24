@@ -13,6 +13,7 @@ COPY package*.json ./
 RUN npm install
 
 # Bundle app source
+ENV NODE_ENV=production
 COPY ./.env .
 COPY ./build .
 
