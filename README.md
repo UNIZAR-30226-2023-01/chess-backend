@@ -1,3 +1,9 @@
+<style>
+.nested {
+  margin-left: 20px;
+}
+</style>
+
 # express-template  [![Production CI](https://github.com/UNIZAR-30226-01/chess-backend/actions/workflows/production.yml/badge.svg)](https://github.com/UNIZAR-30226-01/chess-backend/actions/workflows/production.yml)
 
 ![Beta](https://img.shields.io/badge/Status-Beta-red)
@@ -22,24 +28,58 @@
 
 ## Getting Started
 
-Run for a development environment
+### Run for a development environment
 
 ```bash
 npm run dev
 ```
 
-Run for a production environment
+###  Run for a production environment
+
+#### Command Line
+> **Note** 
+> this version requires to have ports `4000` and `4001` open on the router. This version does not support HTTPS 
+
 ```bash
 npm run tsc
 npm run start
 ```
 
-Run for a production environment with [`pm2`](https://pm2.keymetrics.io/)
-```bash
-pm2 start app.js
-```
+#### Docker Compose (preferred)
 
+> **Note** 
+>  This version includes `nginx` redirection so the ports that need to be open in the router are `443` and `8443`. This version supports HTTPS.
 Compile for docker
+
+  <details>
+    <summary><b>Get a certificate<b></summary>
+    <details class="nested">
+    <summary>Self Signed</summary>
+
+1. Crea una clave privada utilizando el siguiente comando:
+```bash
+openssl genrsa -out cert.key 2048
+```
+1. Crea un certificado autofirmado utilizando el siguiente comando:<br>
+  Este comando generará un certificado autofirmado válido por 365 días y lo guardará en un archivo llamado "cert.crt". Durante la ejecución del comando se te solicitará que proporciones algunos datos para el certificado. Asegúrate de proporcionar el nombre de dominio correcto en el campo "Common Name".
+```bash
+openssl req -new -x509 -key cert.key -out cert.crt -days 365
+```
+1. Verifica que el certificado SSL y la clave privada corresponden utilizando los siguientes comandos:
+```
+openssl x509 -noout -modulus -in cert.crt | openssl md5
+openssl rsa -noout -modulus -in cert.key | openssl md5
+```
+  </details>
+  <details class="nested">
+    <summary>Lets Encrypt & Certbot</summary>
+
+Follow the instructions on the following [page](https://certbot.eff.org/)
+
+  </details>
+  </details>
+<br>
+
 ```bash
 docker-compose up -d
 ```
