@@ -1,9 +1,3 @@
-<style>
-.nested {
-  margin-left: 20px;
-}
-</style>
-
 # express-template  [![Production CI](https://github.com/UNIZAR-30226-01/chess-backend/actions/workflows/production.yml/badge.svg)](https://github.com/UNIZAR-30226-01/chess-backend/actions/workflows/production.yml)
 
 ![Beta](https://img.shields.io/badge/Status-Beta-red)
@@ -53,7 +47,7 @@ Compile for docker
 
   <details>
     <summary><b>Get a certificate<b></summary>
-    <details class="nested">
+    <details>
     <summary>Self Signed</summary>
 
 1. Crea una clave privada utilizando el siguiente comando:
@@ -71,7 +65,7 @@ openssl x509 -noout -modulus -in cert.crt | openssl md5
 openssl rsa -noout -modulus -in cert.key | openssl md5
 ```
   </details>
-  <details class="nested">
+  <details>
     <summary>Lets Encrypt & Certbot</summary>
 
 Follow the instructions on the following [page](https://certbot.eff.org/)
