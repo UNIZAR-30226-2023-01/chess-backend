@@ -47,7 +47,7 @@ Compile for docker
 
   <details>
     <summary><b>Get a certificate<b></summary>
-    <details class="nested">
+    <details>
     <summary>Self Signed</summary>
 
 1. Crea una clave privada utilizando el siguiente comando:
@@ -65,7 +65,7 @@ openssl x509 -noout -modulus -in cert.crt | openssl md5
 openssl rsa -noout -modulus -in cert.key | openssl md5
 ```
   </details>
-  <details class="nested">
+  <details>
     <summary>Lets Encrypt & Certbot</summary>
 
 Follow the instructions on the following [page](https://certbot.eff.org/)
