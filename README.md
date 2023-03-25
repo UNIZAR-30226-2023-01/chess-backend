@@ -1,9 +1,3 @@
-<style>
-.nested {
-  margin-left: 20px;
-}
-</style>
-
 # express-template  [![Production CI](https://github.com/UNIZAR-30226-01/chess-backend/actions/workflows/production.yml/badge.svg)](https://github.com/UNIZAR-30226-01/chess-backend/actions/workflows/production.yml)
 
 ![Beta](https://img.shields.io/badge/Status-Beta-red)
