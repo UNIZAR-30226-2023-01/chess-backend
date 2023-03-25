@@ -3,7 +3,9 @@ FROM alpine:latest
 # Compile Stockfish and move it to /bin
 RUN apk upgrade && apk add git gcc g++ make
 RUN git clone https://github.com/official-stockfish/Stockfish.git
-RUN cd Stockfish/src && make -j build ARCH=x86-64-modern && mv stockfish /bin
+COPY stockfish-compile.sh Stockfish/src
+RUN cd Stockfish/src && chmod u+x stockfish-compile.sh \
+    && ./stockfish-compile.sh && mv stockfish /bin && cd
 
 
 RUN apk upgrade && apk add nodejs npm

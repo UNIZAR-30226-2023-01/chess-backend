@@ -12,7 +12,7 @@ import { Server, Socket } from 'socket.io'
 const skillLevel = [1, 3, 7, 20]
 
 const randomTimeToThink = (): number => {
-  return Math.floor(Math.random() * (1 - 1000 + 1) + 4000)
+  return Math.floor(Math.random() * (1 - 500 + 1) + 2000)
 }
 
 export const findGame = async (
