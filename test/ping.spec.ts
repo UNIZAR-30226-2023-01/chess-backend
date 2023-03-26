@@ -31,10 +31,10 @@ describe('GET /api/v1/ping', () => {
   })
 })
 
-describe('GET /api/v1/secure-ping', () => {
+describe('GET /api/v1/health/secure-ping', () => {
   it('El servidor hace pong', async () => {
     await request(app)
-      .post('/api/v1/auth/sign-up')
+      .post('/api/v1/auth/health/sign-up')
       .send(newClient)
       .expect(201)
       .then(async _ => {

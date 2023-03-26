@@ -7,7 +7,8 @@ import { setStatus } from '@lib/status'
 import { invalidateToken } from '@lib/token-blacklist'
 
 export const signIn = (req: Request, res: Response): void => {
-  UserModel.findOne({ username: req.body.username })
+  const { username = undefined, email = undefined } = req.body
+  UserModel.findOne({ $or: [{ username }, { email }] })
     .then((user) => {
       if (!user) {
         return res
@@ -180,30 +181,41 @@ export const changePassword = (req: Request, res: Response): void => {
       }
 
       const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
-      jwt.verify(token, secret)
-      return null
+      return jwt.verify(token, secret, (err, _decoded) => {
+        if (err) {
+          return res
+            .status(401)
+            .json({ status: setStatus(req, 401, 'Invalid token') })
+        }
+
+        return pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
+          if (err != null) {
+            console.error(err)
+            return res
+              .status(500)
+              .json({ status: setStatus(req, 500, 'Internal server error') })
+          }
+
+          return UserModel.findByIdAndUpdate({ _id: id }, {
+            password: derivedKey,
+            salt
+          })
+            .then(() => {
+              return res
+                .status(201)
+                .json({ status: setStatus(req, 0, 'Password changed') })
+            })
+            .catch(() => {
+              return res
+                .status(500)
+                .json({ status: setStatus(req, 500, 'Internal server error') })
+            })
+        })
+      })
     })
-    .catch(() => {
+    .catch((err: Error) => {
       return res
         .status(500)
-        .json({ status: setStatus(req, 500, 'Internal server error') })
+        .json({ status: setStatus(req, 500, err.message) })
     })
-
-  pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
-    if (err != null) console.error(err)
-    UserModel.findByIdAndUpdate({ _id: id }, {
-      password: derivedKey,
-      salt
-    })
-      .then(() => {
-        res
-          .status(201)
-          .json({ status: setStatus(req, 0, 'Password changed') })
-      })
-      .catch(() => {
-        res
-          .status(500)
-          .json({ status: setStatus(req, 500, 'Internal server error') })
-      })
-  })
 }
