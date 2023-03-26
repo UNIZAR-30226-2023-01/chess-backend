@@ -18,7 +18,6 @@ import server from '@server'
 dotenv.config()
 require('@auth/passport')
 require('@auth/passportGoogle')
-console.log('process.env.NODE_ENV', process.env.NODE_ENV)
 
 const app = express()
 app.use(express.json())
@@ -55,7 +54,7 @@ app.listen(PORT, () => {
 })
 
 app.use('/api/v1', stamp)
-app.use('/api/v1', indexRouter)
+app.use('/api/v1/health', indexRouter)
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', usersRouter)
 app.use('/api/v1/history', historyRouter)

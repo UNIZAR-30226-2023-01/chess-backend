@@ -2,20 +2,22 @@ import express from 'express'
 import * as authCtrl from '@controllers/auth'
 import * as userMiddleware from '@middlewares/user'
 import passport from 'passport'
+import { validateBody } from '@middlewares/parser'
+import { signIn, signUp, forgotPassword, resetPassword } from '@schemas/auth'
 
 const router = express.Router()
 
 const SUCCESS_REDIRECT = process.env.SUCCESS_REDIRECT ?? 'http://localhost:3000/login?success=true'
 const FAILURE_REDIRECT = process.env.FAILURE_REDIRECT ?? 'http://localhost:3000/login?success=false'
 
-router.post('/sign-in', authCtrl.signIn)
-router.post('/sign-up', authCtrl.signUp)
+router.post('/sign-in', validateBody(signIn), authCtrl.signIn)
+router.post('/sign-up', validateBody(signUp), authCtrl.signUp)
 router.post('/sign-out', userMiddleware.isAuthenticated, authCtrl.signOut)
 router.post('/verify', userMiddleware.isAuthenticated, authCtrl.verify)
 
-router.post('/forgot-password', authCtrl.forgotPassword)
-router.get('/reset-password/:id/:token', authCtrl.resetPassword)
-router.post('/reset-password/:id/:token', authCtrl.changePassword)
+router.post('/forgot-password', validateBody(forgotPassword), authCtrl.forgotPassword)
+router.get('/reset-password/:id/:token', validateBody(forgotPassword), authCtrl.resetPassword)
+router.post('/reset-password/:id/:token', validateBody(resetPassword), authCtrl.changePassword)
 
 router.get('/sign-in/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
 router.get('/auth/google/callback', passport.authenticate('google', {
