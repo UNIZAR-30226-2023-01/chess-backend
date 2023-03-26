@@ -18,7 +18,7 @@ For developers eager to hit the ground running with the Reign API here are a few
 2. **Sign in to gain access.** Once you register and confirm your account you'll have all the API endpoints at your disposal. remember that some require authentication and to access them you will need to log in.
 3. **Make a test call using your key.** You can use the code examples below to perform a test call with the programming language of your choice. This example makes a ping call to test the connection to the protected endpoints.
 Be sure to replace the API Key in sample code with your own and use API domain api.gracehopper.xyz.
-4. **Postman Collection** To help with development, we provide a fully featured postman collection that you can import and use immediately! Read more here.
+4. **Postman Collection** To help with development, we provide a fully featured postman collection that you can import and use immediately! You can download it [here](https://www.postman.com/downloads/). After you set up Postman, you can import Reign's latest Postman collection by adding this URL: https://api.postman.com/collections/17239372-07f36979-473f-4f23-b168-648841a32ce1?access_key=PMAT-01GWC18AT2XR4XVW5C87NCRAVZ in the import collection secction in your main page inside postman
 5. **Implement your application.** Now that you've confirmed your API Key is working, get familiar with the API by reading the rest of this API Reference and commence building your application!
 
 ***Note:** Making HTTP requests on the client side with Javascript is currently prohibited through CORS configuration. This is to protect your API Key which should not be visible to users of your application so your API Key is not stolen. Secure your API Key by routing calls through your own backend service.*
@@ -76,12 +76,11 @@ Most HTTP requests made against the Reign API must be validated with an API Key.
 
 <h2>Using Your API Key</h2>
 
-You may use any server side programming language that can make HTTP requests to target the Reign API. All requests should target domain https://api.gracehopper.xyz.
+You may use any server side programming language that can make HTTP requests to target the Reign API. All requests should target domain https://api.gracehopper.xyz. 
 
 You can supply your API Key in REST API calls in one of two ways:
-
-- Preferred method: Via a cookie named `api-auth`
-- Convenience method: Via a custom header named `X-REIGN_API_KEY`
+- **Preferred method:** Via a cookie named `api-auth`
+- **Convenience method:** Via a custom header named `X-REIGN_API_KEY`
 
 ***Security Warning:** It's important to secure your API Key against public access. The cookie option is strongly recommended over the custom header option for passing your API Key in a production environment.*
 
