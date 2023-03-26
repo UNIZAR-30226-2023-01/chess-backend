@@ -48,9 +48,9 @@ servers:
     description: Production server (WS API)
   
 paths:
-  /ping:
+  /health/ping:
     $ref: 'paths/ping/ping.yaml'
-  /secure-ping:
+  /health/secure-ping:
     $ref: 'paths/ping/securePing.yaml'
   /auth/sign-up:
     $ref: 'paths/auth/signUp.yaml'

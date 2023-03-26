@@ -13,10 +13,10 @@ const client = {
   password: 'qwerty123'
 }
 
-describe('GET /api/v1/ping', () => {
+describe('GET /api/v1/health/ping', () => {
   it('El servidor hace pong', async () => {
     const response = await request(app)
-      .get('/api/v1/ping')
+      .get('/api/v1/health/ping')
       .expect('Content-Type', /json/)
       .expect(200)
 
@@ -34,7 +34,7 @@ describe('GET /api/v1/ping', () => {
 describe('GET /api/v1/health/secure-ping', () => {
   it('El servidor hace pong', async () => {
     await request(app)
-      .post('/api/v1/auth/health/sign-up')
+      .post('/api/v1/auth/sign-up')
       .send(newClient)
       .expect(201)
       .then(async _ => {
@@ -44,7 +44,7 @@ describe('GET /api/v1/health/secure-ping', () => {
           .expect(200)
           .then(async res => {
             const response = await request(app)
-              .get('/api/v1/secure-ping')
+              .get('/api/v1/health/secure-ping')
               .set('Cookie', res.headers['set-cookie'])
               .expect('Content-Type', /json/)
               .expect(200)
@@ -63,7 +63,7 @@ describe('GET /api/v1/health/secure-ping', () => {
 
   it('El usuario no tiene permiso', async () => {
     await request(app)
-      .get('/api/v1/secure-ping')
+      .get('/api/v1/health/secure-ping')
       .expect(401)
   })
 })
