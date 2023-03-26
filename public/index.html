@@ -7,21 +7,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet" />
-
-  <!-- Redoc doesn't change outer page styles -->
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-    }
-
-  </style>
-
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
-  <!-- Redoc element with link to your OpenAPI definition -->
-  <redoc spec-url="openapi.yaml"></redoc>
+<body class="h-screen relative flex flex-col overflow-hidden">
+  <nav class="w-full flex items-center justify-between px-6 lg:px-8 py-4 sticky top-0 z-50 bg-white"
+    aria-label="Global">
+    <div class="flex flex-1">
+      <a href="https://reign.gracehopper.xyz" class="-m-1.5 p-1.5">
+        <img class="h-12" src="./logo-w.png" alt="logo white" />
+      </a>
+    </div>
+    <div class="flex flex-1 justify-end">
+      <a href="https://reign.gracehopper.xyz/auth/login" class="text-sm font-semibold leading-6 text-gray-900">
+        Entrar <span aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+  </nav>
+  <div class="h-full relative overflow-y-auto">
+    <!-- Redoc element with link to your OpenAPI definition -->
+    <redoc class="absolute top-0 left-0 max-w-full" spec-url="openapi.yaml"></redoc>
+  </div>
   <!-- Link to Redoc JavaScript on CDN for rendering standalone element -->
   <script crossorigin="anonymous" src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
 

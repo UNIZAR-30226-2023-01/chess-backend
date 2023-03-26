@@ -64,7 +64,11 @@ waitForElements().then(() => {
   }
   */
 
+  // Remove Redocly Footer
+  const redoclyFooter = document.getElementsByClassName('sc-kYPZxB')[0];
+  redoclyFooter.hidden = true;
+
   // Remove Redocly Sidebar
-  const redoclySidebar = document.getElementsByClassName('sc-kYPZxB')[0];
-  redoclySidebar.hidden = true;
+  const redoclySidebar = document.getElementsByClassName('menu-content')[0]
+  redoclySidebar.style.cssText = 'padding: 25px 0 100px 0; position: sticky; top: 0; z-index: 50;'
 })

@@ -4,7 +4,7 @@ get:
     - url: 'https://api.gracehopper.xyz/api/v1'
   tags:
     - History
-  summary: History
+  summary: All Games
   description: Returns information concerning all games that have been played until now.
   operationId: getAllHistory
   security: []
