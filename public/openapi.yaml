@@ -83,6 +83,8 @@ paths:
   /tournaments/leave/{id}:
     $ref: paths/tournaments/leaveTournaments.yaml
 webhooks:
+  heartbeat:
+    $ref: paths/webhooks/heartbeat.yaml
   findRoom:
     $ref: paths/webhooks/findRoom.yaml
   joinRoom:
