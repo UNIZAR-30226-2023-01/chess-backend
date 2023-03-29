@@ -3,8 +3,8 @@ import * as match from '@controllers/game/match-game'
 import * as competitive from '@controllers/game/competitive-game'
 import * as ai from '@controllers/game/ai-game'
 import * as custom from '@controllers/game/custom-game'
-import * as gameCtl from '@lib/game'
-import * as roomCtl from '@lib/room'
+import * as gameLib from '@lib/game'
+import * as roomLib from '@lib/room'
 import { FindRoomMsg, MoveMsg } from '@lib/types/socket-msg'
 import { GameType } from '@lib/types/game'
 
@@ -20,7 +20,7 @@ export const move = async (
   io: Server,
   data: MoveMsg
 ): Promise<void> => {
-  const roomID = roomCtl.getGameRoom(socket)
+  const roomID = roomLib.getGameRoom(socket)
   if (!roomID) {
     socket.emit('error', 'This socket is not playing any game')
     return
@@ -32,7 +32,7 @@ export const move = async (
     return
   }
 
-  const game = await gameCtl.getGame(roomID)
+  const game = await gameLib.getGame(roomID)
   if (!game) {
     socket.emit('error', `No game with roomID: ${roomID}`)
     return
@@ -53,13 +53,13 @@ export const surrender = async (
   socket: Socket,
   io: Server
 ): Promise<void> => {
-  const roomID = roomCtl.getGameRoom(socket)
+  const roomID = roomLib.getGameRoom(socket)
   if (!roomID) {
     socket.emit('error', 'This socket is not playing any game')
     return
   }
 
-  const game = await gameCtl.getGame(roomID)
+  const game = await gameLib.getGame(roomID)
   if (!game) {
     socket.emit('error', `No game with roomID: ${roomID}`)
     return
@@ -79,13 +79,13 @@ export const voteDraw = async (
   socket: Socket,
   io: Server
 ): Promise<void> => {
-  const roomID = roomCtl.getGameRoom(socket)
+  const roomID = roomLib.getGameRoom(socket)
   if (!roomID) {
     socket.emit('error', 'This socket is not playing any game')
     return
   }
 
-  const game = await gameCtl.getGame(roomID)
+  const game = await gameLib.getGame(roomID)
   if (!game) {
     socket.emit('error', `No game with roomID: ${roomID}`)
     return
@@ -113,7 +113,7 @@ export const findRoom = async (
 ): Promise<void> => {
   console.log('ROOMSS: ', socket.rooms)
 
-  if (gameCtl.isSocketInGame(socket)) {
+  if (gameLib.isSocketInGame(socket)) {
     socket.emit('error', 'This socket is already playing or in queue')
     return
   }

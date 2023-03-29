@@ -5,7 +5,7 @@ import { chessTimers } from '@lib/timer'
 import { FindRoomMsg, FoundRoomMsg, GameOverMsg } from '@lib/types/socket-msg'
 import { GameModel } from '@models/game'
 import { composeLock, compose, ResourceName } from '@lib/namespaces'
-import * as roomCtl from '@lib/room'
+import * as roomLib from '@lib/room'
 
 // 2 minutes after a game is over, it is deleted from redis
 export const GAME_OVER_TTL = 2 * 60
@@ -266,7 +266,7 @@ export const updateGameTimer = (
 }
 
 export const isSocketInGame = (socket: Socket): boolean => {
-  return roomCtl.getGameRoom(socket) !== null
+  return roomLib.getGameRoom(socket) !== null
 }
 
 export const createFoundRoomMsg = (

@@ -1,4 +1,4 @@
-import * as gameCtl from '@lib/game'
+import * as gameLib from '@lib/game'
 import { FindRoomMsg } from '@lib/types/socket-msg'
 import { Server, Socket } from 'socket.io'
 import * as roomGen from '@lib/room'
@@ -16,7 +16,7 @@ export const findGame = async (
     return
   }
 
-  const check = gameCtl.checkRoomCreationMsg(data)
+  const check = gameLib.checkRoomCreationMsg(data)
   if (check.error) {
     socket.emit('error', check.error)
     return
@@ -79,7 +79,7 @@ const createGame = async (
   }
 
   console.log(game)
-  await gameCtl.setGame(roomID, game)
+  await gameLib.setGame(roomID, game)
 
   await socket.join(roomID)
 
@@ -93,7 +93,7 @@ const joinGame = async (
 ): Promise<void> => {
   let darkSocket: Socket, lightSocket: Socket
 
-  const game = await gameCtl.getGame(roomID, async (game) => {
+  const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) {
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
@@ -136,13 +136,13 @@ const joinGame = async (
     game.light = (await UserModel.findById(lightId))
       ?.username ?? ReservedUsernames.GUEST_USER
 
-    await gameCtl.setGame(roomID, game)
+    await gameLib.setGame(roomID, game)
     return game
   })
   if (!game) return
 
-  const resDark = gameCtl.createFoundRoomMsg(game.darkSocketId, roomID, game)
-  const resLight = gameCtl.createFoundRoomMsg(game.lightSocketId, roomID, game)
+  const resDark = gameLib.createFoundRoomMsg(game.darkSocketId, roomID, game)
+  const resLight = gameLib.createFoundRoomMsg(game.lightSocketId, roomID, game)
 
   io.to(game.darkSocketId).emit('room', resDark)
   io.to(game.lightSocketId).emit('room', resLight)
@@ -155,7 +155,7 @@ const joinGame = async (
     const gameTimer = new ChessTimer(
       game.initialTimer * 1000,
       game.timerIncrement * 1000,
-      gameCtl.timeoutProtocol(io, roomID)
+      gameLib.timeoutProtocol(io, roomID)
     )
 
     chessTimers.set(roomID, gameTimer)

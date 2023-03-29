@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io'
-import * as gameCtl from '@lib/game'
-import * as roomCtl from '@lib/room'
+import * as gameLib from '@lib/game'
+import * as roomLib from '@lib/room'
 const _ = require('lodash')
 
 interface RoomMessage {
@@ -12,18 +12,18 @@ const gameState = async (
   roomID: string,
   join?: boolean
 ): Promise<boolean> => {
-  const game = await gameCtl.getGame(roomID, async (game) => {
+  const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) {
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
     }
 
-    if (!gameCtl.isGameStarted(game)) {
+    if (!gameLib.isGameStarted(game)) {
       socket.emit('error', 'This game has not started yet')
       return
     }
 
-    if (!gameCtl.updateGameTimer(roomID, game)) {
+    if (!gameLib.updateGameTimer(roomID, game)) {
       socket.emit('error', 'Internal server error')
       return
     }
@@ -32,12 +32,12 @@ const gameState = async (
       game.spectators.push(socket.data.username)
     }
 
-    await gameCtl.setGame(roomID, game)
+    await gameLib.setGame(roomID, game)
     return game
   })
   if (!game) return false
 
-  socket.emit('room', gameCtl.filterGameState(game))
+  socket.emit('room', gameLib.filterGameState(game))
   return true
 }
 
@@ -57,7 +57,7 @@ export const joinRoom = async (
     return
   }
 
-  if (gameCtl.isSocketInGame(socket)) {
+  if (gameLib.isSocketInGame(socket)) {
     socket.emit('error', 'You have already joined a room')
     return
   }
@@ -73,24 +73,24 @@ export const joinRoom = async (
 export const leaveRoom = async (
   socket: Socket
 ): Promise<void> => {
-  const roomID = roomCtl.getGameRoom(socket)
+  const roomID = roomLib.getGameRoom(socket)
   if (!roomID) {
     socket.emit('error', 'This socket is not watching any game')
     return
   }
 
-  const game = await gameCtl.getGame(roomID, async (game) => {
+  const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) { // TODO: Internal server error
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
     }
 
-    if (gameCtl.isPlayerOfGame(socket, game)) {
+    if (gameLib.isPlayerOfGame(socket, game)) {
       socket.emit('error', 'Players cannot leave a room')
       return
     }
 
-    if (!gameCtl.updateGameTimer(roomID, game)) {
+    if (!gameLib.updateGameTimer(roomID, game)) {
       socket.emit('error', 'Internal server error')
       return
     }
@@ -102,7 +102,7 @@ export const leaveRoom = async (
       )]
     )
 
-    await gameCtl.setGame(roomID, game)
+    await gameLib.setGame(roomID, game)
     return game
   })
   if (!game) return

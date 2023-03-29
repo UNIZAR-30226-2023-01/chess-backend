@@ -13,13 +13,6 @@ export enum GameType {
   TOURNAMENT = 'TOURNAMENT'
 }
 
-/*
-export enum NewGameType {
-  CREATE_CUSTOM = 'CREATE_CUSTOM',
-  JOIN_CUSTOM = 'JOIN_CUSTOM'
-}
-*/
-
 export enum PlayerColor {
   LIGHT = 'LIGHT',
   DARK = 'DARK'
@@ -29,7 +22,8 @@ export enum EndState {
   CHECKMATE = 'CHECKMATE',
   DRAW = 'DRAW',
   TIMEOUT = 'TIMEOUT',
-  SURRENDER = 'SURRENDER'
+  SURRENDER = 'SURRENDER',
+  DISCONNECTION = 'DISCONNECTION'
 }
 
 /**
