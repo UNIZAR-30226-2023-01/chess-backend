@@ -10,7 +10,7 @@ import { parseUser } from '@lib/parsers'
 export const signUp = (req: Request, res: Response): void => {
   const salt = randomBytes(16)
   pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
-    if (err != null) return res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
+    if (err) return res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
 
     return UserModel.create({
       username: req.body.username,
@@ -41,7 +41,8 @@ export const signUp = (req: Request, res: Response): void => {
 
 export const signIn = (req: Request, res: Response): void => {
   const { username = undefined, email = undefined } = req.body
-  UserModel.findOne({ $or: [{ username }, { email }] })
+  const filter = username ? { username } : { email }
+  UserModel.findOne(filter)
     .then((user) => {
       if (!user) {
         return res
