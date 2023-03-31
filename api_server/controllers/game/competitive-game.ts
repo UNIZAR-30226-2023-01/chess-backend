@@ -1,7 +1,7 @@
 import { Server, Socket } from 'socket.io'
 import * as matchmaking from '@lib/matchmaking'
 import { chessTimers, ChessTimer } from '@lib/timer'
-import * as gameCtl from '@lib/game'
+import * as gameLib from '@lib/game'
 import { FindRoomMsg } from '@lib/types/socket-msg'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 import { Types } from 'mongoose'
@@ -100,10 +100,10 @@ export const findGame = async (
   console.log(game)
 
   const roomID = match.roomID.toString()
-  await gameCtl.setGame(roomID, game)
+  await gameLib.setGame(roomID, game)
 
-  const res1 = gameCtl.createFoundRoomMsg(match.socket1, roomID, game)
-  const res2 = gameCtl.createFoundRoomMsg(match.socket2, roomID, game)
+  const res1 = gameLib.createFoundRoomMsg(match.socket1, roomID, game)
+  const res2 = gameLib.createFoundRoomMsg(match.socket2, roomID, game)
 
   io.to(match.socket1).emit('room', res1)
   io.to(match.socket2).emit('room', res2)
@@ -111,7 +111,7 @@ export const findGame = async (
   const gameTimer = new ChessTimer(
     data.time * 1000,
     increment * 1000,
-    gameCtl.timeoutProtocol(io, roomID)
+    gameLib.timeoutProtocol(io, roomID)
   )
 
   chessTimers.set(match.roomID, gameTimer)
