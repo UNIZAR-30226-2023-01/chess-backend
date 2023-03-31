@@ -18,6 +18,9 @@ properties:
   google:
     type: boolean
     description: Denotes whether the account is associated with google.
+  verified:
+    type: boolean
+    description: Denotes whether the account is verified or not.
   createdAt:
     type: string
     format: date

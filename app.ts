@@ -8,7 +8,7 @@ import { stamp } from '@middlewares/timestamp'
 import indexRouter from '@routes/index'
 import authRouter from '@routes/auth'
 import usersRouter from '@routes/users'
-import historyRouter from '@routes/history'
+import gameRouter from '@routes/games'
 import tournamentsRouter from '@routes/tournaments'
 import cors from 'cors'
 import * as dotenv from 'dotenv'
@@ -59,7 +59,7 @@ app.use('/v1', stamp)
 app.use('/v1/health', indexRouter)
 app.use('/v1/auth', authRouter)
 app.use('/v1/users', usersRouter)
-app.use('/v1/history', historyRouter)
+app.use('/v1/games', gameRouter)
 app.use('/v1/tournaments', tournamentsRouter)
 
 server.listen(Number(PORT) + 1, () => {

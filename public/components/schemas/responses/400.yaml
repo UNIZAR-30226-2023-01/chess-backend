@@ -1,0 +1,26 @@
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        status:
+          type: object
+          description: Standardized status object for API calls.
+          properties: 
+            timestamp:
+              type: string
+              format: date
+              example: 2023-03-30T17:24:17.230Z
+              description: Current timestamp (ISO 8601) on the server.
+            error_code:
+              type: integer
+              example: 400
+              description: An internal error code for the current error. If a unique platform error code is not available the HTTP status code is returned. null is returned if there is no error.
+            error_message:
+              type: string
+              example: Bad Request
+              description: An error message to go along with the error code.
+            elapsed:
+              type: number
+              example: 1
+              description: Number of milliseconds taken to generate this response.

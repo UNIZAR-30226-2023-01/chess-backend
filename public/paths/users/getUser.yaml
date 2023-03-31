@@ -7,7 +7,8 @@ get:
   summary: Get User
   description: Retrieves information from a single user
   operationId: getUser
-  security: []
+  security:
+    - api_key: []
   parameters:
     - in: path
       name: id
@@ -17,7 +18,7 @@ get:
       description: ID of the user to get
   responses:
     200:
-      description: Authorized
+      description: Successful
       content:
         application/json:
           schema:
@@ -32,43 +33,45 @@ get:
               summary: ""
               value:
                 data:
-                  id: 507f1f77bcf86cd799439011
-                  avatar: "https://api.gracehopper.xyz/..."
+                  id: 6427012084270ee46cd8300c
+                  avatar: "https://api.gracehopper.xyz/assets/avatar"
                   username: johndoe
                   email: "johndoe@example.com"
                   google: true
-                  createdAt: 2023-02-18T14:51:41.370Z
-                  updatedAt: 2023-02-18T14:51:41.370Z
+                  verified: false
+                  games: https://api.gracehopper.xyz/v1/games?userId=6427012084270ee46cd8300c
+                  elo: 800
+                  skins: 
+                    board: wood
+                    lightPieces: classic
+                    darkPieces: classic
+                  availableSkins: []
                   stats: 
                     bulletWins: 0
+                    bulletDraws: 0
                     bulletDefeats: 0
                     blitzWins: 0
+                    blitzDraws: 0
                     blitzDefeats: 0
                     fastWins: 0
+                    fastDraws: 0
                     fastDefeats: 0
+                  createdAt: 2023-03-30T17:24:17.230Z
+                  updatedAt: 2023-03-30T17:24:17.230Z
                 status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 200
-                  error_message: ""
+                  timestamp: 2023-03-30T17:24:17.230Z
+                  error_code: 0
+                  error_message: "Successful"
                   elapsed: 0
     401:
       description: Unauthorized
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                $ref: '../../components/schemas/status.yaml'
-          examples:
-            example:
-              summary: ""
-              value:
-                status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 401
-                  error_message: ""
-                  elapsed: 0
+      $ref: '../../components/schemas/responses/401.yaml'
+    429:
+      description: Too Many Request
+      $ref: '../../components/schemas/responses/429.yaml'
+    500:
+      description: Internal server error
+      $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
       source: ""
@@ -100,7 +103,7 @@ patch:
             avatar:
               type: string
               format: url 
-              example: https://api.gracehopper.xyz/...
+              example: https://api.gracehopper.xyz/assets/avatar2
               description: New address of the user's profile image.
             username: 
               type: string
@@ -112,15 +115,19 @@ patch:
               example: johndoe@example.com
               uniqueItems: true
               description: New email address for a user.
-            google:
-              type: boolean
-              example: false 
-              description: Change the google link status
-            password: 
+            board:
               type: string
-              format: password
-              example: qwerty
-              description: New Password
+              example: wood
+              description: Equipped game board.
+            lightPieces:
+              type: string
+              example: classic 
+              description: Light-equipped chess pieces.
+            darkPieces:
+              type: string
+              example: classic 
+              description: Dark-equipped chess pieces.
+
   responses:
     200:
       description: Authorized
@@ -130,7 +137,7 @@ patch:
             type: object
             properties:
               data:
-                $ref: "../../components/schemas/user.yaml"
+                $ref: "../../components/schemas/user_detail.yaml"
               status:
                 $ref: "../../components/schemas/status.yaml"
           examples:
@@ -138,36 +145,51 @@ patch:
               summary: ""
               value:
                 data:
-                  id: 507f1f77bcf86cd799439011
-                  avatar: "https://api.gracehopper.xyz/..."
+                  id: 6427012084270ee46cd8300c
+                  avatar: "https://api.gracehopper.xyz/assets/avatar"
                   username: johndoe
                   email: "johndoe@example.com"
                   google: true
-                  createdAt: 2023-02-18T14:51:41.370Z
-                  updatedAt: 2023-02-18T14:51:41.370Z
+                  verified: false
+                  games: https://api.gracehopper.xyz/v1/games?userId=6427012084270ee46cd8300c
+                  elo: 800
+                  skins: 
+                    board: wood
+                    lightPieces: classic
+                    darkPieces: classic
+                  availableSkins: []
+                  stats: 
+                    bulletWins: 0
+                    bulletDraws: 0
+                    bulletDefeats: 0
+                    blitzWins: 0
+                    blitzDraws: 0
+                    blitzDefeats: 0
+                    fastWins: 0
+                    fastDraws: 0
+                    fastDefeats: 0
+                  createdAt: 2023-03-30T17:24:17.230Z
+                  updatedAt: 2023-03-30T17:24:17.230Z
                 status:
-                  timestamp: 2023-02-18T14:51:41.370Z
+                  timestamp: 2023-03-30T17:24:17.230Z
                   error_code: 200
                   error_message: ""
                   elapsed: 0
+    400:
+      description: Bad Request
+      $ref: '../../components/schemas/responses/400.yaml'
     401:
       description: Unauthorized
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                $ref: '../../components/schemas/status.yaml'
-          examples:
-            example:
-              summary: ""
-              value:
-                status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 401
-                  error_message: ""
-                  elapsed: 0
+      $ref: '../../components/schemas/responses/401.yaml'
+    404:
+      description: Not Found
+      $ref: '../../components/schemas/responses/404.yaml'
+    429:
+      description: Too Many Request
+      $ref: '../../components/schemas/responses/429.yaml'
+    500:
+      description: Internal server error
+      $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
       source: ""
@@ -192,41 +214,20 @@ delete:
       description: ID of the user to get
   responses:
     200:
-      description: Authorized
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                $ref: '../../components/schemas/status.yaml'
-          examples:
-            example:
-              summary: ""
-              value:
-                status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 200
-                  error_message: ""
-                  elapsed: 0
+      description: Successful
+      $ref: '../../components/schemas/responses/200.yaml'
+    400:
+      description: Bad Request
+      $ref: '../../components/schemas/responses/400.yaml'
     401:
       description: Unauthorized
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                $ref: '../../components/schemas/status.yaml'
-          examples:
-            example:
-              summary: ""
-              value:
-                status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 401
-                  error_message: ""
-                  elapsed: 0
+      $ref: '../../components/schemas/responses/401.yaml'
+    429:
+      description: Too Many Request
+      $ref: '../../components/schemas/responses/429.yaml'
+    500:
+      description: Internal server error
+      $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
       source: ""

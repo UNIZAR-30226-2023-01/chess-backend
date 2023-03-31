@@ -5,6 +5,10 @@ properties:
     type: integer
     default: 0
     description: number of 1-minute games won
+  bulletDraws:
+    type: integer
+    default: 0
+    description: number of drawn 1-minute matches
   bulletDefeats:
     type: integer
     default: 0
@@ -13,6 +17,10 @@ properties:
     type: integer
     default: 0
     description: number of 3-minute games won
+  blitzDraws:
+    type: integer
+    default: 0
+    description: number of drawn 3-minute matches
   blitzDefeats:
     type: integer
     default: 0
@@ -21,6 +29,10 @@ properties:
     type: integer
     default: 0
     description: number of 5-minute games won
+  fastDraws:
+    type: integer
+    default: 0
+    description: number of drawn 5-minute matches
   fastDefeats:
     type: integer
     default: 0

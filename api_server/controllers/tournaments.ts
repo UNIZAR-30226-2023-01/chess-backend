@@ -9,15 +9,10 @@ export const create = (req: Request, res: Response): void => {
         .status(201)
         .json({
           data: user.toJSON(),
-          status: setStatus(req, 0, 'Tournament created successfully')
+          status: setStatus(req, 0, 'Successful')
         })
     })
-    .catch((err: Error) => {
-      if (err.message.includes('duplicate key')) {
-        return res
-          .status(409)
-          .json({ status: setStatus(req, 409, 'Tournament already exists') })
-      }
+    .catch((_err: Error) => {
       return res
         .status(500)
         .json({ status: setStatus(req, 500, 'Internal server error') })
@@ -29,7 +24,7 @@ export const getAll = (req: Request, res: Response): void => {
     .status(200)
     .json({
       ...res.locals,
-      status: setStatus(req, 0, 'OK')
+      status: setStatus(req, 0, 'Successful')
     })
 }
 
@@ -40,7 +35,7 @@ export const updateOne = (req: Request, res: Response): void => {
         .status(200)
         .json({
           data: tournament,
-          status: setStatus(req, 0, 'OK')
+          status: setStatus(req, 0, 'Successful')
         })
     })
     .catch(_err => {
@@ -63,7 +58,7 @@ export const getOne = (req: Request, res: Response): void => {
         .status(200)
         .json({
           data: tournament,
-          status: setStatus(req, 0, 'OK')
+          status: setStatus(req, 0, 'Successful')
         })
     })
     .catch(_err => {
@@ -79,7 +74,7 @@ export const deleteOne = (req: Request, res: Response): void => {
       res
         .status(200)
         .json({
-          status: setStatus(req, 0, 'OK')
+          status: setStatus(req, 0, 'Successful')
         })
     })
     .catch(_err => {

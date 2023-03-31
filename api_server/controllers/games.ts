@@ -11,7 +11,7 @@ export const getAll = (req: Request, res: Response): void => {
     .json({
       meta,
       data: data.map(parseGame),
-      status: setStatus(req, 0, 'OK')
+      status: setStatus(req, 0, 'Successful')
     })
 }
 
@@ -29,7 +29,7 @@ export const getOne = (req: Request, res: Response): void => {
         .status(200)
         .json({
           data: parseGame(game),
-          status: setStatus(req, 0, 'OK')
+          status: setStatus(req, 0, 'Successful')
         })
     })
     .catch(_err => {

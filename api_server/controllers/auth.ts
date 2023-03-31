@@ -7,6 +7,38 @@ import { setStatus } from '@lib/status'
 import { invalidateToken } from '@lib/token-blacklist'
 import { parseUser } from '@lib/parsers'
 
+export const signUp = (req: Request, res: Response): void => {
+  const salt = randomBytes(16)
+  pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
+    if (err != null) return res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
+
+    return UserModel.create({
+      username: req.body.username,
+      email: req.body.email,
+      password: derivedKey,
+      salt
+    })
+      .then((user) => {
+        res
+          .status(201)
+          .json({
+            data: parseUser(user),
+            status: setStatus(req, 0, 'Successful')
+          })
+      })
+      .catch((err: Error) => {
+        if (err.message.includes('duplicate key')) {
+          return res
+            .status(409)
+            .json({ status: setStatus(req, 409, 'Conflict') })
+        }
+        return res
+          .status(500)
+          .json({ status: setStatus(req, 500, 'Internal Server Error') })
+      })
+  })
+}
+
 export const signIn = (req: Request, res: Response): void => {
   const { username = undefined, email = undefined } = req.body
   UserModel.findOne({ $or: [{ username }, { email }] })
@@ -58,38 +90,6 @@ export const signIn = (req: Request, res: Response): void => {
     })
 }
 
-export const signUp = (req: Request, res: Response): void => {
-  const salt = randomBytes(16)
-  pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
-    if (err != null) return res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
-
-    return UserModel.create({
-      username: req.body.username,
-      email: req.body.email,
-      password: derivedKey,
-      salt
-    })
-      .then((user) => {
-        res
-          .status(201)
-          .json({
-            data: parseUser(user),
-            status: setStatus(req, 0, 'Successful')
-          })
-      })
-      .catch((err: Error) => {
-        if (err.message.includes('duplicate key')) {
-          return res
-            .status(409)
-            .json({ status: setStatus(req, 409, 'Conflict') })
-        }
-        return res
-          .status(500)
-          .json({ status: setStatus(req, 500, 'Internal server error') })
-      })
-  })
-}
-
 export const signOut = async (req: Request, res: Response): Promise<void> => {
   try {
     const authToken = req.cookies['api-auth']
@@ -101,7 +101,7 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
   } catch (err) {
     res
       .status(500)
-      .json({ status: setStatus(req, 500, 'Internal server error') })
+      .json({ status: setStatus(req, 500, 'Internal Server Error') })
   }
 }
 
@@ -137,7 +137,7 @@ export const forgotPassword = (req: Request, res: Response): void => {
     .catch(_ => {
       return res
         .status(500)
-        .json({ status: setStatus(req, 500, 'Internal server error') })
+        .json({ status: setStatus(req, 500, 'Internal Server Error') })
     })
 }
 
@@ -165,7 +165,7 @@ export const resetPassword = (req: Request, res: Response): void => {
     .catch(() => {
       return res
         .status(500)
-        .json({ status: setStatus(req, 500, 'Internal server error') })
+        .json({ status: setStatus(req, 500, 'Internal Server Error') })
     })
 }
 
@@ -178,7 +178,7 @@ export const changePassword = (req: Request, res: Response): void => {
       if (!user) {
         return res
           .status(404)
-          .json({ status: setStatus(req, 404, 'User not found') })
+          .json({ status: setStatus(req, 404, 'Not Found') })
       }
 
       const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
@@ -186,14 +186,14 @@ export const changePassword = (req: Request, res: Response): void => {
         if (err) {
           return res
             .status(401)
-            .json({ status: setStatus(req, 401, 'Invalid token') })
+            .json({ status: setStatus(req, 401, 'Unauthorized') })
         }
 
         return pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
           if (err) {
             return res
               .status(500)
-              .json({ status: setStatus(req, 500, 'Internal server error') })
+              .json({ status: setStatus(req, 500, 'Internal Server Error') })
           }
 
           return UserModel.findByIdAndUpdate({ _id: id }, {
@@ -202,20 +202,20 @@ export const changePassword = (req: Request, res: Response): void => {
           })
             .then(() => {
               return res
-                .status(201)
-                .json({ status: setStatus(req, 0, 'Password changed') })
+                .status(200)
+                .json({ status: setStatus(req, 0, 'Successful') })
             })
             .catch(() => {
               return res
                 .status(500)
-                .json({ status: setStatus(req, 500, 'Internal server error') })
+                .json({ status: setStatus(req, 500, 'Internal Server Error') })
             })
         })
       })
     })
-    .catch((err: Error) => {
+    .catch((_err: Error) => {
       return res
         .status(500)
-        .json({ status: setStatus(req, 500, err.message) })
+        .json({ status: setStatus(req, 500, 'Internal Server Error') })
     })
 }

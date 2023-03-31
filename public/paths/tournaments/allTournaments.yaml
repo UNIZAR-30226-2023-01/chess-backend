@@ -9,6 +9,17 @@ post:
   operationId: postTournaments
   security:
     - api_key: []
+  parameters:
+    - in: query
+      name: page
+      schema:
+        type: integer
+      description: Page to be consulted.
+    - in: query
+      name: limit
+      schema:
+        type: integer
+      description: Max number of results on one page.
   responses:
     200:
       description: Authorized
@@ -59,7 +70,8 @@ get:
   summary: All Tournaments
   description: Allows to query the information of all tournaments
   operationId: getAllTournament
-  security: []
+  security:
+    - api_key: []
   responses:
     200:
       description: Authorized

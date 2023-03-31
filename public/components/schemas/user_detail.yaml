@@ -18,6 +18,34 @@ properties:
   google:
     type: boolean
     description: Denotes whether the account is associated with google.
+  verified:
+    type: boolean
+    description: Denotes whether the account is verified or not.
+  games:
+    type: string
+    format: uri
+    description: URI for requesting a user's played games.
+  elo:
+    type: integer
+    description: User score.
+  skins: 
+    type: object
+    properties: 
+      board:
+        type: string
+        description: Equipped game board.
+      lightPieces:
+        type: string
+        description: Light-equipped chess pieces.
+      darkPieces:
+        type: string
+        description: Dark-equipped chess pieces.
+  availableSkins: 
+    type: array
+    items: 
+      type: string
+  stats: 
+    $ref: './stats.yaml'
   createdAt:
     type: string
     format: date
@@ -26,5 +54,3 @@ properties:
     type: string
     format: date
     description: The date and time when the user's account information was last updated.
-  stats: 
-    $ref: './stats.yaml'

@@ -11,7 +11,7 @@ export const getAll = (req: Request, res: Response): void => {
     .json({
       meta,
       data: data.map(parseExtendedUser),
-      status: setStatus(req, 0, 'OK')
+      status: setStatus(req, 0, 'Successful')
     })
 }
 
@@ -28,7 +28,7 @@ export const getOne = (req: Request, res: Response): void => {
         .status(200)
         .json({
           data: parseExtendedUser(user),
-          status: setStatus(req, 0, 'OK')
+          status: setStatus(req, 0, 'Successful')
         })
     })
     .catch(_err => {
@@ -51,7 +51,7 @@ export const updateOne = (req: Request, res: Response): void => {
         .status(200)
         .json({
           data: parseExtendedUser(user),
-          status: setStatus(req, 0, 'OK')
+          status: setStatus(req, 0, 'Successful')
         })
     })
     .catch(_err => {
@@ -67,7 +67,7 @@ export const deleteOne = (req: Request, res: Response): void => {
       res
         .status(200)
         .json({
-          status: setStatus(req, 0, 'OK')
+          status: setStatus(req, 0, 'Successful')
         })
     })
     .catch(_err => {

@@ -10,7 +10,7 @@ tags:
     description: OAuth 2.0, which stands for (open authorization), is a standard designed to allow a website or application to access resources hosted by other web applications on behalf of a user. In our case, it allows identification by the methods listed below.
   - name: User
     description: Allows to query and manipulate the user object information.
-  - name: History
+  - name: Games
     description: Allows you to query the history of games with filters by different fields.
   - name: Tournament
     description: Allows to query and manipulate the information of the tournament type objects.
@@ -29,11 +29,11 @@ x-tagGroups:
   - name: User
     tags:
       - User
-      - History
+      - Games
   - name: Tournament
     tags:
       - Tournament
-  - name: Game
+  - name: Events
     tags:
       - Room
       - Game
@@ -70,10 +70,10 @@ paths:
     $ref: paths/users/getAllUsers.yaml
   /users/{id}:
     $ref: paths/users/getUser.yaml
-  /history:
-    $ref: paths/history/getAllHistory.yaml
-  /history/{id}:
-    $ref: paths/history/getHistory.yaml
+  /games:
+    $ref: paths/games/getAllGames.yaml
+  /games/{id}:
+    $ref: paths/games/getGame.yaml
   /tournaments:
     $ref: paths/tournaments/allTournaments.yaml
   /tournaments/{id}:
