@@ -16,7 +16,7 @@ router.post('/sign-out', userMiddleware.isAuthenticated, authCtrl.signOut)
 router.post('/verify', userMiddleware.isAuthenticated, authCtrl.verify)
 
 router.post('/forgot-password', validateBody(forgotPassword), authCtrl.forgotPassword)
-router.get('/reset-password/:id/:token', validateBody(forgotPassword), authCtrl.resetPassword)
+router.get('/reset-password/:id/:token', authCtrl.resetPassword)
 router.post('/reset-password/:id/:token', validateBody(resetPassword), authCtrl.changePassword)
 
 router.get('/sign-in/google', passport.authenticate('google', { scope: ['profile', 'email'] }))

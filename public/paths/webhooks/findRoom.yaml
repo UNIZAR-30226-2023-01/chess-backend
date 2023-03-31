@@ -75,7 +75,9 @@ post:
                 description: |
                   Current state of this game's board, in FEN notation.
               moves:
-                type: string[]
+                type: array
+                items:
+                  type: string
                 description: |
                   List of all the moves executed, in long algebraic notation.
               useTimer:

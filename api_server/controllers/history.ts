@@ -1,12 +1,16 @@
 import { Request, Response } from 'express'
 import { setStatus } from '@lib/status'
 import { GameModel } from '@models/game'
+import { parseGame } from '@lib/parsers'
 
 export const getAll = (req: Request, res: Response): void => {
+  const { meta, data } = res.locals
+
   res
     .status(200)
     .json({
-      ...res.locals,
+      meta,
+      data: data.map(parseGame),
       status: setStatus(req, 0, 'OK')
     })
 }
@@ -24,7 +28,7 @@ export const getOne = (req: Request, res: Response): void => {
       return res
         .status(200)
         .json({
-          data: game,
+          data: parseGame(game),
           status: setStatus(req, 0, 'OK')
         })
     })

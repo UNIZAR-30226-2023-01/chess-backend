@@ -15,6 +15,7 @@ import * as dotenv from 'dotenv'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
 import server from '@server'
+import { Limiter, SpeedLimiter } from '@middlewares/limiters'
 dotenv.config()
 require('@auth/passport')
 require('@auth/passportGoogle')
@@ -53,12 +54,13 @@ app.listen(PORT, () => {
     .catch((err) => console.error(err))
 })
 
-app.use('/api/v1', stamp)
-app.use('/api/v1/health', indexRouter)
-app.use('/api/v1/auth', authRouter)
-app.use('/api/v1/users', usersRouter)
-app.use('/api/v1/history', historyRouter)
-app.use('/api/v1/tournaments', tournamentsRouter)
+app.use(Limiter, SpeedLimiter)
+app.use('/v1', stamp)
+app.use('/v1/health', indexRouter)
+app.use('/v1/auth', authRouter)
+app.use('/v1/users', usersRouter)
+app.use('/v1/history', historyRouter)
+app.use('/v1/tournaments', tournamentsRouter)
 
 server.listen(Number(PORT) + 1, () => {
   console.log(`Socket.IO is running → PORT ${String(Number(PORT) + 1)}`)

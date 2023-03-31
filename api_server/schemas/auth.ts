@@ -12,9 +12,14 @@ export const signIn = object().shape({
   password: string().required()
 }).test('oneOfFields', 'Only one of the "username" or "email" fields must be provided, but not both.', function (value) {
   const { username, email } = value
-  if ((username && email) ?? (!username && !email)) {
+  if ((username && email)) {
     return this.createError({
       message: 'Only one of the \'username\' or \'email\' fields must be provided, but not both.',
+      path: 'username'
+    })
+  } else if (!username && !email) {
+    return this.createError({
+      message: 'One of the \'username\' or \'email\' fields must be provided.',
       path: 'username'
     })
   }

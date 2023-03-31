@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import { UserModel } from '@models/user'
 import { setStatus } from '@lib/status'
 import { invalidateToken } from '@lib/token-blacklist'
+import { parseUser } from '@lib/parsers'
 
 export const signIn = (req: Request, res: Response): void => {
   const { username = undefined, email = undefined } = req.body
@@ -13,7 +14,7 @@ export const signIn = (req: Request, res: Response): void => {
       if (!user) {
         return res
           .status(404)
-          .json({ status: setStatus(req, 404, 'User not found') })
+          .json({ status: setStatus(req, 404, 'Not Found') })
       }
 
       const { _id: id, username, password, salt } = user
@@ -25,7 +26,7 @@ export const signIn = (req: Request, res: Response): void => {
           if (err != null || !timingSafeEqual(password, derivedKey)) {
             return res
               .status(401)
-              .json({ status: setStatus(req, 401, 'Invalid credentials') })
+              .json({ status: setStatus(req, 401, 'Unauthorized') })
           }
 
           const token = jwt.sign(
@@ -45,8 +46,8 @@ export const signIn = (req: Request, res: Response): void => {
           return res
             .status(200)
             .json({
-              data: user.toJSON(),
-              status: setStatus(req, 200, 'User logged in successfully')
+              data: parseUser(user),
+              status: setStatus(req, 0, 'Successful')
             })
         })
     })
@@ -60,7 +61,7 @@ export const signIn = (req: Request, res: Response): void => {
 export const signUp = (req: Request, res: Response): void => {
   const salt = randomBytes(16)
   pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
-    if (err != null) return res.status(500).json({ status: setStatus(req, 409, 'User already exists') })
+    if (err != null) return res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
 
     return UserModel.create({
       username: req.body.username,
@@ -72,15 +73,15 @@ export const signUp = (req: Request, res: Response): void => {
         res
           .status(201)
           .json({
-            data: user.toJSON(),
-            status: setStatus(req, 0, 'User created successfully')
+            data: parseUser(user),
+            status: setStatus(req, 0, 'Successful')
           })
       })
       .catch((err: Error) => {
         if (err.message.includes('duplicate key')) {
           return res
             .status(409)
-            .json({ status: setStatus(req, 409, 'User already exists') })
+            .json({ status: setStatus(req, 409, 'Conflict') })
         }
         return res
           .status(500)
@@ -96,18 +97,18 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
     res
       .clearCookie('api-auth')
       .status(200)
-      .json({ message: 'Good Bye!' })
+      .json({ status: setStatus(req, 0, 'Successful') })
   } catch (err) {
     res
       .status(500)
-      .json({ message: 'Internal Server Error!' })
+      .json({ status: setStatus(req, 500, 'Internal server error') })
   }
 }
 
 export const verify = (req: Request, res: Response): void => {
   res
     .status(200)
-    .json({ status: setStatus(req, 200, 'User Authorized') })
+    .json({ status: setStatus(req, 200, 'Successful') })
 }
 
 export const forgotPassword = (req: Request, res: Response): void => {
@@ -117,7 +118,7 @@ export const forgotPassword = (req: Request, res: Response): void => {
       if (!user) {
         return res
           .status(404)
-          .json({ status: setStatus(req, 404, 'User not found') })
+          .json({ status: setStatus(req, 404, 'Not Found') })
       }
 
       const { _id: id, email } = user.toJSON()
@@ -127,10 +128,10 @@ export const forgotPassword = (req: Request, res: Response): void => {
       const url = `${req.protocol}://${req.get('host') ?? req.hostname}/reset-password/${String(id)}/${token}`
 
       return res
-        .status(500)
+        .status(200)
         .json({
           data: { id, url },
-          status: setStatus(req, 200, 'OK')
+          status: setStatus(req, 0, 'Successful')
         })
     })
     .catch(_ => {
@@ -148,7 +149,7 @@ export const resetPassword = (req: Request, res: Response): void => {
       if (!user) {
         return res
           .status(404)
-          .json({ status: setStatus(req, 404, 'User not found') })
+          .json({ status: setStatus(req, 404, 'Not Found') })
       }
 
       const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
@@ -158,7 +159,7 @@ export const resetPassword = (req: Request, res: Response): void => {
         .status(200)
         .json({
           data,
-          status: setStatus(req, 200, 'OK')
+          status: setStatus(req, 0, 'Successful')
         })
     })
     .catch(() => {
@@ -189,8 +190,7 @@ export const changePassword = (req: Request, res: Response): void => {
         }
 
         return pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
-          if (err != null) {
-            console.error(err)
+          if (err) {
             return res
               .status(500)
               .json({ status: setStatus(req, 500, 'Internal server error') })

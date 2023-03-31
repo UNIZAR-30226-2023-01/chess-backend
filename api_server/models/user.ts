@@ -12,6 +12,13 @@ export interface UserDocument extends Document {
   avatar: string
   password: Buffer
   salt: Buffer
+  verified: boolean
+  elo: number
+  board: string
+  lightPieces: string
+  darkPieces: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -31,7 +38,7 @@ const userSchema = new Schema<UserDocument>({
   },
   avatar: {
     type: String,
-    required: false
+    default: 'avatar'
   },
   password: {
     type: Buffer,
@@ -40,6 +47,26 @@ const userSchema = new Schema<UserDocument>({
   salt: {
     type: Buffer,
     require: true
+  },
+  verified: {
+    type: Boolean,
+    default: false
+  },
+  elo: {
+    type: Number,
+    default: 800
+  },
+  board: {
+    type: String,
+    default: 'wood'
+  },
+  lightPieces: {
+    type: String,
+    default: 'classic'
+  },
+  darkPieces: {
+    type: String,
+    default: 'classic'
   }
 }, {
   timestamps: true
