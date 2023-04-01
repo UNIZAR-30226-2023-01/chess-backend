@@ -1,6 +1,6 @@
 import { UserModel } from '@models/user'
 
-beforeEach((done) => {
+before((done) => {
   UserModel.deleteMany({})
     .then(_ => { done() })
     .catch(err => {

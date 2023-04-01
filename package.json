@@ -39,6 +39,7 @@
     "passport-jwt": "4.0.1",
     "redlock": "^5.0.0-beta.2",
     "socket.io": "^4.6.1",
+    "socket.io-client": "^4.6.1",
     "spdy": "^4.0.2",
     "ts-standard": "^12.0.2",
     "tsconfig-paths": "^4.1.2",
