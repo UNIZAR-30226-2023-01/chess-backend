@@ -69,7 +69,7 @@ jobs:
         pwd
         echo "$CERT"
         echo "$KEY"
-        mkdir -p nginx/api.gracehopper.xyz && echo "$CERT" | xargs base64 -d > nginx/api.gracehopper.xyz/cert.pem
-        mkdir -p nginx/api.gracehopper.xyz && echo "$KEY" | xargs base64 -d > nginx/api.gracehopper.xyz/privkey.pem
+        mkdir -p nginx/api.gracehopper.xyz && echo "$CERT" | base64 -d > nginx/api.gracehopper.xyz/cert.pem
+        mkdir -p nginx/api.gracehopper.xyz && echo "$KEY" | base64 -d > nginx/api.gracehopper.xyz/privkey.pem
     - name: Test
       run: npm run test
