@@ -16,11 +16,20 @@ import passport from 'passport'
 import cookieSession from 'cookie-session'
 import server from '@server'
 import { Limiter, SpeedLimiter } from '@middlewares/limiters'
+import spdy from 'spdy'
+import fs from 'fs'
 dotenv.config()
 require('@auth/passport')
 require('@auth/passportGoogle')
 
+const options = {
+  key: fs.readFileSync('cert.key'),
+  cert: fs.readFileSync('cert.crt'),
+  protocols: ['h2', 'http/1.1']
+}
+
 const app = express()
+const httpServer = spdy.createServer(options, app)
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -47,7 +56,7 @@ app.use(passport.session())
 app.use(express.static(path.join(__dirname, 'public')))
 
 const PORT = process.env.PORT ?? 4000
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server is running → PORT ${String(PORT)}`)
   connectDB()
     .then(() => console.log('MongoDB has been connected'))
