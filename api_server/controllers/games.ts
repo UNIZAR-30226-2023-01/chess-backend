@@ -22,7 +22,7 @@ export const getOne = (req: Request, res: Response): void => {
       if (!game) {
         return res
           .status(404)
-          .json(setStatus(req, 404, 'Not Found'))
+          .json({ status: setStatus(req, 404, 'Not Found') })
       }
 
       return res
@@ -35,6 +35,6 @@ export const getOne = (req: Request, res: Response): void => {
     .catch(_err => {
       return res
         .status(500)
-        .json(setStatus(req, 500, 'Internal Server Error'))
+        .json({ status: setStatus(req, 500, 'Internal Server Error') })
     })
 }
