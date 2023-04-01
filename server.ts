@@ -32,9 +32,9 @@ function onConnection (socket: Socket): void {
   socket.on('vote_draw', gameCtl.voteDraw.bind(null, socket, io))
 
   socket.on('disconnect', disconnectionCtl.disconnect.bind(null, socket, io))
-  socket.on('heartbeat', () => {})
-  socket.onAny(disconnectionCtl.heartbeat.bind(null, socket, io))
-  disconnectionCtl.heartbeat.bind(null, socket, io)()
+  // socket.on('heartbeat', () => {})
+  // socket.onAny(disconnectionCtl.heartbeat.bind(null, socket, io))
+  // disconnectionCtl.heartbeat.bind(null, socket, io)()
 }
 
 io.on('connection', onConnection)

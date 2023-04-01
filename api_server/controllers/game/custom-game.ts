@@ -83,7 +83,7 @@ const createGame = async (
 
   await socket.join(roomID)
 
-  socket.emit('room', { roomID })
+  socket.emit('room_created', { roomID })
 }
 
 const joinGame = async (
