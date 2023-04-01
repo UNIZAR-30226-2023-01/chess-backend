@@ -21,7 +21,7 @@ export const getOne = (req: Request, res: Response): void => {
       if (!user) {
         return res
           .status(404)
-          .json(setStatus(req, 404, 'Not Found'))
+          .json({ status: setStatus(req, 404, 'Not Found') })
       }
 
       return res
@@ -44,7 +44,7 @@ export const updateOne = (req: Request, res: Response): void => {
       if (!user) {
         return res
           .status(404)
-          .json(setStatus(req, 404, 'Not Found'))
+          .json({ status: setStatus(req, 404, 'Not Found') })
       }
 
       return res
@@ -63,14 +63,21 @@ export const updateOne = (req: Request, res: Response): void => {
 
 export const deleteOne = (req: Request, res: Response): void => {
   UserModel.findByIdAndDelete(req.params.id, req.body)
-    .then(_ => {
-      res
+    .then(user => {
+      if (!user) {
+        return res
+          .status(404)
+          .json({ status: setStatus(req, 404, 'Not Found') })
+      }
+
+      return res
         .status(200)
         .json({
           status: setStatus(req, 0, 'Successful')
         })
     })
-    .catch(_err => {
+    .catch(err => {
+      console.log(err)
       res
         .status(500)
         .json({ status: setStatus(req, 500, 'Internal Server Error') })

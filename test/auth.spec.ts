@@ -144,9 +144,6 @@ describe('POST /v1/auth/reset-password', () => {
         const lastIndex = url.lastIndexOf('/')
         const token = url.substring(Number(lastIndex) + 1)
 
-        console.log('id', data.id)
-        console.log('token', token)
-
         await request(app)
           .get(`/v1/auth/reset-password/${String(data.id)}/${String(token)}`)
           .expect(200)
