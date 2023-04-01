@@ -9,10 +9,10 @@ import { parseUser } from '@lib/parsers'
 
 export const signUp = (req: Request, res: Response): void => {
   const salt = randomBytes(16)
-  pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
+  pbkdf2(req.body.password, salt, 310000, 64, 'sha512', async (err, derivedKey) => {
     if (err) return res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
 
-    return UserModel.create({
+    return await UserModel.create({
       username: req.body.username,
       email: req.body.email,
       password: derivedKey,
@@ -190,14 +190,14 @@ export const changePassword = (req: Request, res: Response): void => {
             .json({ status: setStatus(req, 401, 'Unauthorized') })
         }
 
-        return pbkdf2(req.body.password, salt, 310000, 64, 'sha512', (err, derivedKey) => {
+        return pbkdf2(req.body.password, salt, 310000, 64, 'sha512', async (err, derivedKey) => {
           if (err) {
             return res
               .status(500)
               .json({ status: setStatus(req, 500, 'Internal Server Error') })
           }
 
-          return UserModel.findByIdAndUpdate({ _id: id }, {
+          return await UserModel.findByIdAndUpdate({ _id: id }, {
             password: derivedKey,
             salt
           })

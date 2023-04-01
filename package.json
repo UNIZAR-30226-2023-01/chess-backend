@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@types/chai": "4.3.4",
+    "@types/chai-http": "^4.2.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/cookie-session": "^2.0.44",
     "@types/cors": "^2.8.13",
