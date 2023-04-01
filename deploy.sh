@@ -30,33 +30,26 @@ if [ "$SERVICE_NAME" == "" ]; then
   exit 1
 fi
 
-git pull && npm install && npm run tsc
+if [ "$SERVICE_NAME" = "express" ]; then
 
-if [ "$SERVICE_NAME" == "all" ]; then
-  echo "Deploying all services"
-  echo "Cleaning up old images"
-  docker rm $(docker stop $(docker ps -a -q --filter ancestor=${EXPRESS_SERVER} --format='{{.ID}}')) >/dev/null 2>&1 && docker rmi ${EXPRESS_SERVER} >/dev/null 2>&1
-  docker rm $(docker stop $(docker ps -a -q --filter ancestor=${PROXY_SERVER} --format='{{.ID}}')) >/dev/null 2>&1 && docker rmi ${PROXY_SERVER} >/dev/null 2>&1
-  echo "Deploying new images"
-  docker-compose up -d >/dev/null 2>&1
-else
-  if [ "$SERVICE_NAME" = "express" ]; then
-    echo "Usage: ./deploy.sh [EXPRESS_SERVER]"
-    echo "Cleaning up old image"
-    docker rm $(docker stop $(docker ps -a -q --filter ancestor=${EXPRESS_SERVER} --format="{{.ID}}")) >/dev/null 2>&1 && docker rmi chess-backend-express >/dev/null 2>&1
-    echo "Deploying new image"
-    docker-compose up -d ${SERVICE_NAME} >/dev/null 2>&1
-  elif [ "$SERVICE_NAME" = "nginx" ]; then
-    echo "Usage: ./deploy.sh [PROXY_SERVER]"
-    echo "Cleaning up old image"
-    docker rm $(docker stop $(docker ps -a -q --filter ancestor=${PROXY_SERVER} --format="{{.ID}}")) >/dev/null 2>&1 && docker rmi chess-backend-nginx >/dev/null 2>&1
-    echo "Deploying new image"
-    docker-compose up -d ${SERVICE_NAME} >/dev/null 2>&1
-  fi
+elif [ "$SERVICE_NAME" = "nginx" ]; then
+  # Detener y eliminar el contenedor actual
+  docker stop chess-backend-express
+  docker rm chess-backend-express
+
+  # Limpiar el sistema de contenedores basura
+  docker system prune -f
+
+  # Eliminar la imagen actual
+  docker rmi chess-backend-express
+  
+  # Construir la imagen
+  docker-compose up -d nginx
+
 fi
 
 echo "Done"
 exit 0
 
 
-docker rm $(docker stop $(docker ps -a -q --filter ancestor="chess-backend-nginx" --format="{{.ID}}")) >/dev/null 2>&1 && docker rmi chess-backend-nginx >/dev/null 2>&1
+docker rm $(docker stop $(docker ps -a -q --filter ancestor=chess-backend-nginx --format="{{.ID}}")) >/dev/null 2>&1 && docker rmi chess-backend-nginx >/dev/null 2>&1

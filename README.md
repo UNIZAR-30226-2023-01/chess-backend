@@ -52,12 +52,12 @@ Compile for docker
 
 1. Crea una clave privada utilizando el siguiente comando:
 ```bash
-openssl genrsa -out cert.key 2048
+openssl genrsa -out privkey.pem 2048
 ```
 1. Crea un certificado autofirmado utilizando el siguiente comando:<br>
   Este comando generará un certificado autofirmado válido por 365 días y lo guardará en un archivo llamado "cert.crt". Durante la ejecución del comando se te solicitará que proporciones algunos datos para el certificado. Asegúrate de proporcionar el nombre de dominio correcto en el campo "Common Name".
 ```bash
-openssl req -new -x509 -key cert.key -out cert.crt -days 365
+openssl req -new -x509 -key privkey.pem -out cert.pem -days 365
 ```
 1. Verifica que el certificado SSL y la clave privada corresponden utilizando los siguientes comandos:
 ```

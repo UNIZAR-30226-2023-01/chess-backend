@@ -61,5 +61,12 @@ jobs:
         node-version: 16
     - name: Install Dependencies
       run: npm ci
+    - name: Certificates
+      env:
+        CERT: ${{ secrets.CERT }}
+        KEY: ${{ secrets.KEY }}
+      run: |
+        mkdir -p nginx/api.gracehopper.xyz && echo "$CERT" | base64 -d > nginx/api.gracehopper.xyz/cert.pem
+        mkdir -p nginx/api.gracehopper.xyz && echo "$KEY" | base64 -d > nginx/api.gracehopper.xyz/privkey.pem
     - name: Test
       run: npm run test
