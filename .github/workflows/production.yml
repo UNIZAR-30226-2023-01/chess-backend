@@ -66,6 +66,9 @@ jobs:
         CERT: ${{ secrets.CERT }}
         KEY: ${{ secrets.KEY }}
       run: |
+        pwd
+        echo "$CERT"
+        echo "$KEY"
         mkdir -p nginx/api.gracehopper.xyz && echo "$CERT" | xargs base64 -d > nginx/api.gracehopper.xyz/cert.pem
         mkdir -p nginx/api.gracehopper.xyz && echo "$KEY" | xargs base64 -d > nginx/api.gracehopper.xyz/privkey.pem
     - name: Test
