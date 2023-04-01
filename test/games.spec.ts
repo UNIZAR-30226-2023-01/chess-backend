@@ -57,7 +57,6 @@ describe('GET /v1/games/:id', () => {
           .set('Cookie', res.headers['set-cookie'])
           .expect(404)
           .then((res) => {
-            console.log(res.body)
             chai.expect(res.body).to.have.property('status')
           })
       })
