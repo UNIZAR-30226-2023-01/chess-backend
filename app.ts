@@ -22,9 +22,11 @@ dotenv.config()
 require('@auth/passport')
 require('@auth/passportGoogle')
 
+console.log(path.join(__dirname, 'nginx', 'api.gracehopper.xyz', 'cert.pem'))
+
 const options = {
-  key: fs.readFileSync('cert.key'),
-  cert: fs.readFileSync('cert.crt'),
+  key: fs.readFileSync(path.join(__dirname, 'nginx', 'api.gracehopper.xyz', 'privkey.pem')),
+  cert: fs.readFileSync(path.join(__dirname, 'nginx', 'api.gracehopper.xyz', 'cert.pem')),
   protocols: ['h2', 'http/1.1']
 }
 
