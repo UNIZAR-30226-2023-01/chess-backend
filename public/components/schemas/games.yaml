@@ -1,0 +1,95 @@
+type: object
+description: User object definition
+properties: 
+  id: 
+    type: string
+    example: 6420651a3e7d2cb2c19aa809
+    uniqueItems: true
+    description: "Unique identifier of a game."
+  lightPlayer: 
+    type: [string, null]
+    example: https://api.gracehopper.xyz/v1/users/642027a0e76140deddbae551
+    description: "URI to get player's information."
+  darkPlayer: 
+    type: [string, null]
+    example: https://api.gracehopper.xyz/v1/users/642028ede76140deddbae557
+    description: "URI to get player's information."
+  board: 
+    type: string
+    format: FEN
+    example: rnbqkbnr/pppppQpp/8/6N1/8/4P3/PPPP1PPP/RNB1KB1R b KQkq - 0 5
+    description: "Current situation of the pieces on the board."
+  moves: 
+    type: array
+    description: "String arrangement indicating the movements performed on the board, are represented in short algebraic notation (Forsyth-Edwards)."
+    items: 
+      type: string
+      format: Forsyth-Edwards
+    example:
+      - "g1f3"
+      - "g8h6"
+      - "f3g5"
+      - "h6g8"
+      - "e2e3"
+      - "b8a6"
+      - "d1h5"
+      - "a6b8"
+      - "h5f7"
+  times: 
+    type: object
+    description: "Object that contains the configuration of the game times."
+    properties: 
+      initial:
+        type: integer
+        description: "Time the game lasts in seconds."
+        example: 300
+      increment:
+        type: integer
+        description: "time to be added after performing a movement in seconds."
+        example: 0
+      lightTimer:
+        type: integer
+        description: "Light user seconds"
+        example: 292312
+      darkTimer:
+        type: integer
+        description: "Dark user seconds"
+        example: 287811
+  winner: 
+    type: [string, null]
+    description: "Indicates the winner of the game if there are."
+    example: LIGHT
+    enum: 
+      - LIGHT
+      - DARK
+  gameType: 
+    type: string
+    description: "Indicates the type of game."
+    example: COMPETITIVE
+  endState: 
+    type: string
+    description: "Indicates how a game ended."
+    example: CHECKMATE
+    enum: 
+      - 'CHECKMATE'
+      - 'DRAW'
+      - 'TIMEOUT'
+      - 'SURRENDER'
+  state: 
+    type: string
+    description: "Indicates the current status of a game."
+    enum: 
+      - 'AI'
+      - 'COMPETITIVE'
+      - 'CUSTOM'
+    example: FINISHED
+  createdAt:
+    type: string
+    format: date
+    description: "game creation's date."
+    example: 2023-03-26T15:30:34.785Z
+  updatedAt:
+    type: string
+    format: date
+    description: "date of the last update of the game."
+    example: 2023-03-26T15:30:34.785Z

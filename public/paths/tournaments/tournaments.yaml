@@ -1,13 +1,14 @@
 get:
   servers: 
-    - url: 'http://localhost:4000/api/v1'
-    - url: 'https://api.gracehopper.xyz/api/v1'
+    - url: 'http://localhost:4000/v1'
+    - url: 'https://api.gracehopper.xyz/v1'
   tags:
     - Tournament
   summary: Get Tournament
   description: Allows to consult the information of a specific tournament
   operationId: getTournament
-  security: []
+  security: 
+    - api_key: []
   parameters:
     - in: path
       name: id
@@ -58,8 +59,8 @@ get:
 
 patch: 
   servers: 
-    - url: 'http://localhost:4000/api/v1'
-    - url: 'https://api.gracehopper.xyz/api/v1'
+    - url: 'http://localhost:4000/v1'
+    - url: 'https://api.gracehopper.xyz/v1'
   tags:
     - Tournament
   summary: Edit Tournament
@@ -117,8 +118,8 @@ patch:
       
 delete:
   servers: 
-    - url: 'http://localhost:4000/api/v1'
-    - url: 'https://api.gracehopper.xyz/api/v1'
+    - url: 'http://localhost:4000/v1'
+    - url: 'https://api.gracehopper.xyz/v1'
   tags:
     - Tournament
   summary: Delete Tournament

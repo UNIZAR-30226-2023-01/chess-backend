@@ -8,18 +8,30 @@ import { stamp } from '@middlewares/timestamp'
 import indexRouter from '@routes/index'
 import authRouter from '@routes/auth'
 import usersRouter from '@routes/users'
-import historyRouter from '@routes/history'
+import gameRouter from '@routes/games'
 import tournamentsRouter from '@routes/tournaments'
 import cors from 'cors'
 import * as dotenv from 'dotenv'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
 import server from '@server'
+import { Limiter, SpeedLimiter } from '@middlewares/limiters'
+import spdy from 'spdy'
+import fs from 'fs'
 dotenv.config()
 require('@auth/passport')
 require('@auth/passportGoogle')
 
+console.log(path.join(__dirname, 'nginx', 'api.gracehopper.xyz', 'cert.pem'))
+
+const options = {
+  key: fs.readFileSync(path.join(__dirname, 'nginx', 'api.gracehopper.xyz', 'privkey.pem')),
+  cert: fs.readFileSync(path.join(__dirname, 'nginx', 'api.gracehopper.xyz', 'cert.pem')),
+  protocols: ['h2', 'http/1.1']
+}
+
 const app = express()
+const httpServer = spdy.createServer(options, app)
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -46,19 +58,20 @@ app.use(passport.session())
 app.use(express.static(path.join(__dirname, 'public')))
 
 const PORT = process.env.PORT ?? 4000
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server is running → PORT ${String(PORT)}`)
   connectDB()
     .then(() => console.log('MongoDB has been connected'))
     .catch((err) => console.error(err))
 })
 
-app.use('/api/v1', stamp)
-app.use('/api/v1/health', indexRouter)
-app.use('/api/v1/auth', authRouter)
-app.use('/api/v1/users', usersRouter)
-app.use('/api/v1/history', historyRouter)
-app.use('/api/v1/tournaments', tournamentsRouter)
+app.use(Limiter, SpeedLimiter)
+app.use('/v1', stamp)
+app.use('/v1/health', indexRouter)
+app.use('/v1/auth', authRouter)
+app.use('/v1/users', usersRouter)
+app.use('/v1/games', gameRouter)
+app.use('/v1/tournaments', tournamentsRouter)
 
 server.listen(Number(PORT) + 1, () => {
   console.log(`Socket.IO is running → PORT ${String(Number(PORT) + 1)}`)

@@ -1,7 +1,7 @@
 post:
   servers: 
-    - url: 'http://localhost:4000/api/v1'
-    - url: 'https://api.gracehopper.xyz/api/v1'
+    - url: 'http://localhost:4000/v1'
+    - url: 'https://api.gracehopper.xyz/v1'
   tags:
     - Tournament
   summary: Create Tournament
@@ -9,6 +9,17 @@ post:
   operationId: postTournaments
   security:
     - api_key: []
+  parameters:
+    - in: query
+      name: page
+      schema:
+        type: integer
+      description: Page to be consulted.
+    - in: query
+      name: limit
+      schema:
+        type: integer
+      description: Max number of results on one page.
   responses:
     200:
       description: Authorized
@@ -52,14 +63,15 @@ post:
 
 get:
   servers: 
-    - url: 'http://localhost:4000/api/v1'
-    - url: 'https://api.gracehopper.xyz/api/v1'
+    - url: 'http://localhost:4000/v1'
+    - url: 'https://api.gracehopper.xyz/v1'
   tags:
     - Tournament
   summary: All Tournaments
   description: Allows to query the information of all tournaments
   operationId: getAllTournament
-  security: []
+  security:
+    - api_key: []
   responses:
     200:
       description: Authorized

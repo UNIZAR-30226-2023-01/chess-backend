@@ -2,12 +2,18 @@ import { UserModel } from '@models/user'
 
 beforeEach((done) => {
   UserModel.deleteMany({})
-    .catch((err) => console.log(err))
-  done()
+    .then(_ => { done() })
+    .catch(err => {
+      console.error(err.message)
+      done()
+    })
 })
 
 afterEach((done) => {
   UserModel.deleteMany({})
-    .catch((err) => console.log(err))
-  done()
+    .then(_ => { done() })
+    .catch(err => {
+      console.error(err.message)
+      done()
+    })
 })

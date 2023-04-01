@@ -65,4 +65,4 @@ build
 dump.rdb
 
 # certificados
-nginx/cert.*
+nginx/api.gracehopper.xyz/*

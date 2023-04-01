@@ -86,7 +86,7 @@ You can supply your API Key in REST API calls in one of two ways:
 
 <h2>Connect with an Authenticated Socket</h2>
 
-To authenticate a socket connection you just need to add a **token** property inside the header of the handshake, containing a valid session token. If this property is not defined (or contains false, 0 or an empty value) the handshake is done but the socket will not be authenticated, so actions restricted to verified users cannot be perfomed. If the property is defined but the token it contains is not valid, the handshake will fail. Otherwise the handshake will success and the socket will be authenticated.
+To authenticate a socket connection you just need to add a **token** property as an extra header, containing a valid session token. If this property is not defined (or contains false, 0 or an empty value) the handshake is done but the socket will not be authenticated, so actions restricted to verified users cannot be perfomed. If the property is defined but the token it contains is not valid, the handshake will fail. Otherwise the handshake will success and the socket will be authenticated.
 
 # Endpoint Overview
 
@@ -175,6 +175,12 @@ A `Status` object is always included in the JSON response payload for both succe
 # Best Practices
 
 This section contains a few recommendations on how to efficiently utilize the Reign API for your enterprise application, particularly if you already have a large base of users for your application.
+
+<h2>Socket Connections</h2>
+
+Socket connections are ment to be held using the [Socket.io](https://socket.io/) library. Clients must continuously send an event for the server to know if connection is still on. If a client has not sent any event after one minute, the server will close the connection.
+
+***Note:** Instead of sending events that modify the game state, the **heartbeat** event can be sent with an empty body.*
 
 <h2>Implement a Caching Strategy If Needed</h2>
 

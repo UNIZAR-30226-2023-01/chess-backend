@@ -3,7 +3,7 @@ post:
     - url: 'http://localhost:4001'
     - url: 'https://api.gracehopper.xyz:8443'
   tags: 
-    -  Room
+    - Room
   summary: Find Room
   operationId: findRoom
   security: []
@@ -75,7 +75,9 @@ post:
                 description: |
                   Current state of this game's board, in FEN notation.
               moves:
-                type: string[]
+                type: array
+                items:
+                  type: string
                 description: |
                   List of all the moves executed, in long algebraic notation.
               useTimer:

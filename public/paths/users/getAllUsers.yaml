@@ -1,21 +1,35 @@
 get:
   servers: 
-    - url: 'http://localhost:4000/api/v1'
-    - url: 'https://api.gracehopper.xyz/api/v1'
+    - url: 'http://localhost:4000/v1'
+    - url: 'https://api.gracehopper.xyz/v1'
   tags:
     - User
   summary: All Users
   description: Retrieves information from all users
   operationId: getAllUsers
-  security: []
+  security:
+    - api_key: []
+  parameters:
+    - in: query
+      name: page
+      schema:
+        type: integer
+      description: Page to be consulted.
+    - in: query
+      name: limit
+      schema:
+        type: integer
+      description: Max number of results on one page.
   responses:
     200:
-      description: Authorized
+      description: Successful
       content:
         application/json:
           schema:
             type: object
             properties:
+              meta:
+                $ref: '../../components/schemas/meta.yaml'
               data:
                 type: array
                 items:
@@ -26,44 +40,53 @@ get:
             example:
               summary: ""
               value:
+                meta:
+                  currentPage: "https://api.gracehopper.xyz/v1/users?page=1&limit=30"
+                  previousPage: null
+                  nextPage: null
+                  perPage: 30
+                  pages: 1
+                  count: 1
                 data:
-                  - id: 507f1f77bcf86cd799439011
-                    avatar: "https://api.gracehopper.xyz/..."
+                  - id: 6427012084270ee46cd8300c
+                    avatar: "https://api.gracehopper.xyz/assets/avatar"
                     username: johndoe
                     email: "johndoe@example.com"
                     google: true
-                    createdAt: 2023-02-18T14:51:41.370Z
-                    updatedAt: 2023-02-18T14:51:41.370Z
+                    verified: false
+                    games: https://api.gracehopper.xyz/v1/games?userId=6427012084270ee46cd8300c
+                    elo: 800
+                    skins: 
+                      board: wood
+                      lightPieces: classic
+                      darkPieces: classic
+                    availableSkins: []
                     stats: 
                       bulletWins: 0
+                      bulletDraws: 0
                       bulletDefeats: 0
                       blitzWins: 0
+                      blitzDraws: 0
                       blitzDefeats: 0
                       fastWins: 0
+                      fastDraws: 0
                       fastDefeats: 0
+                    createdAt: 2023-03-30T17:24:17.230Z
+                    updatedAt: 2023-03-30T17:24:17.230Z
                 status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 200
-                  error_message: ""
+                  timestamp: 2023-03-30T17:24:17.230Z
+                  error_code: 0
+                  error_message: "Successful"
                   elapsed: 0
     401:
       description: Unauthorized
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                $ref: '../../components/schemas/status.yaml'
-          examples:
-            example:
-              summary: ""
-              value:
-                status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 401
-                  error_message: ""
-                  elapsed: 0
+      $ref: '../../components/schemas/responses/401.yaml'
+    429:
+      description: Too Many Request
+      $ref: '../../components/schemas/responses/429.yaml'
+    500:
+      description: Internal server error
+      $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
       source: ""

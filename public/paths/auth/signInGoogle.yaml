@@ -1,7 +1,7 @@
 get:
   servers: 
-    - url: 'http://localhost:4000/api/v1'
-    - url: 'https://api.gracehopper.xyz/api/v1'
+    - url: 'http://localhost:4000/v1'
+    - url: 'https://api.gracehopper.xyz/v1'
   tags:
     - OAuth 2.0
   summary: Google
@@ -10,4 +10,14 @@ get:
   security: []
   responses:
     200:
-      description: OK
+      description: Successful
+      $ref: '../../components/schemas/responses/200.yaml'
+    400:
+      description: Conflict
+      $ref: '../../components/schemas/responses/400.yaml'
+    429:
+      description: Too Many Request
+      $ref: '../../components/schemas/responses/429.yaml'
+    500:
+      description: Internal Server Error
+      $ref: '../../components/schemas/responses/500.yaml'

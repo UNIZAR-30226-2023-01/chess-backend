@@ -3,7 +3,7 @@ post:
     - url: 'http://localhost:4001'
     - url: 'https://api.gracehopper.xyz:8443'
   tags: 
-    -  Game
+    - Game
   summary: Move Piece
   operationId: move
   security: []

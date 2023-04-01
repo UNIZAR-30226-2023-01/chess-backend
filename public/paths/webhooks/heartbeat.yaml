@@ -1,0 +1,16 @@
+get:
+  servers: 
+    - url: 'http://localhost:4001'
+    - url: 'https://api.gracehopper.xyz:8443'
+  tags: 
+    - Room
+  summary: Sending Heartbeats
+  operationId: heartbeat
+  description: event(heartbeat) 
+    Clients must continuously send an event for the server to
+    know if connection is still on. If a client has not sent any event
+    after one minute, the server will close the connection.
+    
+    Instead of sending events that modify the game state,
+    the **heartbeat** event can be sent with an empty body.
+  security: []

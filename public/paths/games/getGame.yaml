@@ -1,0 +1,45 @@
+get:
+  servers: 
+    - url: 'http://localhost:4000/v1'
+    - url: 'https://api.gracehopper.xyz/v1'
+  tags:
+    - Games
+  summary: Get Game
+  description: Returns information about one of the games that have been played till date.
+  operationId: getGames
+  security: 
+    - api_key: []
+  parameters:
+    - in: path
+      name: id
+      schema:
+        type: string
+      required: true
+      description: ID of the user to get
+  responses:
+    200:
+      description: Successful
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '../../components/schemas/games.yaml'
+              status:
+                $ref: '../../components/schemas/status.yaml'
+    401:
+      description: Unauthorized
+      $ref: '../../components/schemas/responses/401.yaml'
+    404:
+      description: Not Found
+      $ref: '../../components/schemas/responses/404.yaml'
+    429:
+      description: Too Many Request
+      $ref: '../../components/schemas/responses/429.yaml'
+    500:
+      description: Internal Server Error
+      $ref: '../../components/schemas/responses/500.yaml'
+  x-codeSamples:
+    - lang: cURL
+      source: ""

@@ -1,5 +1,5 @@
-import * as gameCtl from '@lib/game'
-import * as roomCtl from '@lib/room'
+import * as gameLib from '@lib/game'
+import * as roomLib from '@lib/room'
 import { bestMove } from '@lib/stockfish'
 import { ChessTimer, chessTimers } from '@lib/timer'
 import { PlayerColor, GameState, START_BOARD, GameType, EndState } from '@lib/types/game'
@@ -20,7 +20,7 @@ export const findGame = async (
   io: Server,
   data: FindRoomMsg
 ): Promise<void> => {
-  const check = gameCtl.checkRoomCreationMsg(data)
+  const check = gameLib.checkRoomCreationMsg(data)
   if (check.error) {
     socket.emit('error', check.error)
     return
@@ -35,7 +35,7 @@ export const findGame = async (
     data.difficulty = 1
   }
 
-  const roomID = await roomCtl.generateUniqueRoomCode()
+  const roomID = await roomLib.generateUniqueRoomCode()
 
   let darkSocketId: string = ReservedUsernames.AI_USER
   let lightSocketId: string = ReservedUsernames.AI_USER
@@ -96,9 +96,9 @@ export const findGame = async (
   }
 
   console.log(game)
-  await gameCtl.setGame(roomID, game)
+  await gameLib.setGame(roomID, game)
 
-  const res = gameCtl.createFoundRoomMsg(socket.id, roomID, game)
+  const res = gameLib.createFoundRoomMsg(socket.id, roomID, game)
 
   socket.emit('room', res)
 
@@ -110,7 +110,7 @@ export const findGame = async (
     const gameTimer = new ChessTimer(
       game.initialTimer * 1000,
       game.timerIncrement * 1000,
-      gameCtl.timeoutProtocol(io, roomID)
+      gameLib.timeoutProtocol(io, roomID)
     )
 
     chessTimers.set(roomID, gameTimer)
@@ -138,7 +138,7 @@ export const move = async (
 ): Promise<void> => {
   console.log('move:', move)
 
-  const game = await gameCtl.getGame(roomID, async (game) => {
+  const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) { // TODO: Internal server error
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
@@ -149,13 +149,13 @@ export const move = async (
       return
     }
 
-    if (!aiMove && !gameCtl.isPlayerOfGame(socket, game)) {
+    if (!aiMove && !gameLib.isPlayerOfGame(socket, game)) {
       socket.emit('error', 'You are not a player of this game')
       return
     }
 
-    let color = gameCtl.getColor(socket, game)
-    if (aiMove) color = gameCtl.alternativeColor(color)
+    let color = gameLib.getColor(socket, game)
+    if (aiMove) color = gameLib.alternativeColor(color)
     if (color !== game.turn) {
       socket.emit('error', 'It is not your turn')
       return
@@ -192,7 +192,7 @@ export const move = async (
     }
 
     game.board = chess.fen()
-    game.turn = gameCtl.alternativeColor(game.turn)
+    game.turn = gameLib.alternativeColor(game.turn)
 
     if (moveRes.promotion) {
       move = moveRes.from + moveRes.to + moveRes.promotion
@@ -201,7 +201,7 @@ export const move = async (
     }
     game.moves.push(move)
 
-    await gameCtl.setGame(roomID, game, game.finished)
+    await gameLib.setGame(roomID, game, game.finished)
     return game
   })
   if (!game) return
@@ -225,7 +225,7 @@ export const move = async (
       gameOverMessage.winner = game.winner
     }
     io.to(roomID).emit('game_over', gameOverMessage)
-    await gameCtl.endProtocol(io, roomID, game)
+    await gameLib.endProtocol(io, roomID, game)
   }
 
   // Execute AI's move if game is not over and

@@ -1,0 +1,22 @@
+type: object
+description: User object definition
+properties: 
+  currentPage: 
+    type: string
+    description: URI you asked for.
+  previousPage: 
+    type: [string, null]
+    description: URI of the previous results page.
+  nextPage: 
+    type: [string, null]
+    description: URI of the following results page.
+  perPage: 
+    type: integer
+    description: Max number of results per page.
+    default: 30
+  pages: 
+    type: integer
+    description: Number of pages containing results.
+  count: 
+    type: integer
+    description: Number of results.

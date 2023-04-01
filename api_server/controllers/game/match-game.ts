@@ -1,5 +1,5 @@
 import { Server, Socket } from 'socket.io'
-import * as gameCtl from '@lib/game'
+import * as gameLib from '@lib/game'
 import { chessTimers } from '@lib/timer'
 import { Chess } from 'chess.ts'
 import { GameOverMsg, MovedMsg } from '@lib/types/socket-msg'
@@ -10,7 +10,7 @@ export const surrender = async (
   io: Server,
   roomID: string
 ): Promise<void> => {
-  const game = await gameCtl.getGame(roomID, async (game) => {
+  const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) { // TODO: Internal server error
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
@@ -21,13 +21,13 @@ export const surrender = async (
       return
     }
 
-    if (!gameCtl.isPlayerOfGame(socket, game)) {
+    if (!gameLib.isPlayerOfGame(socket, game)) {
       socket.emit('error', 'You are not a player of this game')
       return
     }
 
-    const color = gameCtl.getColor(socket, game)
-    game.winner = gameCtl.alternativeColor(color)
+    const color = gameLib.getColor(socket, game)
+    game.winner = gameLib.alternativeColor(color)
 
     if (color === PlayerColor.DARK) {
       game.darkSurrended = true
@@ -38,11 +38,11 @@ export const surrender = async (
     game.finished = true
     game.endState = EndState.SURRENDER
 
-    if (!gameCtl.updateGameTimer(roomID, game)) {
+    if (!gameLib.updateGameTimer(roomID, game)) {
       socket.emit('error', 'Internal server error')
     }
 
-    await gameCtl.setGame(roomID, game, true)
+    await gameLib.setGame(roomID, game, true)
     return game
   })
   if (!game) return
@@ -58,7 +58,7 @@ export const surrender = async (
   }
 
   io.to(roomID).emit('game_over', message)
-  await gameCtl.endProtocol(io, roomID, game)
+  await gameLib.endProtocol(io, roomID, game)
 }
 
 export const voteDraw = async (
@@ -66,7 +66,7 @@ export const voteDraw = async (
   io: Server,
   roomID: string
 ): Promise<void> => {
-  const game = await gameCtl.getGame(roomID, async (game) => {
+  const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) { // TODO: Internal server error
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
@@ -77,12 +77,12 @@ export const voteDraw = async (
       return
     }
 
-    if (!gameCtl.isPlayerOfGame(socket, game)) {
+    if (!gameLib.isPlayerOfGame(socket, game)) {
       socket.emit('error', 'You are not a player of this game')
       return
     }
 
-    const color = gameCtl.getColor(socket, game)
+    const color = gameLib.getColor(socket, game)
 
     if (color === PlayerColor.DARK) {
       game.darkVotedDraw = true
@@ -95,11 +95,11 @@ export const voteDraw = async (
       game.endState = EndState.DRAW
     }
 
-    if (!gameCtl.updateGameTimer(roomID, game)) {
+    if (!gameLib.updateGameTimer(roomID, game)) {
       socket.emit('error', 'Internal server error')
     }
 
-    await gameCtl.setGame(roomID, game, true)
+    await gameLib.setGame(roomID, game, true)
     return game
   })
   if (!game) return
@@ -115,9 +115,9 @@ export const voteDraw = async (
     }
 
     io.to(roomID).emit('game_over', message)
-    await gameCtl.endProtocol(io, roomID, game)
+    await gameLib.endProtocol(io, roomID, game)
   } else {
-    io.to(roomID).emit('voted_draw', { color: gameCtl.getColor(socket, game) })
+    io.to(roomID).emit('voted_draw', { color: gameLib.getColor(socket, game) })
   }
 }
 
@@ -129,7 +129,7 @@ export const move = async (
 ): Promise<void> => {
   console.log('move:', move)
 
-  const game = await gameCtl.getGame(roomID, async (game) => {
+  const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) { // TODO: Internal server error
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
@@ -140,12 +140,12 @@ export const move = async (
       return
     }
 
-    if (!gameCtl.isPlayerOfGame(socket, game)) {
+    if (!gameLib.isPlayerOfGame(socket, game)) {
       socket.emit('error', 'You are not a player of this game')
       return
     }
 
-    const color = gameCtl.getColor(socket, game)
+    const color = gameLib.getColor(socket, game)
     if (color !== game.turn) {
       socket.emit('error', 'It is not your turn')
       return
@@ -182,7 +182,7 @@ export const move = async (
     }
 
     game.board = chess.fen()
-    game.turn = gameCtl.alternativeColor(game.turn)
+    game.turn = gameLib.alternativeColor(game.turn)
 
     if (moveRes.promotion) {
       move = moveRes.from + moveRes.to + moveRes.promotion
@@ -191,7 +191,7 @@ export const move = async (
     }
     game.moves.push(move)
 
-    await gameCtl.setGame(roomID, game, game.finished)
+    await gameLib.setGame(roomID, game, game.finished)
     return game
   })
   if (!game) return
@@ -215,6 +215,6 @@ export const move = async (
       gameOverMessage.winner = game.winner
     }
     io.to(roomID).emit('game_over', gameOverMessage)
-    await gameCtl.endProtocol(io, roomID, game)
+    await gameLib.endProtocol(io, roomID, game)
   }
 }

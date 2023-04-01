@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import passport from 'passport'
 import { TokenValidationResult, validateToken } from '@lib/token-blacklist'
+import { setStatus } from '@lib/status'
 
 export const isAuthenticated = (req: Request, res: Response, next: NextFunction): void => {
   if (req.isAuthenticated()) return next()
@@ -10,7 +11,7 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
         if (!user) {
           res
             .status(401)
-            .json({ message: 'User not authenticated!' })
+            .json({ status: setStatus(req, 401, 'Unauthorized') })
           return
         }
 
@@ -22,12 +23,12 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
         if (status === TokenValidationResult.ERROR) {
           res
             .status(500)
-            .json({ message: 'Internal server error' })
+            .json({ status: setStatus(req, 500, 'Internal Server Error') })
         } else if (status === TokenValidationResult.INVALID_TOKEN) {
           res.clearCookie('api-auth')
           res
             .status(401)
-            .json({ message: 'Invalid Token!' })
+            .json({ status: setStatus(req, 401, 'Unauthorized') })
         } else {
           req.body.user = user
           next()
@@ -36,6 +37,6 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
   } catch (err) {
     res
       .status(500)
-      .json({ message: 'Internal server error' })
+      .json({ status: setStatus(req, 500, 'Internal Server Error') })
   }
 }

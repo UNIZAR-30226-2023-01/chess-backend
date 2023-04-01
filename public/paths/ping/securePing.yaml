@@ -1,7 +1,7 @@
 get:
   servers: 
-    - url: 'http://localhost:4000/api/v1'
-    - url: 'https://api.gracehopper.xyz/api/v1'
+    - url: 'http://localhost:4000/v1'
+    - url: 'https://api.gracehopper.xyz/v1'
   tags:
     - Health
   summary: Secure Ping
@@ -11,41 +11,17 @@ get:
     - api_key: []
   responses:
     200:
-      description: OK
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                $ref: '../../components/schemas/status.yaml'
-          examples:
-            example:
-              summary: ""
-              value:
-                status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 200
-                  error_message: ""
-                  elapsed: 0
+      description: Successful
+      $ref: '../../components/schemas/responses/200.yaml'
     401:
       description: Unauthorized
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                $ref: '../../components/schemas/status.yaml'
-          examples:
-            example:
-              summary: ""
-              value:
-                status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 401
-                  error_message: ""
-                  elapsed: 0
+      $ref: '../../components/schemas/responses/401.yaml'
+    429:
+      description: Too Many Request
+      $ref: '../../components/schemas/responses/429.yaml'
+    500:
+      description: Internal Server Error
+      $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
       source: ""
