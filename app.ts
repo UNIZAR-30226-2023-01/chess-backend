@@ -34,7 +34,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(cors({
-  origin: ['https://cdn.redoc.ly', 'https://reign.gracehopper.xyz'],
+  origin: ['https://cdn.redoc.ly', 'https://reign.gracehopper.xyz', 'http://localhost:3000'],
   credentials: true
 }))
 app.use(helmet({
