@@ -1,10 +1,16 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { Request, Response, NextFunction } from 'express'
+import { MongooseQueryParser } from 'mongoose-query-parser'
 
 export const paginate = (model: any) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const page = Number(req.query.page) || 1
-    const limit = Number(req.query.limit) || 30
+    const parser = new MongooseQueryParser({
+      skipKey: 'page'
+    })
+    const resultado = parser.parse(req.query)
+
+    const page = resultado.skip ?? 1
+    const limit = resultado.limit ?? 30
     const startIndex = (page - 1) * limit
 
     const basePath = `${req.protocol}://${req.get('host') ?? req.hostname}${req.baseUrl}`
@@ -13,7 +19,11 @@ export const paginate = (model: any) => {
     const previousPage = new URL(basePath)
 
     const numDocs = await model.countDocuments().exec()
-    const data = await model.find().limit(limit).skip(startIndex).exec()
+    const data = await model
+      .find(resultado.filter)
+      .limit(limit).skip(startIndex)
+      .sort(resultado.sort)
+      .exec()
 
     currentPage.searchParams.set('page', String(page))
     previousPage.searchParams.set('page', String(page - 1))
