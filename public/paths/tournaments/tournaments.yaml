@@ -1,6 +1,6 @@
 get:
   servers: 
-    - url: 'https://localhost:4000/v1'
+    - url: 'http://localhost:4000/v1'
     - url: 'https://api.gracehopper.xyz/v1'
   tags:
     - Tournament
@@ -35,7 +35,7 @@ get:
 
 patch: 
   servers: 
-    - url: 'https://localhost:4000/v1'
+    - url: 'http://localhost:4000/v1'
     - url: 'https://api.gracehopper.xyz/v1'
   tags:
     - Tournament
@@ -82,7 +82,7 @@ patch:
       
 delete:
   servers: 
-    - url: 'https://localhost:4000/v1'
+    - url: 'http://localhost:4000/v1'
     - url: 'https://api.gracehopper.xyz/v1'
   tags:
     - Tournament
