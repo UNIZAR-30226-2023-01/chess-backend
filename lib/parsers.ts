@@ -125,8 +125,8 @@ export const parseTournament = (Tournament: TournamentDocument): Tournament => {
     leave: `https://api.gracehopper.xyz/v1/tournaments/leave/${String(Tournament._id)}`,
     owner: `https://api.gracehopper.xyz/v1/users/${String(Tournament.owner)}`,
     startTime: Tournament.startTime,
-    rounds: Math.pow(2, Number(Tournament.rounds)),
-    participants: 0,
+    rounds: Number(Tournament.rounds),
+    participants: Tournament.participants.length,
     matches: Tournament.matches.map((match) => {
       const matchJSON = JSON.parse(JSON.stringify(match))
       return {
