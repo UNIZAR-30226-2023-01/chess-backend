@@ -36,8 +36,8 @@ app.use(cookieSession({
   name: 'api-auth',
   secret: String(process.env.JWT_SECRET),
   maxAge: 24 * 60 * 60 * 1000,
-  httpOnly: false,
-  secure: true,
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   domain: process.env.NODE_ENV === 'production' ? '.gracehopper.xyz' : undefined
 }))

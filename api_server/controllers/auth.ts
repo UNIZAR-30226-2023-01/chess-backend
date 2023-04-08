@@ -69,8 +69,8 @@ export const signIn = (req: Request, res: Response): void => {
           )
 
           res.cookie('api-auth', token, {
-            httpOnly: false,
-            secure: true,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
             expires: dayjs().add(1, 'day').toDate(),
             domain: process.env.NODE_ENV === 'production' ? '.gracehopper.xyz' : undefined,
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
