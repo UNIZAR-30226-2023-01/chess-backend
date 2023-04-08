@@ -61,8 +61,8 @@ openssl req -new -x509 -key privkey.pem -out cert.pem -days 365
 ```
 1. Verifica que el certificado SSL y la clave privada corresponden utilizando los siguientes comandos:
 ```
-openssl x509 -noout -modulus -in cert.crt | openssl md5
-openssl rsa -noout -modulus -in cert.key | openssl md5
+openssl x509 -noout -modulus -in privkey.pem | openssl md5
+openssl rsa -noout -modulus -in cert.pem | openssl md5
 ```
   </details>
   <details>

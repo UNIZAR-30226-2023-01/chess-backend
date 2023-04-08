@@ -20,7 +20,7 @@ router.get('/reset-password/:id/:token', authCtrl.resetPassword)
 router.post('/reset-password/:id/:token', validateBody(resetPassword), authCtrl.changePassword)
 
 router.get('/sign-in/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
-router.get('/auth/google/callback', passport.authenticate('google', {
+router.get('/google/callback', passport.authenticate('google', {
   failureMessage: 'Invalid credentials',
   failureRedirect: FAILURE_REDIRECT,
   successRedirect: SUCCESS_REDIRECT

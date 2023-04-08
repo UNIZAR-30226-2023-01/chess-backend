@@ -126,7 +126,7 @@ export const forgotPassword = (req: Request, res: Response): void => {
       const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
       const payload = { id, email }
       const token = jwt.sign(payload, secret, { expiresIn: '15m' })
-      const url = `${req.protocol}://${req.get('host') ?? req.hostname}/reset-password/${String(id)}/${token}`
+      const url = `https://reign.gracehopper.xyz/auth/reset-password/${String(id)}/${token}`
 
       return res
         .status(200)

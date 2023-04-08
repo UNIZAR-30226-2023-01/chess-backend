@@ -2,7 +2,7 @@ import passport from 'passport'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { UserModel } from '@models/user'
 
-const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL ?? 'http://localhost:4000/api/v1/auth/google/callback'
+const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL ?? 'https://localhost:4000/v1/auth/google/callback'
 
 passport.use(new GoogleStrategy({
   clientID: String(process.env.GOOGLE_CLIENT_ID),

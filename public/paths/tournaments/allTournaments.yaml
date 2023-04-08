@@ -9,54 +9,45 @@ post:
   operationId: postTournaments
   security:
     - api_key: []
-  parameters:
-    - in: query
-      name: page
-      schema:
-        type: integer
-      description: Page to be consulted.
-    - in: query
-      name: limit
-      schema:
-        type: integer
-      description: Max number of results on one page.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            startTime:
+              type: string
+              format: date 
+              example: 2023-04-02T18:08:59.561Z
+              description: Tournament start date.
+            rounds:
+              type: integer
+              description: Number of tournament rounds.
+
   responses:
     200:
-      description: Authorized
+      description: Successful
       content:
         application/json:
           schema:
             type: object
             properties:
+              data:
+                $ref: '../../components/schemas/tournament.yaml'
               status:
                 $ref: '../../components/schemas/status.yaml'
-          examples:
-            example:
-              summary: ""
-              value:
-                status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 200
-                  error_message: ""
-                  elapsed: 0
     401:
       description: Unauthorized
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                $ref: '../../components/schemas/status.yaml'
-          examples:
-            example:
-              summary: ""
-              value:
-                status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 401
-                  error_message: ""
-                  elapsed: 0
+      $ref: '../../components/schemas/responses/401.yaml'
+    409:
+      description: Conflict
+      $ref: '../../components/schemas/responses/409.yaml'
+    429:
+      description: Too Many Request
+      $ref: '../../components/schemas/responses/429.yaml'
+    500:
+      description: Internal Server Error
+      $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
       source: ""
@@ -72,43 +63,42 @@ get:
   operationId: getAllTournament
   security:
     - api_key: []
+  parameters:
+    - in: query
+      name: page
+      schema:
+        type: integer
+      description: Page to be consulted.
+    - in: query
+      name: limit
+      schema:
+        type: integer
+      description: Max number of results on one page.
   responses:
     200:
-      description: Authorized
+      description: Successful
       content:
         application/json:
           schema:
             type: object
             properties:
+              meta:
+                $ref: '../../components/schemas/meta.yaml'
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas/tournament.yaml'
               status:
-                $ref: '../../components/schemas/status.yaml'
-          examples:
-            example:
-              summary: ""
-              value:
-                status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 200
-                  error_message: ""
-                  elapsed: 0
+                  $ref: '../../components/schemas/status.yaml'
     401:
       description: Unauthorized
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                $ref: '../../components/schemas/status.yaml'
-          examples:
-            example:
-              summary: ""
-              value:
-                status:
-                  timestamp: 2023-02-18T14:51:41.370Z
-                  error_code: 401
-                  error_message: ""
-                  elapsed: 0
+      $ref: '../../components/schemas/responses/401.yaml'
+    429:
+      description: Too Many Request
+      $ref: '../../components/schemas/responses/429.yaml'
+    500:
+      description: Internal Server Error
+      $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
       source: ""

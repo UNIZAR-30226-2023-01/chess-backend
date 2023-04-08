@@ -1,0 +1,70 @@
+type: object
+description: User object definition
+properties: 
+  id: 
+    uniqueItems: true
+    type: string
+    example: 642ff637124419bec84934cb
+    description: Unique identifier of a tournament.
+  join:
+    type: string
+    format: url
+    description: URI to join the tournament.
+  leave:
+    type: string
+    format: url
+    description: URI to leave the tournament.
+  owner:
+    type: string
+    format: url
+    description: URI to query the owner's information.
+  startTime:
+    type: string
+    format: date
+    description: Tournament start date.
+  rounds:
+    type: integer
+    description: Number of tournament rounds.
+  participants:
+    type: integer
+    format: date
+    description: Number of people registered in the tournament. Cannot exceed 2^rounds
+  matches:
+    type: object
+    description: Tournament pairings
+    properties:
+      id: 
+        type: string
+        uniqueItems: true
+      game: 
+        type: string
+        format: url
+      name: 
+        type: string
+      nextMatchId: 
+        type: [string, null]
+      tournamentRoundText:
+        type: string
+      startTime: 
+        type: string
+        format: date
+      state:
+        type: string
+        enum:
+          - 'NO_SHOW'
+          - 'WALK_OVER'
+          - 'NO_PARTY'
+          - 'DONE'
+          - 'SCORE_DONE'
+      participants:
+        type: array of objects
+
+  createdAt:
+    type: string
+    format: date
+    description: The date and time when the tournament's account was created.
+  updatedAt:
+    type: string
+    format: date
+    description: The date and time when the tournament's information was last updated.
+ 
