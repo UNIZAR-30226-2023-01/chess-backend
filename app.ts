@@ -16,27 +16,16 @@ import passport from 'passport'
 import cookieSession from 'cookie-session'
 import server from '@server'
 import { Limiter, SpeedLimiter } from '@middlewares/limiters'
-import spdy from 'spdy'
-import fs from 'fs'
 dotenv.config()
 require('@auth/passport')
 require('@auth/passportGoogle')
 
-console.log(path.join(__dirname, 'nginx', 'api.gracehopper.xyz', 'cert.pem'))
-
-const options = {
-  key: fs.readFileSync(path.join(__dirname, 'nginx', 'api.gracehopper.xyz', 'privkey.pem')),
-  cert: fs.readFileSync(path.join(__dirname, 'nginx', 'api.gracehopper.xyz', 'cert.pem')),
-  protocols: ['h2', 'http/1.1']
-}
-
 const app = express()
-const httpServer = spdy.createServer(options, app)
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(cors({
-  origin: ['https://cdn.redoc.ly', 'https://reign.gracehopper.xyz'],
+  origin: ['https://cdn.redoc.ly', 'https://reign.gracehopper.xyz', 'http://localhost:3000'],
   credentials: true
 }))
 app.use(helmet({
@@ -58,7 +47,7 @@ app.use(passport.session())
 app.use(express.static(path.join(__dirname, 'public')))
 
 const PORT = process.env.PORT ?? 4000
-httpServer.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server is running → PORT ${String(PORT)}`)
   connectDB()
     .then(() => console.log('MongoDB has been connected'))

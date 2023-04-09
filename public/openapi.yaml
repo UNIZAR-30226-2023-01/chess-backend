@@ -38,9 +38,9 @@ x-tagGroups:
       - Room
       - Game
 servers:
-  - url: 'http://localhost:4000/v1'
+  - url: 'https://localhost:4000/v1'
     description: Sandbox server (REST API)
-  - url: 'http://localhost:4001'
+  - url: 'https://localhost:4001'
     description: Sandbox server (WS API)
   - url: 'https://api.gracehopper.xyz/v1'
     description: Production server (REST API)

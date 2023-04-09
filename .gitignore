@@ -69,3 +69,5 @@ nginx/api.gracehopper.xyz/*
 
 # test especificos
 test.sh
+
+*.pem

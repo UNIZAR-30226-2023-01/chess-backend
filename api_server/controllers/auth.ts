@@ -6,6 +6,7 @@ import { UserModel } from '@models/user'
 import { setStatus } from '@lib/status'
 import { invalidateToken } from '@lib/token-blacklist'
 import { parseUser } from '@lib/parsers'
+import sgMail from '@sendgrid/mail'
 
 export const signUp = (req: Request, res: Response): void => {
   const salt = randomBytes(16)
@@ -115,7 +116,7 @@ export const verify = (req: Request, res: Response): void => {
 export const forgotPassword = (req: Request, res: Response): void => {
   const { email } = req.body
   UserModel.findOne({ email })
-    .then((user: any) => {
+    .then(async (user: any) => {
       if (!user) {
         return res
           .status(404)
@@ -126,13 +127,36 @@ export const forgotPassword = (req: Request, res: Response): void => {
       const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
       const payload = { id, email }
       const token = jwt.sign(payload, secret, { expiresIn: '15m' })
-      const url = `${req.protocol}://${req.get('host') ?? req.hostname}/reset-password/${String(id)}/${token}`
+      const url = `https://reign.gracehopper.xyz/auth/reset-password/${String(id)}/${token}`
+      const data = { id, url }
 
-      return res
-        .status(200)
-        .json({
-          data: { id, url },
-          status: setStatus(req, 0, 'Successful')
+      const msg = {
+        to: email,
+        from: 'hi@gracehopper.xyz',
+        templateId: 'd-dc0aeb5b912d49aa94527a96cade5e71',
+        dynamicTemplateData: {
+          subject: 'Ha solicitado un restablecimiento de contraseña',
+          url
+        }
+      }
+
+      sgMail.setApiKey(String(process.env.SENDGRID_API_KEY))
+      return await sgMail.send(msg)
+        .then(() => {
+          return res
+            .status(200)
+            .json({
+              data,
+              status: setStatus(req, 0, 'Successful')
+            })
+        })
+        .catch(() => {
+          return res
+            .status(500)
+            .json({
+              data,
+              status: setStatus(req, 500, 'Internal Server Error')
+            })
         })
     })
     .catch(_ => {

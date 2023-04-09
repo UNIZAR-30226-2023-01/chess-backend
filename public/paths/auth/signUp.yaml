@@ -32,6 +32,7 @@ post:
               type: string
               format: password
               example: qwerty
+              minLength: 8
               description: Password to protect the user's profile
   responses:
     201:

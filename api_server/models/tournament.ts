@@ -10,22 +10,17 @@ export interface MatchDocument extends Document {
 const MatchSchema = new Schema<MatchDocument>({
   nextMatchId: {
     type: Schema.Types.ObjectId,
-    required: true,
     ref: 'Game'
   },
-  tournamentRoundText: {
-    type: String,
-    required: true
-  },
   startTime: {
-    type: Date,
-    required: true
+    type: Date
   }
 }, {
   timestamps: true
 })
 
 export interface TournamentDocument extends Document {
+  owner: typeof UserModel
   startTime: Date
   rounds: Number
   participants: [typeof UserModel]
@@ -35,6 +30,10 @@ export interface TournamentDocument extends Document {
 }
 
 const TournamentSchema = new Schema<TournamentDocument>({
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: 'UserModel'
+  },
   startTime: {
     type: Date,
     required: true
@@ -45,7 +44,7 @@ const TournamentSchema = new Schema<TournamentDocument>({
   },
   participants: [{
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'UserModel'
   }],
   matches: [MatchSchema]
 }, {

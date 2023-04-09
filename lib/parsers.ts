@@ -1,4 +1,5 @@
 import { GameDocument } from '@models/game'
+import { TournamentDocument } from '@models/tournament'
 import { UserDocument } from '@models/user'
 
 interface User {
@@ -89,5 +90,57 @@ export const parseGame = (Games: GameDocument): Game => {
     state: Games.finished ? 'FINISHED' : 'IN_PROGRESS',
     createdAt: Games.createdAt,
     updatedAt: Games.updatedAt
+  }
+}
+
+interface Match {
+  id: string
+  game: string
+  name: string
+  nextMatchId: string | null
+  tournamentRoundText: string
+  startTime: string
+  state: 'NO_SHOW' | 'WALK_OVER' | 'NO_PARTY' | 'DONE' | 'SCORE_DONE'
+  participants: any[]
+}
+
+interface Tournament {
+  id: string
+  join: string
+  leave: string
+  owner: string
+  startTime: Date
+  rounds: number
+  participants: number
+  matches: Match[]
+  // matches: any[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+export const parseTournament = (Tournament: TournamentDocument): Tournament => {
+  return {
+    id: Tournament._id,
+    join: `https://api.gracehopper.xyz/v1/tournaments/join/${String(Tournament._id)}`,
+    leave: `https://api.gracehopper.xyz/v1/tournaments/leave/${String(Tournament._id)}`,
+    owner: `https://api.gracehopper.xyz/v1/users/${String(Tournament.owner)}`,
+    startTime: Tournament.startTime,
+    rounds: Number(Tournament.rounds),
+    participants: Tournament.participants.length,
+    matches: Tournament.matches.map((match) => {
+      const matchJSON = JSON.parse(JSON.stringify(match))
+      return {
+        id: matchJSON._id,
+        game: `https://api.gracehopper.xyz/v1/games/${String(matchJSON._id)}`,
+        name: '',
+        nextMatchId: matchJSON.nextMatchId,
+        tournamentRoundText: '',
+        startTime: matchJSON.startTime,
+        state: 'NO_SHOW',
+        participants: []
+      }
+    }),
+    createdAt: Tournament.createdAt,
+    updatedAt: Tournament.updatedAt
   }
 }
