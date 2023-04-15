@@ -14,7 +14,7 @@ import cors from 'cors'
 import * as dotenv from 'dotenv'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
-import server from '@server'
+import { server } from '@server'
 import { Limiter, SpeedLimiter } from '@middlewares/limiters'
 dotenv.config()
 require('@auth/passport')

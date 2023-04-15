@@ -1,13 +1,13 @@
-import { Server, Socket } from 'socket.io'
+import { Socket } from 'socket.io'
 import * as gameLib from '@lib/game'
 import { chessTimers } from '@lib/timer'
 import { Chess } from 'chess.ts'
 import { GameOverMsg, MovedMsg } from '@lib/types/socket-msg'
 import { PlayerColor, EndState } from '@lib/types/game'
+import { io } from '@server'
 
 export const surrender = async (
   socket: Socket,
-  io: Server,
   roomID: string
 ): Promise<void> => {
   const game = await gameLib.getGame(roomID, async (game) => {
@@ -58,12 +58,11 @@ export const surrender = async (
   }
 
   io.to(roomID).emit('game_over', message)
-  await gameLib.endProtocol(io, roomID, game)
+  await gameLib.endProtocol(roomID, game)
 }
 
 export const voteDraw = async (
   socket: Socket,
-  io: Server,
   roomID: string
 ): Promise<void> => {
   const game = await gameLib.getGame(roomID, async (game) => {
@@ -115,7 +114,7 @@ export const voteDraw = async (
     }
 
     io.to(roomID).emit('game_over', message)
-    await gameLib.endProtocol(io, roomID, game)
+    await gameLib.endProtocol(roomID, game)
   } else {
     io.to(roomID).emit('voted_draw', { color: gameLib.getColor(socket, game) })
   }
@@ -123,7 +122,6 @@ export const voteDraw = async (
 
 export const move = async (
   socket: Socket,
-  io: Server,
   roomID: string,
   move: string
 ): Promise<void> => {
@@ -215,6 +213,6 @@ export const move = async (
       gameOverMessage.winner = game.winner
     }
     io.to(roomID).emit('game_over', gameOverMessage)
-    await gameLib.endProtocol(io, roomID, game)
+    await gameLib.endProtocol(roomID, game)
   }
 }

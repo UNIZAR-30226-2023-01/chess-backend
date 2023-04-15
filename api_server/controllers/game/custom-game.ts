@@ -1,18 +1,18 @@
 import * as gameLib from '@lib/game'
 import { FindRoomMsg } from '@lib/types/socket-msg'
-import { Server, Socket } from 'socket.io'
+import { Socket } from 'socket.io'
 import * as roomGen from '@lib/room'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 import { ChessTimer, chessTimers } from '@lib/timer'
 import { ReservedUsernames, UserModel } from '@models/user'
+import { io } from '@server'
 
 export const findGame = async (
   socket: Socket,
-  io: Server,
   data: FindRoomMsg
 ): Promise<void> => {
   if (data.roomID) {
-    await joinGame(socket, io, data.roomID)
+    await joinGame(socket, data.roomID)
     return
   }
 
@@ -88,7 +88,6 @@ const createGame = async (
 
 const joinGame = async (
   socket: Socket,
-  io: Server,
   roomID: string
 ): Promise<void> => {
   let darkSocket: Socket, lightSocket: Socket
@@ -155,7 +154,7 @@ const joinGame = async (
     const gameTimer = new ChessTimer(
       game.initialTimer * 1000,
       game.timerIncrement * 1000,
-      gameLib.timeoutProtocol(io, roomID)
+      gameLib.timeoutProtocol(roomID)
     )
 
     chessTimers.set(roomID, gameTimer)

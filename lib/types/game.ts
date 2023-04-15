@@ -1,4 +1,4 @@
-import { Types } from 'mongoose'
+import { Schema } from 'mongoose'
 
 // Board to test checkmate with tomato and the lettucero horse
 // Next two moves: [f1g1, a8h8]
@@ -22,8 +22,15 @@ export enum EndState {
   CHECKMATE = 'CHECKMATE',
   DRAW = 'DRAW',
   TIMEOUT = 'TIMEOUT',
-  SURRENDER = 'SURRENDER',
-  DISCONNECTION = 'DISCONNECTION'
+  SURRENDER = 'SURRENDER'
+}
+
+export enum State {
+  PAUSED = 'PAUSED',
+  RESUMING = 'RESUMING',
+  PLAYING = 'PLAYING',
+  NOT_STARTED = 'NOT STARTED',
+  ENDED = 'ENDED'
 }
 
 /**
@@ -33,8 +40,8 @@ export interface GameState {
   turn: PlayerColor
   darkSocketId: string
   lightSocketId: string
-  darkId?: Types.ObjectId
-  lightId?: Types.ObjectId
+  darkId?: Schema.Types.ObjectId
+  lightId?: Schema.Types.ObjectId
 
   dark: string
   light: string

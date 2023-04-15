@@ -1,11 +1,14 @@
-import { Server, Socket } from 'socket.io'
-import { EndState, GameState, GameType, PlayerColor } from '@lib/types/game'
+import { Socket } from 'socket.io'
+import { EndState, GameState, GameType, PlayerColor, State } from '@lib/types/game'
 import { client, redlock } from '@config/database'
 import { chessTimers } from '@lib/timer'
 import { FindRoomMsg, FoundRoomMsg, GameOverMsg } from '@lib/types/socket-msg'
 import { GameModel } from '@models/game'
 import { composeLock, compose, ResourceName } from '@lib/namespaces'
 import * as roomLib from '@lib/room'
+import { Schema } from 'mongoose'
+import { ReservedUsernames, UserModel } from '@models/user'
+import { io } from '@server'
 
 // 2 minutes after a game is over, it is deleted from redis
 export const GAME_OVER_TTL = 2 * 60
@@ -48,43 +51,161 @@ export const setGame = async (
   } else {
     await client.set(resource, JSON.stringify(game))
   }
+  if (!await newGameInDB(game, roomID)) {
+    console.error('Error at newGameInDB')
+  }
 }
 
-export const saveGame = async (
-  io: Server,
+export const canGameBeStored = (
   game: GameState
-): Promise<boolean> => {
+): boolean => {
   const darkSocket = io.sockets.sockets.get(game.darkSocketId)
   const lightSocket = io.sockets.sockets.get(game.lightSocketId)
 
   const darkIsAuth: boolean = darkSocket?.data.authenticated
   const lightIsAuth: boolean = lightSocket?.data.authenticated
 
-  if (!darkIsAuth || !lightIsAuth) {
-    return false
-  }
+  return darkIsAuth || lightIsAuth
+}
+
+export const newGameInDB = async (
+  game: GameState,
+  roomID: string
+): Promise<boolean> => {
+  if (!canGameBeStored(game)) return true
 
   try {
     await GameModel.create({
-      dark: game.dark,
-      light: game.light,
       darkId: game.darkId,
       lightId: game.lightId,
 
       board: game.board,
       moves: game.moves,
 
-      useTimer: game.useTimer,
       initialTimer: game.initialTimer,
       timerIncrement: game.timerIncrement,
       timerDark: game.timerDark,
       timerLight: game.timerLight,
 
-      finished: game.finished,
+      gameType: game.gameType,
+      state: State.NOT_STARTED,
       endState: game.endState,
       winner: game.winner,
+      roomID
+    })
+  } catch (error: any) {
+    console.error(error)
+    return false
+  }
 
-      gameType: game.gameType
+  return true
+}
+
+export const startGameInDB = async (
+  game: GameState,
+  roomID: string
+): Promise<boolean> => {
+  if (!canGameBeStored(game)) return true
+
+  try {
+    await GameModel.updateOne({ roomID }, {
+      $set: { state: State.PLAYING }
+    })
+  } catch (error: any) {
+    console.error(error)
+    return false
+  }
+
+  return true
+}
+
+export const pauseGameInDB = async (
+  game: GameState,
+  roomID: string
+): Promise<boolean> => {
+  if (!canGameBeStored(game)) return true
+
+  try {
+    await GameModel.updateOne({ roomID }, {
+      $set: { state: State.PAUSED },
+      $unset: { roomID: '' }
+    })
+  } catch (error: any) {
+    console.error(error)
+    return false
+  }
+
+  return true
+}
+
+export const getCustomGameFromDB = async (
+  id: Schema.Types.ObjectId
+): Promise<GameState | undefined> => {
+  let game: GameState
+
+  try {
+    const gameData = await GameModel.findById(id)
+    if (!gameData || gameData.gameType !== GameType.CUSTOM) return undefined
+
+    const dark = (await UserModel.findById(gameData.darkId))?.username
+    const light = (await UserModel.findById(gameData.lightId))?.username
+
+    game = {
+      turn: gameData.moves.length % 2 === 0 ? PlayerColor.LIGHT : PlayerColor.DARK,
+      darkSocketId: '',
+      lightSocketId: '',
+      darkId: gameData.darkId,
+      lightId: gameData.lightId,
+      dark: dark ?? ReservedUsernames.GUEST_USER,
+      light: light ?? ReservedUsernames.GUEST_USER,
+      board: gameData.board,
+      moves: gameData.moves,
+      useTimer: gameData.initialTimer !== undefined,
+      initialTimer: gameData.initialTimer,
+      timerIncrement: gameData.timerIncrement,
+      timerDark: gameData.timerDark,
+      timerLight: gameData.timerLight,
+      finished: false,
+      spectators: [],
+      darkVotedDraw: false,
+      lightVotedDraw: false,
+      darkVotedSave: false,
+      lightVotedSave: false,
+      darkSurrended: false,
+      lightSurrended: false,
+      gameType: gameData.gameType
+    }
+  } catch (error: any) {
+    console.error(error)
+    return undefined
+  }
+
+  return game
+}
+
+export const endGameInDB = async (
+  game: GameState,
+  roomID: string
+): Promise<boolean> => {
+  if (!canGameBeStored(game)) return true
+
+  try {
+    await GameModel.updateOne({ roomID }, {
+      $set: {
+        darkId: game.darkId,
+        lightId: game.lightId,
+        board: game.board,
+        moves: game.moves,
+        initialTimer: game.initialTimer,
+        timerIncrement: game.timerIncrement,
+        timerDark: game.timerDark,
+        timerLight: game.timerLight,
+        gameType: game.gameType,
+        state: State.ENDED,
+        endState: game.endState,
+        winner: game.winner
+      },
+      $unset: { roomID: '' }
     })
   } catch (error: any) {
     console.error(error)
@@ -95,7 +216,6 @@ export const saveGame = async (
 }
 
 export const endProtocol = async (
-  io: Server,
   roomID: string,
   game: GameState
 ): Promise<void> => {
@@ -104,19 +224,18 @@ export const endProtocol = async (
 
   // and timer is removed
   const gameTimer = chessTimers.get(roomID)
-  if (gameTimer) gameTimer.stop()
-  chessTimers.delete(roomID)
+  if (gameTimer) {
+    gameTimer.stop()
+    chessTimers.delete(roomID)
+  }
 
   // Then save in database
-  if (game.gameType === GameType.COMPETITIVE) {
-    if (!await saveGame(io, game)) {
-      console.error('Error at saveGame')
-    }
+  if (!await endGameInDB(game, roomID)) {
+    console.error('Error at endGameInDB')
   }
 }
 
 export const timeoutProtocol = (
-  io: Server,
   roomID: string
 ): (winner: PlayerColor) => Promise<void> => {
   return async (winner: PlayerColor) => {
@@ -146,7 +265,7 @@ export const timeoutProtocol = (
 
     io.to(roomID).emit('game_over', message)
 
-    await endProtocol(io, roomID, game)
+    await endProtocol(roomID, game)
   }
 }
 
@@ -227,12 +346,20 @@ export const checkRoomCreationMsg = (
     data.time = parseInt(data.time)
     if (isNaN(data.time)) {
       res.error = 'Initial timer is not a number'
-    } else if (data.time === 0) {
+    } else if (data.time <= 0) {
+      res.error = 'Initial timer must be a positive integer'
+    }
+
+    // Change last 'else if' to the following code to enable timerless games
+
+    /*
+    else if (data.time === 0) {
       data.increment = undefined
       res.useTimer = false
     } else if (data.time < 0) {
       res.error = 'Initial timer value cannot be negative'
     }
+    */
   }
 
   if (res.useTimer) {

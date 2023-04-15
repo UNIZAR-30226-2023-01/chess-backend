@@ -1,3 +1,4 @@
+import { EndState, GameType, PlayerColor, State } from '@lib/types/game'
 import { model, Schema, Document } from 'mongoose'
 
 export interface GameDocument extends Document {
@@ -9,10 +10,13 @@ export interface GameDocument extends Document {
   timerIncrement?: number
   timerDark?: number
   timerLight?: number
-  finished: boolean
-  endState?: 'CHECKMATE' | 'DRAW' | 'TIMEOUT' | 'SURRENDER'
-  winner?: 'LIGHT' | 'DARK'
-  gameType: 'AI' | 'COMPETITIVE' | 'CUSTOM'
+
+  gameType: GameType
+  state: State
+  endState?: EndState
+  winner?: PlayerColor
+  roomID?: String
+
   createdAt: Date
   updatedAt: Date
 }
@@ -46,19 +50,23 @@ const gameSchema = new Schema<GameDocument>({
   timerLight: {
     type: Number
   },
-  finished: {
-    type: Boolean,
-    required: true
-  },
-  endState: {
-    type: String
-  },
+
   winner: {
     type: String
   },
   gameType: {
     type: String, // GameType
     required: true
+  },
+  state: {
+    type: String,
+    required: true
+  },
+  endState: {
+    type: String
+  },
+  roomID: {
+    type: String
   }
 }, {
   timestamps: true

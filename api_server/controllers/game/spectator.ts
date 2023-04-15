@@ -1,6 +1,7 @@
-import { Server, Socket } from 'socket.io'
+import { Socket } from 'socket.io'
 import * as gameLib from '@lib/game'
 import * as roomLib from '@lib/room'
+import { io } from '@server'
 const _ = require('lodash')
 
 interface RoomMessage {
@@ -43,7 +44,6 @@ const gameState = async (
 
 export const joinRoom = async (
   socket: Socket,
-  io: Server,
   data: RoomMessage
 ): Promise<void> => {
   if (!data.roomID) {

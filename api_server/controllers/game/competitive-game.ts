@@ -1,11 +1,12 @@
-import { Server, Socket } from 'socket.io'
+import { Socket } from 'socket.io'
 import * as matchmaking from '@lib/matchmaking'
 import { chessTimers, ChessTimer } from '@lib/timer'
 import * as gameLib from '@lib/game'
 import { FindRoomMsg } from '@lib/types/socket-msg'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
-import { Types } from 'mongoose'
+import { Schema } from 'mongoose'
 import { UserModel } from '@models/user'
+import { io } from '@server'
 const _ = require('lodash')
 
 const initialTimes = [3 * 60, 5 * 60, 10 * 60] // seconds
@@ -13,7 +14,6 @@ const increments = [0, 0, 0] // seconds
 
 export const findGame = async (
   socket: Socket,
-  io: Server,
   data: FindRoomMsg
 ): Promise<void> => {
   if (!data.time) {
@@ -47,7 +47,7 @@ export const findGame = async (
   await socket.join(match.roomID)
   if (!match.player2 || !match.socket2) return // jugador que espera
 
-  let darkId: Types.ObjectId, lightId: Types.ObjectId
+  let darkId, lightId: Schema.Types.ObjectId
   let darkSocketId: string, lightSocketId: string
   if (Math.random() >= 0.5) {
     darkId = match.player1
@@ -111,7 +111,7 @@ export const findGame = async (
   const gameTimer = new ChessTimer(
     data.time * 1000,
     increment * 1000,
-    gameLib.timeoutProtocol(io, roomID)
+    gameLib.timeoutProtocol(roomID)
   )
 
   chessTimers.set(match.roomID, gameTimer)
