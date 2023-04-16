@@ -6,6 +6,7 @@ import * as custom from '@controllers/game/custom-game'
 import * as restorable from '@controllers/game/restorable-game'
 import * as gameLib from '@lib/game'
 import * as roomLib from '@lib/room'
+import * as matchmaking from '@lib/matchmaking'
 import { FindRoomMsg, MoveMsg } from '@lib/types/socket-msg'
 import { GameType } from '@lib/types/game'
 
@@ -124,3 +125,32 @@ export const findRoom = async (
 
 export const voteSave = restorable.saveGame
 export const resumeGame = restorable.resumeGame
+
+export const cancelGameCreation = async (
+  socket: Socket
+): Promise<void> => {
+  const roomID = roomLib.getGameRoom(socket)
+  if (!roomID) {
+    socket.emit('error', 'This socket is not playing any game')
+    return
+  }
+
+  const isCompetitive = await matchmaking.cancelSearch(roomID)
+
+  if (isCompetitive) {
+    await competitive.cancelSearch(socket, roomID)
+    return
+  }
+
+  const game = await gameLib.getGame(roomID)
+  if (!game) {
+    socket.emit('error', `No game with roomID: ${roomID}`)
+    return
+  } else if (game.gameType !== GameType.CUSTOM &&
+             game.gameType !== GameType.COMPETITIVE) {
+    socket.emit('error', `Not supported action in game type ${game.gameType}`)
+    return
+  }
+
+  await custom.cancelCreation(socket, roomID)
+}

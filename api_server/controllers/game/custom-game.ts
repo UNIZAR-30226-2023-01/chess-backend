@@ -7,6 +7,7 @@ import { ChessTimer, chessTimers } from '@lib/timer'
 import { ReservedUsernames, UserModel } from '@models/user'
 import { io } from '@server'
 import { Types } from 'mongoose'
+import { GameModel } from '@models/game'
 
 export const findGame = async (
   socket: Socket,
@@ -200,4 +201,28 @@ const joinGame = async (
   }
 
   await gameLib.startGameInDB(game, roomID)
+}
+
+export const cancelCreation = async (
+  socket: Socket, roomID: string
+): Promise<void> => {
+  const game = await gameLib.getGame(roomID, async (game) => {
+    if (!game) {
+      socket.emit('error', `No game with roomID: ${roomID}`)
+      return
+    }
+
+    if (game.darkSocketId !== '' && game.lightSocketId !== '') {
+      socket.emit('error', 'This game has already been started')
+      return
+    }
+
+    await gameLib.unsetGame(roomID)
+    return game
+  })
+  if (!game) return
+
+  await GameModel.remove({ roomID })
+  socket.emit('cancelled')
+  await socket.leave(roomID)
 }

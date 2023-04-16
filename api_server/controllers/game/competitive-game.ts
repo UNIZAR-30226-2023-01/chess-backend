@@ -120,3 +120,11 @@ export const findGame = async (
 
   chessTimers.set(match.roomID, gameTimer)
 }
+
+export const cancelSearch = async (
+  socket: Socket, roomID: string
+): Promise<void> => {
+  socket.emit('cancelled')
+  await gameLib.unsetGame(roomID)
+  await socket.leave(roomID)
+}
