@@ -133,8 +133,40 @@ export const pauseGameInDB = async (
 
   try {
     await GameModel.updateOne({ roomID }, {
-      $set: { state: State.PAUSED },
+      $set: {
+        darkId: game.darkId,
+        lightId: game.lightId,
+        board: game.board,
+        moves: game.moves,
+        initialTimer: game.initialTimer,
+        timerIncrement: game.timerIncrement,
+        timerDark: game.timerDark,
+        timerLight: game.timerLight,
+        gameType: game.gameType,
+        state: State.PAUSED,
+        endState: game.endState,
+        winner: game.winner
+      },
       $unset: { roomID: '' }
+    })
+  } catch (error: any) {
+    console.error(error)
+    return false
+  }
+
+  return true
+}
+
+export const resumeGameInDB = async (
+  game: GameState,
+  gameID: Types.ObjectId,
+  roomID: string
+): Promise<boolean> => {
+  if (!canGameBeStored(game)) return true
+
+  try {
+    await GameModel.updateOne({ _id: gameID }, {
+      $set: { state: State.RESUMING, roomID }
     })
   } catch (error: any) {
     console.error(error)
@@ -327,7 +359,10 @@ export const isIdOnGame = (
   id: Types.ObjectId,
   game: GameState
 ): boolean => {
-  return (game.lightId?.equals(id) ?? game.darkId?.equals(id) ?? false)
+  if (game.lightId && game.darkId) {
+    return game.lightId.equals(id) || game.darkId.equals(id)
+  }
+  return false
 }
 
 export const getColor = (

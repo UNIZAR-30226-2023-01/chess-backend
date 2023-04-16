@@ -6,6 +6,7 @@ import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 import { ChessTimer, chessTimers } from '@lib/timer'
 import { ReservedUsernames, UserModel } from '@models/user'
 import { io } from '@server'
+import { Types } from 'mongoose'
 
 export const findGame = async (
   socket: Socket,
@@ -37,17 +38,23 @@ const createGame = async (
 
   const roomID = await roomLib.generateUniqueRoomCode()
 
-  let darkSocketId: string = ''
-  let lightSocketId: string = ''
-  if (data.hostColor === PlayerColor.DARK) darkSocketId = socket.id
-  else lightSocketId = socket.id
+  let darkSocketId = ''
+  let lightSocketId = ''
+  let darkId, lightId: Types.ObjectId | undefined
+  if (data.hostColor === PlayerColor.DARK) {
+    darkSocketId = socket.id
+    darkId = socket.data.userID
+  } else {
+    lightSocketId = socket.id
+    lightId = socket.data.userID
+  }
 
   const game: GameState = {
     turn: PlayerColor.LIGHT,
     darkSocketId,
     lightSocketId,
-    darkId: undefined,
-    lightId: undefined,
+    darkId,
+    lightId,
 
     dark: '',
     light: '',
@@ -87,6 +94,25 @@ const createGame = async (
   socket.emit('room_created', { roomID })
 }
 
+export const completeUserInfo = async (
+  socket: Socket,
+  game: GameState
+): Promise<void> => {
+  if (game.darkId?.equals(socket.data.userID)) {
+    game.dark = (await UserModel.findById(game.darkId))?.username ??
+      ReservedUsernames.GUEST_USER
+    game.light = ''
+    game.darkSocketId = socket.id
+    game.lightSocketId = ''
+  } else {
+    game.light = (await UserModel.findById(game.lightId))?.username ??
+      ReservedUsernames.GUEST_USER
+    game.dark = ''
+    game.lightSocketId = socket.id
+    game.darkSocketId = ''
+  }
+}
+
 const joinGame = async (
   socket: Socket,
   roomID: string
@@ -111,8 +137,8 @@ const joinGame = async (
       return
     }
 
-    if ((socket.data.userID === game.darkId && game.darkSocketId !== '') ||
-        (socket.data.userID === game.lightId && game.lightSocketId !== '')) {
+    if ((socket.data.userID?.equals(game.darkId) && game.darkSocketId !== '') ||
+        (socket.data.userID?.equals(game.lightId) && game.lightSocketId !== '')) {
       socket.emit('error', 'This player has already joined this game')
       return
     }
@@ -137,19 +163,12 @@ const joinGame = async (
     darkSocket = _darkSocket
     lightSocket = _lightSocket
 
-    let darkId: string | undefined
-    if (darkSocket.data.authenticated) {
-      darkId = darkSocket.data.userID
-    }
+    if (darkSocket.data.authenticated) game.darkId = darkSocket.data.userID
+    if (lightSocket.data.authenticated) game.lightId = lightSocket.data.userID
 
-    let lightId: string | undefined
-    if (lightSocket.data.authenticated) {
-      lightId = lightSocket.data.userID
-    }
-
-    game.dark = (await UserModel.findById(darkId))
+    game.dark = (await UserModel.findById(game.darkId))
       ?.username ?? ReservedUsernames.GUEST_USER
-    game.light = (await UserModel.findById(lightId))
+    game.light = (await UserModel.findById(game.lightId))
       ?.username ?? ReservedUsernames.GUEST_USER
 
     await gameLib.setGame(roomID, game)
@@ -167,9 +186,12 @@ const joinGame = async (
 
   if (game.useTimer &&
         game.timerIncrement !== undefined &&
-        game.initialTimer !== undefined) {
+        game.timerLight !== undefined &&
+        game.timerDark !== undefined) {
     const gameTimer = new ChessTimer(
-      game.initialTimer * 1000,
+      game.turn,
+      game.timerLight,
+      game.timerDark,
       game.timerIncrement * 1000,
       gameLib.timeoutProtocol(roomID)
     )

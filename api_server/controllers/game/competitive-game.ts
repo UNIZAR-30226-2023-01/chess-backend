@@ -111,6 +111,8 @@ export const findGame = async (
   io.to(match.socket2).emit('room', res2)
 
   const gameTimer = new ChessTimer(
+    game.turn,
+    data.time * 1000,
     data.time * 1000,
     increment * 1000,
     gameLib.timeoutProtocol(roomID)
