@@ -1,7 +1,7 @@
 import * as gameLib from '@lib/game'
 import { FindRoomMsg } from '@lib/types/socket-msg'
 import { Socket } from 'socket.io'
-import * as roomGen from '@lib/room'
+import * as roomLib from '@lib/room'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 import { ChessTimer, chessTimers } from '@lib/timer'
 import { ReservedUsernames, UserModel } from '@models/user'
@@ -35,7 +35,7 @@ const createGame = async (
     return
   }
 
-  const roomID = await roomGen.generateUniqueRoomCode()
+  const roomID = await roomLib.generateUniqueRoomCode()
 
   let darkSocketId: string = ''
   let lightSocketId: string = ''
@@ -80,6 +80,7 @@ const createGame = async (
 
   console.log(game)
   await gameLib.setGame(roomID, game)
+  void gameLib.newGameInDB(game, roomID)
 
   await socket.join(roomID)
 
@@ -103,10 +104,26 @@ const joinGame = async (
       return
     }
 
-    if (game.darkSocketId === '') {
+    if (game.darkId !== undefined &&
+        game.lightId !== undefined &&
+        !socket.data.authenticated) {
+      socket.emit('error', 'You are not player of this game')
+      return
+    }
+
+    if ((socket.data.userID === game.darkId && game.darkSocketId !== '') ||
+        (socket.data.userID === game.lightId && game.lightSocketId !== '')) {
+      socket.emit('error', 'This player has already joined this game')
+      return
+    }
+
+    if (game.darkSocketId === '' && game.lightSocketId !== '') {
       game.darkSocketId = socket.id
-    } else {
+    } else if (game.lightSocketId === '' && game.darkSocketId !== '') {
       game.lightSocketId = socket.id
+    } else {
+      socket.emit('error', 'This game is not ready to join')
+      return
     }
 
     const _darkSocket = io.sockets.sockets.get(game.darkSocketId)
@@ -159,4 +176,6 @@ const joinGame = async (
 
     chessTimers.set(roomID, gameTimer)
   }
+
+  await gameLib.startGameInDB(game, roomID)
 }

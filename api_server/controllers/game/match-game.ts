@@ -11,7 +11,7 @@ export const surrender = async (
   roomID: string
 ): Promise<void> => {
   const game = await gameLib.getGame(roomID, async (game) => {
-    if (!game) { // TODO: Internal server error
+    if (!game) {
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
     }
@@ -66,7 +66,7 @@ export const voteDraw = async (
   roomID: string
 ): Promise<void> => {
   const game = await gameLib.getGame(roomID, async (game) => {
-    if (!game) { // TODO: Internal server error
+    if (!game) {
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
     }
@@ -98,7 +98,7 @@ export const voteDraw = async (
       socket.emit('error', 'Internal server error')
     }
 
-    await gameLib.setGame(roomID, game, true)
+    await gameLib.setGame(roomID, game, game.finished)
     return game
   })
   if (!game) return
@@ -128,7 +128,7 @@ export const move = async (
   console.log('move:', move)
 
   const game = await gameLib.getGame(roomID, async (game) => {
-    if (!game) { // TODO: Internal server error
+    if (!game) {
       socket.emit('error', `No game with roomID: ${roomID}`)
       return
     }

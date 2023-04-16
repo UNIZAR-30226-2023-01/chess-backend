@@ -1,9 +1,9 @@
 import { EndState, GameType, PlayerColor, State } from '@lib/types/game'
-import { model, Schema, Document } from 'mongoose'
+import { model, Schema, Document, Types } from 'mongoose'
 
 export interface GameDocument extends Document {
-  darkId?: Schema.Types.ObjectId
-  lightId?: Schema.Types.ObjectId
+  darkId?: Types.ObjectId
+  lightId?: Types.ObjectId
   board: string // FEN codification of board state
   moves: string[] // UCI LAN format
   initialTimer?: number
@@ -15,7 +15,7 @@ export interface GameDocument extends Document {
   state: State
   endState?: EndState
   winner?: PlayerColor
-  roomID?: String
+  roomID?: string
 
   createdAt: Date
   updatedAt: Date
@@ -23,11 +23,11 @@ export interface GameDocument extends Document {
 
 const gameSchema = new Schema<GameDocument>({
   darkId: {
-    type: Schema.Types.ObjectId,
+    type: Types.ObjectId,
     ref: 'User'
   },
   lightId: {
-    type: Schema.Types.ObjectId,
+    type: Types.ObjectId,
     ref: 'User'
   },
   board: {

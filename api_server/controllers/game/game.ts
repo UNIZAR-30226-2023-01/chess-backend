@@ -3,6 +3,7 @@ import * as match from '@controllers/game/match-game'
 import * as competitive from '@controllers/game/competitive-game'
 import * as ai from '@controllers/game/ai-game'
 import * as custom from '@controllers/game/custom-game'
+import * as restorable from '@controllers/game/restorable-game'
 import * as gameLib from '@lib/game'
 import * as roomLib from '@lib/room'
 import { FindRoomMsg, MoveMsg } from '@lib/types/socket-msg'
@@ -120,3 +121,6 @@ export const findRoom = async (
     socket.emit('error', 'Not supported game type')
   }
 }
+
+export const voteSave = restorable.saveGame
+export const resumeGame = restorable.resumeGame

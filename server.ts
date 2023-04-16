@@ -29,6 +29,8 @@ function onConnection (socket: Socket): void {
   socket.on('move', gameCtl.move.bind(null, socket))
   socket.on('surrender', gameCtl.surrender.bind(null, socket))
   socket.on('vote_draw', gameCtl.voteDraw.bind(null, socket))
+  socket.on('vote_save', gameCtl.voteSave.bind(null, socket))
+  socket.on('resume', gameCtl.resumeGame.bind(null, socket))
 }
 
 io.on('connection', onConnection)

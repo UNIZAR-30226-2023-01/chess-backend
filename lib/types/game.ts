@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose'
+import { Types } from 'mongoose'
 
 // Board to test checkmate with tomato and the lettucero horse
 // Next two moves: [f1g1, a8h8]
@@ -40,8 +40,8 @@ export interface GameState {
   turn: PlayerColor
   darkSocketId: string
   lightSocketId: string
-  darkId?: Schema.Types.ObjectId
-  lightId?: Schema.Types.ObjectId
+  darkId?: Types.ObjectId
+  lightId?: Types.ObjectId
 
   dark: string
   light: string

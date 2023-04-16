@@ -7,7 +7,7 @@ import { FindRoomMsg, GameOverMsg, MovedMsg } from '@lib/types/socket-msg'
 import { ReservedUsernames, UserModel } from '@models/user'
 import { io } from '@server'
 import { Chess } from 'chess.ts'
-import { Schema } from 'mongoose'
+import { Types } from 'mongoose'
 import { Socket } from 'socket.io'
 
 const skillLevel = [1, 3, 7, 20]
@@ -40,8 +40,8 @@ export const findGame = async (
   let darkSocketId: string = ReservedUsernames.AI_USER
   let lightSocketId: string = ReservedUsernames.AI_USER
 
-  let darkId: Schema.Types.ObjectId | undefined
-  let lightId: Schema.Types.ObjectId | undefined
+  let darkId: Types.ObjectId | undefined
+  let lightId: Types.ObjectId | undefined
 
   let dark: string = ReservedUsernames.AI_USER
   let light: string = ReservedUsernames.AI_USER
@@ -97,6 +97,16 @@ export const findGame = async (
 
   console.log(game)
   await gameLib.setGame(roomID, game)
+  await gameLib.newGameInDB(game, roomID)
+  await startAIGame(socket, game, roomID)
+}
+
+export const startAIGame = async (
+  socket: Socket,
+  game: GameState,
+  roomID: string
+): Promise<void> => {
+  await gameLib.startGameInDB(game, roomID)
 
   const res = gameLib.createFoundRoomMsg(socket.id, roomID, game)
 
@@ -116,8 +126,10 @@ export const findGame = async (
     chessTimers.set(roomID, gameTimer)
   }
 
-  // AI starts if player moves dark pieces
-  if (data.hostColor === PlayerColor.DARK) {
+  if ((game.dark === ReservedUsernames.AI_USER &&
+        game.turn === PlayerColor.DARK) ||
+      (game.light === ReservedUsernames.AI_USER &&
+        game.turn === PlayerColor.LIGHT)) {
     const move = await bestMove(
       game.board,
       skillLevel[game.difficulty ?? 1],
@@ -193,6 +205,7 @@ export const move = async (
     game.board = chess.fen()
     game.turn = gameLib.alternativeColor(game.turn)
 
+    // Unify move format before pushing and emiting it
     if (moveRes.promotion) {
       move = moveRes.from + moveRes.to + moveRes.promotion
     } else {

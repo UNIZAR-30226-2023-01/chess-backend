@@ -2,7 +2,8 @@ export enum ResourceName {
   LOCK = 'lock',
   ROOM = 'room',
   TOKEN_BL = 'token-blacklist',
-  PLAYER_Q = 'player-queue'
+  PLAYER_Q = 'player-queue',
+  RESTORE_Q = 'restore-game-queue'
 }
 
 export const compose = (prefix: string, ...sufix: string[]): string => {

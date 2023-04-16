@@ -6,7 +6,7 @@ import { FindRoomMsg, FoundRoomMsg, GameOverMsg } from '@lib/types/socket-msg'
 import { GameModel } from '@models/game'
 import { composeLock, compose, ResourceName } from '@lib/namespaces'
 import * as roomLib from '@lib/room'
-import { Schema } from 'mongoose'
+import { Types } from 'mongoose'
 import { ReservedUsernames, UserModel } from '@models/user'
 import { io } from '@server'
 
@@ -51,9 +51,13 @@ export const setGame = async (
   } else {
     await client.set(resource, JSON.stringify(game))
   }
-  if (!await newGameInDB(game, roomID)) {
-    console.error('Error at newGameInDB')
-  }
+}
+
+export const unsetGame = async (
+  roomID: string
+): Promise<void> => {
+  const resource = compose(ResourceName.ROOM, roomID)
+  await client.del(resource)
 }
 
 export const canGameBeStored = (
@@ -125,6 +129,8 @@ export const pauseGameInDB = async (
 ): Promise<boolean> => {
   if (!canGameBeStored(game)) return true
 
+  updateGameTimer(roomID, game)
+
   try {
     await GameModel.updateOne({ roomID }, {
       $set: { state: State.PAUSED },
@@ -138,17 +144,30 @@ export const pauseGameInDB = async (
   return true
 }
 
-export const getCustomGameFromDB = async (
-  id: Schema.Types.ObjectId
-): Promise<GameState | undefined> => {
+interface GameAndState {
+  game: GameState
+  state: State
+  roomID?: string
+}
+
+export const getGameStateFromDB = async (
+  id: Types.ObjectId
+): Promise<GameAndState | undefined> => {
   let game: GameState
+  let state: State
+  let roomID: string | undefined
 
   try {
     const gameData = await GameModel.findById(id)
-    if (!gameData || gameData.gameType !== GameType.CUSTOM) return undefined
+    if (!gameData ||
+      (gameData.gameType !== GameType.CUSTOM &&
+      gameData.gameType !== GameType.AI)) return undefined
 
     const dark = (await UserModel.findById(gameData.darkId))?.username
     const light = (await UserModel.findById(gameData.lightId))?.username
+    const alternativeName = (gameData.gameType === GameType.CUSTOM)
+      ? ReservedUsernames.GUEST_USER
+      : ReservedUsernames.AI_USER
 
     game = {
       turn: gameData.moves.length % 2 === 0 ? PlayerColor.LIGHT : PlayerColor.DARK,
@@ -156,8 +175,8 @@ export const getCustomGameFromDB = async (
       lightSocketId: '',
       darkId: gameData.darkId,
       lightId: gameData.lightId,
-      dark: dark ?? ReservedUsernames.GUEST_USER,
-      light: light ?? ReservedUsernames.GUEST_USER,
+      dark: dark ?? alternativeName,
+      light: light ?? alternativeName,
       board: gameData.board,
       moves: gameData.moves,
       useTimer: gameData.initialTimer !== undefined,
@@ -175,12 +194,14 @@ export const getCustomGameFromDB = async (
       lightSurrended: false,
       gameType: gameData.gameType
     }
+    state = gameData.state
+    roomID = gameData.roomID
   } catch (error: any) {
     console.error(error)
     return undefined
   }
 
-  return game
+  return { game, state, roomID }
 }
 
 export const endGameInDB = async (
@@ -215,6 +236,14 @@ export const endGameInDB = async (
   return true
 }
 
+export const removeTimer = (roomID: string): void => {
+  const gameTimer = chessTimers.get(roomID)
+  if (gameTimer) {
+    gameTimer.stop()
+    chessTimers.delete(roomID)
+  }
+}
+
 export const endProtocol = async (
   roomID: string,
   game: GameState
@@ -223,11 +252,7 @@ export const endProtocol = async (
   io.in(roomID).socketsLeave(roomID)
 
   // and timer is removed
-  const gameTimer = chessTimers.get(roomID)
-  if (gameTimer) {
-    gameTimer.stop()
-    chessTimers.delete(roomID)
-  }
+  removeTimer(roomID)
 
   // Then save in database
   if (!await endGameInDB(game, roomID)) {
@@ -296,6 +321,13 @@ export const isPlayerOfGame = (
 ): boolean => {
   return (game.lightSocketId === socket.id ||
     game.darkSocketId === socket.id)
+}
+
+export const isIdOnGame = (
+  id: Types.ObjectId,
+  game: GameState
+): boolean => {
+  return (game.lightId?.equals(id) ?? game.darkId?.equals(id) ?? false)
 }
 
 export const getColor = (
