@@ -37,36 +37,24 @@ export const findGame = async (
 
   const roomID = await roomLib.generateUniqueRoomCode()
 
-  let darkSocketId: string = ReservedUsernames.AI_USER
-  let lightSocketId: string = ReservedUsernames.AI_USER
-
   let darkId: Types.ObjectId | undefined
   let lightId: Types.ObjectId | undefined
 
-  let dark: string = ReservedUsernames.AI_USER
-  let light: string = ReservedUsernames.AI_USER
-
   if (data.hostColor === PlayerColor.DARK) {
-    darkSocketId = socket.id
     darkId = socket.data.userID
-    dark = (await UserModel.findById(darkId))
-      ?.username ?? ReservedUsernames.GUEST_USER
   } else {
-    lightSocketId = socket.id
     lightId = socket.data.userID
-    light = (await UserModel.findById(lightId))
-      ?.username ?? ReservedUsernames.GUEST_USER
   }
 
   const game: GameState = {
     turn: PlayerColor.LIGHT,
-    darkSocketId,
-    lightSocketId,
+    darkSocketId: '',
+    lightSocketId: '',
     darkId,
     lightId,
 
-    dark,
-    light,
+    dark: '',
+    light: '',
     board: START_BOARD,
     moves: [],
 
@@ -94,11 +82,29 @@ export const findGame = async (
     gameType: GameType.AI,
     difficulty: data.difficulty
   }
-
-  console.log(game)
+  await completeUserInfo(socket, game)
   await gameLib.setGame(roomID, game)
   await gameLib.newGameInDB(game, roomID)
   await startAIGame(socket, game, roomID)
+}
+
+export const completeUserInfo = async (
+  socket: Socket,
+  game: GameState
+): Promise<void> => {
+  if (game.darkId?.equals(socket.data.userID)) {
+    game.dark = (await UserModel.findById(game.darkId))?.username ??
+      ReservedUsernames.GUEST_USER
+    game.light = ReservedUsernames.AI_USER
+    game.darkSocketId = socket.id
+    game.lightSocketId = ''
+  } else {
+    game.light = (await UserModel.findById(game.lightId))?.username ??
+      ReservedUsernames.GUEST_USER
+    game.dark = ReservedUsernames.AI_USER
+    game.lightSocketId = socket.id
+    game.darkSocketId = ''
+  }
 }
 
 export const startAIGame = async (
@@ -116,9 +122,12 @@ export const startAIGame = async (
 
   if (game.useTimer &&
         game.timerIncrement !== undefined &&
-        game.initialTimer !== undefined) {
+        game.timerLight !== undefined &&
+        game.timerDark !== undefined) {
     const gameTimer = new ChessTimer(
-      game.initialTimer * 1000,
+      game.turn,
+      game.timerLight,
+      game.timerDark,
       game.timerIncrement * 1000,
       gameLib.timeoutProtocol(roomID)
     )
@@ -147,6 +156,7 @@ export const move = async (
   move: string,
   aiMove?: boolean
 ): Promise<void> => {
+  // DEBUG
   console.log('move:', move)
 
   const game = await gameLib.getGame(roomID, async (game) => {

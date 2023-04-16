@@ -1,4 +1,4 @@
-import { GameState, GameType, PlayerColor, State } from '@lib/types/game'
+import { GameType, PlayerColor, State } from '@lib/types/game'
 import { io } from '@server'
 import { Socket } from 'socket.io'
 import * as ai from '@controllers/game/ai-game'
@@ -9,7 +9,6 @@ import * as roomLib from '@lib/room'
 import { GameIDMsg } from '@lib/types/socket-msg'
 import { Types } from 'mongoose'
 import { GameModel } from '@models/game'
-import { ReservedUsernames, UserModel } from '@models/user'
 
 export const saveGame = async (
   socket: Socket
@@ -61,7 +60,7 @@ export const saveGame = async (
     }
 
     if ((game.gameType === GameType.AI) ||
-        (game.darkVotedDraw && game.lightVotedDraw)) {
+        (game.darkVotedSave && game.lightVotedSave)) {
       save = true
       gameLib.removeTimer(roomID)
       await gameLib.unsetGame(roomID)
@@ -83,7 +82,6 @@ export const saveGame = async (
 
     io.to(roomID).emit('game_saved',
       /* PARA DEBUG RAPIDO */ gameID)
-    await gameLib.pauseGameInDB(game, roomID)
     io.in(roomID).socketsLeave(roomID)
   } else {
     io.to(roomID).emit('voted_save', { color: gameLib.getColor(socket, game) })
@@ -99,8 +97,13 @@ export const resumeGame = async (
     return
   }
 
-  const gameID = new Types.ObjectId(data.gameID)
-  console.log('GAME ID:', gameID)
+  let gameID
+  try {
+    gameID = new Types.ObjectId(data.gameID)
+  } catch (err: any) {
+    socket.emit('error', `No game with gameID: ${data.gameID}`)
+    return
+  }
 
   if (gameLib.isSocketInGame(socket)) {
     socket.emit('error', 'This socket is already playing or in queue')
@@ -109,7 +112,7 @@ export const resumeGame = async (
 
   const gameAndState = await gameLib.getGameStateFromDB(gameID)
   if (!gameAndState) {
-    socket.emit('error', 'Internal server error')
+    socket.emit('error', `No game with gameID: ${data.gameID}`)
     return
   }
 
@@ -138,31 +141,19 @@ export const resumeGame = async (
     }
   } else {
     const roomID = await roomLib.generateUniqueRoomCode()
-    await completeUserInfo(socket, game)
-    await gameLib.setGame(roomID, game)
-
     if (game.gameType === GameType.CUSTOM) {
-      console.log('NOOOOOOOOOOOOOOOO')
+      await custom.completeUserInfo(socket, game)
+      await gameLib.setGame(roomID, game)
+      await socket.join(roomID)
+      await gameLib.resumeGameInDB(game, gameID, roomID)
+      socket.emit('room_created', { roomID })
     } else { // GameType.AI
+      await ai.completeUserInfo(socket, game)
+      await gameLib.setGame(roomID, game)
+      await gameLib.resumeGameInDB(game, gameID, roomID)
       await ai.startAIGame(socket, game, roomID)
     }
 
     await restoreQ.pullGameID(data.gameID)
-  }
-}
-
-const completeUserInfo = async (socket: Socket, game: GameState): Promise<void> => {
-  if (game.darkId?.equals(socket.data.userID)) {
-    game.dark = (await UserModel.findById(game.darkId))?.username ??
-      ReservedUsernames.GUEST_USER
-    game.light = ReservedUsernames.AI_USER
-    game.darkSocketId = socket.id
-    game.lightSocketId = ''
-  } else {
-    game.light = (await UserModel.findById(game.lightId))?.username ??
-      ReservedUsernames.GUEST_USER
-    game.dark = ReservedUsernames.AI_USER
-    game.lightSocketId = socket.id
-    game.darkSocketId = ''
   }
 }
