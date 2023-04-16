@@ -28,9 +28,9 @@ post:
         example:
           move: "e2e4"
   responses:
-    '100':
+    '200':
       description: event(moved) 
-        Emits the move to every socket in the room.
+        The move contained in this event.
       content:
         application/json:
           schema:
@@ -62,7 +62,7 @@ post:
             timerDark: 300000
     '300':
       description: event(game_over) 
-        Emits that the game has been finished because of this move event.
+        The game has ended.
       content:
         application/json:
           schema:
@@ -71,7 +71,7 @@ post:
               endState:
                 type: string
                 description: |
-                  Reason why the game is over.
+                  Reason why the game ended.
                 enum:
                   - CHECKMATE
                   - DRAW

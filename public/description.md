@@ -176,12 +176,6 @@ A `Status` object is always included in the JSON response payload for both succe
 
 This section contains a few recommendations on how to efficiently utilize the Reign API for your enterprise application, particularly if you already have a large base of users for your application.
 
-<h2>Socket Connections</h2>
-
-Socket connections are ment to be held using the [Socket.io](https://socket.io/) library. Clients must continuously send an event for the server to know if connection is still on. If a client has not sent any event after one minute, the server will close the connection.
-
-***Note:** Instead of sending events that modify the game state, the **heartbeat** event can be sent with an empty body.*
-
 <h2>Implement a Caching Strategy If Needed</h2>
 
 There are standard legal data safeguards included in the [Commercial Terms](https://reign.gracehopper.xyz/terms) of Use that app developers should be aware of. These conditions help prevent unauthorized scraping and redistribution of Reign data, but are intentionally worded to allow legitimate local caching of system data to support the operation of your application. If your application has a significant user base and you are concerned about staying within API throttling limits, consider implementing a data caching strategy.

@@ -15,7 +15,7 @@ get:
   responses:
     '100':
       description: event(voted_draw) 
-        Emits that this socket has voted for a draw.
+        This socket has voted for a draw.
       content:
         application/json:
           schema:
@@ -32,7 +32,7 @@ get:
             color: "LIGHT"
     '300':
       description: event(game_over) 
-        Emits that the game has been finished because of this event.
+        The game has ended.
       content:
         application/json:
           schema:
@@ -41,7 +41,7 @@ get:
               endState:
                 type: string
                 description: |
-                  Reason why the game is over.
+                  Reason why the game ended.
                 enum:
                   - DRAW
           example:

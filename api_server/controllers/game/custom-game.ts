@@ -212,7 +212,7 @@ export const cancelCreation = async (
       return
     }
 
-    if (game.darkSocketId !== '' && game.lightSocketId !== '') {
+    if (gameLib.isGameStarted(game)) {
       socket.emit('error', 'This game has already been started')
       return
     }

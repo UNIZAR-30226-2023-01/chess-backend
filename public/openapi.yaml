@@ -83,10 +83,12 @@ paths:
   /tournaments/leave/{id}:
     $ref: paths/tournaments/leaveTournaments.yaml
 webhooks:
-  heartbeat:
-    $ref: paths/webhooks/heartbeat.yaml
   findRoom:
     $ref: paths/webhooks/findRoom.yaml
+  cancel:
+    $ref: paths/webhooks/cancel.yaml
+  resume:
+    $ref: paths/webhooks/resumeGame.yaml
   joinRoom:
     $ref: paths/webhooks/joinRoom.yaml
   leaveRoom:

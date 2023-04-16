@@ -12,7 +12,7 @@ get:
   responses:
     '300':
       description: event(game_over) 
-        Emits that the game has been finished because of this event.
+        The game has ended.
       content:
         application/json:
           schema:
@@ -21,7 +21,7 @@ get:
               endState:
                 type: string
                 description: |
-                  Reason why the game is over.
+                  Reason why the game ended.
                 enum:
                   - SURRENDER
               winner:
