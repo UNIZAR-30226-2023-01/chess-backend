@@ -236,6 +236,36 @@ export const getGameStateFromDB = async (
   return { game, state, roomID }
 }
 
+export const updateUserStats = async (
+  game: GameState,
+  userID: Types.ObjectId,
+  color: PlayerColor
+): Promise<void> => {
+  let incProp: string = ''
+
+  const isWinner = color === game.winner
+  const isDraw = game.endState === EndState.DRAW
+  switch (game.initialTimer) {
+    case 180:
+      incProp = 'bullet'
+      break
+    case 300:
+      incProp = 'blitz'
+      break
+    case 600:
+      incProp = 'fast'
+      break
+  }
+  if (isDraw) incProp += 'Draws'
+  else if (isWinner) incProp += 'Wins'
+  else incProp += 'Defeats'
+
+  const obj: Object = {}
+  Object.defineProperty(obj, incProp, { value: 1 })
+
+  await UserModel.findByIdAndUpdate(userID, { $inc: obj })
+}
+
 export const endGameInDB = async (
   game: GameState,
   roomID: string
@@ -260,6 +290,11 @@ export const endGameInDB = async (
       },
       $unset: { roomID: '' }
     })
+
+    if (game.gameType === GameType.COMPETITIVE) {
+      if (game.darkId) void updateUserStats(game, game.darkId, PlayerColor.DARK)
+      if (game.lightId) void updateUserStats(game, game.lightId, PlayerColor.LIGHT)
+    }
   } catch (error: any) {
     console.error(error)
     return false
