@@ -241,27 +241,27 @@ export const updateUserStats = async (
   userID: Types.ObjectId,
   color: PlayerColor
 ): Promise<void> => {
-  let incProp: string = ''
+  let incProp = 'stats.'
 
   const isWinner = color === game.winner
   const isDraw = game.endState === EndState.DRAW
   switch (game.initialTimer) {
     case 180:
-      incProp = 'bullet'
+      incProp += 'bullet'
       break
     case 300:
-      incProp = 'blitz'
+      incProp += 'blitz'
       break
     case 600:
-      incProp = 'fast'
+      incProp += 'fast'
       break
   }
   if (isDraw) incProp += 'Draws'
   else if (isWinner) incProp += 'Wins'
   else incProp += 'Defeats'
 
-  const obj: Object = {}
-  Object.defineProperty(obj, incProp, { value: 1 })
+  const obj: { [key: string]: number } = {}
+  obj[incProp] = 1
 
   await UserModel.findByIdAndUpdate(userID, { $inc: obj })
 }

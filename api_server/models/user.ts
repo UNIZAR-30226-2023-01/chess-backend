@@ -79,44 +79,57 @@ const userSchema = new Schema<UserDocument>({
     type: String,
     default: 'classic'
   },
-  stats: new Schema({
-    bulletWins: {
-      type: Number,
-      default: 0
-    },
-    bulletDefeats: {
-      type: Number,
-      default: 0
-    },
-    bulletDraws: {
-      type: Number,
-      default: 0
-    },
-    blitzWins: {
-      type: Number,
-      default: 0
-    },
-    blitzDefeats: {
-      type: Number,
-      default: 0
-    },
-    blitzDraws: {
-      type: Number,
-      default: 0
-    },
-    fastWins: {
-      type: Number,
-      default: 0
-    },
-    fastDefeats: {
-      type: Number,
-      default: 0
-    },
-    fastDraws: {
-      type: Number,
-      default: 0
+  stats: {
+    type: new Schema({
+      bulletWins: {
+        type: Number,
+        default: 0
+      },
+      bulletDefeats: {
+        type: Number,
+        default: 0
+      },
+      bulletDraws: {
+        type: Number,
+        default: 0
+      },
+      blitzWins: {
+        type: Number,
+        default: 0
+      },
+      blitzDefeats: {
+        type: Number,
+        default: 0
+      },
+      blitzDraws: {
+        type: Number,
+        default: 0
+      },
+      fastWins: {
+        type: Number,
+        default: 0
+      },
+      fastDefeats: {
+        type: Number,
+        default: 0
+      },
+      fastDraws: {
+        type: Number,
+        default: 0
+      }
+    }),
+    default: {
+      bulletWins: 0,
+      bulletDefeats: 0,
+      bulletDraws: 0,
+      blitzWins: 0,
+      blitzDefeats: 0,
+      blitzDraws: 0,
+      fastWins: 0,
+      fastDefeats: 0,
+      fastDraws: 0
     }
-  })
+  }
 }, {
   timestamps: true
 })
