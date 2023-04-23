@@ -94,6 +94,9 @@ post:
     401:
       description: Unauthorized
       $ref: '../../components/schemas/responses/401.yaml'
+    403:
+      description: Forbbiden
+      $ref: '../../components/schemas/responses/403.yaml'
     404:
       description: Not Found
       $ref: '../../components/schemas/responses/404.yaml'

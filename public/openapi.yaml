@@ -60,7 +60,9 @@ paths:
     $ref: 'paths/auth/signInGoogle.yaml'
   /auth/sign-out:
     $ref: 'paths/auth/signOut.yaml'
-  /auth/verify:
+  /auth/authenticate:
+    $ref: paths/auth/authenticate.yaml
+  /auth/verify/{id}/{token}:
     $ref: paths/auth/verify.yaml
   /auth/forgot-password:
     $ref: paths/auth/forgotPassword.yaml
