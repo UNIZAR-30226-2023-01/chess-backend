@@ -5,6 +5,7 @@ export interface MatchDocument extends Document {
   nextMatchId: Schema.Types.ObjectId
   tournamentRoundText: String
   startTime: Date
+  state: 'NO_SHOW' | 'WALK_OVER' | 'NO_PARTY' | 'DONE' | 'SCORE_DONE'
 }
 
 const MatchSchema = new Schema<MatchDocument>({
@@ -12,8 +13,15 @@ const MatchSchema = new Schema<MatchDocument>({
     type: Schema.Types.ObjectId,
     ref: 'Game'
   },
+  tournamentRoundText: {
+    type: String
+  },
   startTime: {
     type: Date
+  },
+  state: {
+    type: String,
+    default: 'NO_SHOW'
   }
 }, {
   timestamps: true

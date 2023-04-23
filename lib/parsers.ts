@@ -13,6 +13,7 @@ interface User {
   elo?: number
   skins?: object
   availableSkins?: object[]
+  stats?: object
   games?: string
   createdAt?: Date
   updatedAt?: Date
@@ -47,6 +48,17 @@ export const parseExtendedUser = (user: UserDocument): User => {
       darkPieces: user.darkPieces
     },
     availableSkins: [],
+    stats: {
+      bulletWins: user.stats.bulletWins,
+      bulletDraws: user.stats.bulletDraws,
+      bulletDefeats: user.stats.bulletDefeats,
+      blitzWins: user.stats.blitzWins,
+      blitzDraws: user.stats.blitzDraws,
+      blitzDefeats: user.stats.blitzDefeats,
+      fastWins: user.stats.fastWins,
+      fastDraws: user.stats.fastDraws,
+      fastDefeats: user.stats.fastDefeats
+    },
     createdAt: user.createdAt,
     updatedAt: user.updatedAt
   }
@@ -54,6 +66,8 @@ export const parseExtendedUser = (user: UserDocument): User => {
 
 interface Game {
   id: string
+  lightUsername?: string
+  darkUsername?: string
   lightPlayer?: string
   darkPlayer?: string
   board: string
@@ -97,7 +111,6 @@ export const parseGame = (Games: GameDocument): Game => {
 interface Match {
   id: string
   game: string
-  name: string
   nextMatchId: string | null
   tournamentRoundText: string
   startTime: string
@@ -133,9 +146,8 @@ export const parseTournament = (Tournament: TournamentDocument): Tournament => {
       return {
         id: matchJSON._id,
         game: `https://api.gracehopper.xyz/v1/games/${String(matchJSON._id)}`,
-        name: '',
         nextMatchId: matchJSON.nextMatchId,
-        tournamentRoundText: '',
+        tournamentRoundText: matchJSON.tournamentRoundText,
         startTime: matchJSON.startTime,
         state: 'NO_SHOW',
         participants: []
