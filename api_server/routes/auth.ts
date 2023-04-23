@@ -13,7 +13,8 @@ const FAILURE_REDIRECT = process.env.FAILURE_REDIRECT ?? 'http://localhost:3000/
 router.post('/sign-in', validateBody(signIn), authCtrl.signIn)
 router.post('/sign-up', validateBody(signUp), authCtrl.signUp)
 router.post('/sign-out', userMiddleware.isAuthenticated, authCtrl.signOut)
-router.post('/verify', userMiddleware.isAuthenticated, authCtrl.verify)
+router.get('/verify/:id/:token', authCtrl.verify)
+router.post('/authenticate', userMiddleware.isAuthenticated, authCtrl.authenticate)
 
 router.post('/forgot-password', validateBody(forgotPassword), authCtrl.forgotPassword)
 router.get('/reset-password/:id/:token', authCtrl.resetPassword)

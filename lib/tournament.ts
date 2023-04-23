@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 interface Match {
-  id: ObjectId
+  _id: ObjectId
   nextMatchId: ObjectId | null
 }
 
@@ -11,8 +11,9 @@ function generateGames (rondas: number): Match[][] {
     const gameLlist = []
     for (let game = 0; game < 2 ** ronda; game++) {
       const data = {
-        id: new ObjectId(),
+        _id: new ObjectId(),
         nextMatchId: null,
+        tournamentRoundText: `Ronda ${ronda + 1}`,
         startTime: getDate(rondas - ronda)
       }
       gameLlist.push(data)
@@ -27,10 +28,10 @@ function linkItems (roundLlist: Match[][]): void {
   for (let i = roundLlist.length - 1; i >= 0; i--) {
     if (i === 0) break
     for (let j = 0; j < roundLlist[i].length; j++) {
-      if (j % 2 === 0) {
-        roundLlist[i][j].nextMatchId = roundLlist[i - 1][j / 2 | 0].id
+      if (j % 2 === 0) { // bug
+        roundLlist[i][j].nextMatchId = roundLlist[i - 1][j / 2 | 0]._id
       } else {
-        roundLlist[i][j].nextMatchId = roundLlist[i - 1][j / 2 | 0].id
+        roundLlist[i][j].nextMatchId = roundLlist[i - 1][j / 2 | 0]._id
       }
     }
   }

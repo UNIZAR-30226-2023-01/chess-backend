@@ -7,7 +7,7 @@ get:
   summary: Leave Room
   operationId: leaveRoom
   description: event(leave_room) 
-    Allows an spectator to leave the game room.
+    Allows an spectator to leave the game room. Does not expect any answer on success.
   security: []
   responses:
     '400':

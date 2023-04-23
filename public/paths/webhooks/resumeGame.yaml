@@ -1,0 +1,154 @@
+get:
+  servers: 
+    - url: 'https://localhost:4001'
+    - url: 'https://api.gracehopper.xyz:8443'
+  tags: 
+    - Room
+  summary: Resume
+  operationId: resume
+  description: event(resume) 
+    Allows retrieving a saved **custom** or **ai** game to be resumed.
+  security: []
+  responses:
+    '200':
+      description: event(room) 
+        Recovered state of the game.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              roomID:
+                type: string
+                description: |
+                  Id of the room where the game takes place.
+                  It can be shared to let other users spectate the match.
+              color:
+                type: string
+                description: Player's color in this game.
+                enum: 
+                  - LIGHT
+                  - DARK
+              turn:
+                type: string
+                description: Next player to move.
+                enum: 
+                  - LIGHT
+                  - DARK
+              light:
+                type: string
+                description: |
+                  Name of light side player.
+              dark:
+                type: string
+                description: |
+                  Name of dark side player.
+              board:
+                type: string
+                description: |
+                  Current state of this game's board, in FEN notation.
+              moves:
+                type: array
+                items:
+                  type: string
+                description: |
+                  List of all the moves executed, in long algebraic notation.
+              useTimer:
+                type: boolean
+                description: |
+                  `true` only if players have limited time to play.
+              initialTimer:
+                type: integer
+                description: |
+                  `time` property with which this game was created
+                  *(only sent if the game uses timer)*.
+              timerIncrement:
+                type: integer
+                description: |
+                  `increment` property with which this game was created
+                  *(only sent if the game uses timer)*.
+              timerLight:
+                type: integer
+                description: | 
+                  Time remaining, in milliseconds, for the light player to move
+                  *(only sent if the game uses timer)*.
+              timerDark:
+                type: integer
+                description: | 
+                  Time remaining, in milliseconds, for the dark player to move
+                  *(only sent if the game uses timer)*.
+              gameType:
+                type: string
+                enum: 
+                  - "AI"
+                  - "COMPETITIVE"
+                  - "CUSTOM"
+                  - "TOURNAMENT"
+          examples:
+            "created AI game":
+              value:
+                roomID: "123456"
+                color: "DARK"
+                turn: "LIGHT"
+                light: "AI"
+                dark: "Guest"
+                board: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+                moves: []
+                useTimer: true
+                initialTimer: 125
+                timerIncrement: 3
+                timerDark: 125000
+                timerLight: 125000
+                gameType: "AI"
+            "joined custom game":
+              value:
+                roomID: "123456"
+                color: "LIGHT"
+                turn: "LIGHT"
+                light: "Guest"
+                dark: "Host"
+                board: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+                moves: []
+                useTimer: false
+                gameType: "CUSTOM"
+            "joined competitive game":
+              value:
+                roomID: "123456"
+                color: "LIGHT"
+                turn: "LIGHT"
+                light: "Bob"
+                dark: "Alice"
+                board: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+                moves: []
+                useTimer: true
+                initialTimer: 300
+                timerIncrement: 0
+                timerDark: 300000
+                timerLight: 300000
+                gameType: "COMPETITIVE"
+    '100':
+      description: event(room_created) 
+        Id of the room.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              roomID:
+                type: string
+                description: |
+                  Id of the room where the game takes place.
+                  It can be shared in order to invite a player or 
+                  to let other users spectate the match.
+          examples:
+            "created custom game":
+              value:
+                roomID: "123456"
+    '400':
+      description: event(error)
+        Something went wrong.
+      content:
+        text/plain:
+          schema:
+            description: Details of what caused the error.
+            type: string

@@ -1,6 +1,7 @@
 import { GameDocument } from '@models/game'
 import { TournamentDocument } from '@models/tournament'
 import { UserDocument } from '@models/user'
+import { EndState, GameType, PlayerColor, State } from '@lib/types/game'
 
 interface User {
   id: string
@@ -12,6 +13,7 @@ interface User {
   elo?: number
   skins?: object
   availableSkins?: object[]
+  stats?: object
   games?: string
   createdAt?: Date
   updatedAt?: Date
@@ -46,6 +48,17 @@ export const parseExtendedUser = (user: UserDocument): User => {
       darkPieces: user.darkPieces
     },
     availableSkins: [],
+    stats: {
+      bulletWins: user.stats.bulletWins,
+      bulletDraws: user.stats.bulletDraws,
+      bulletDefeats: user.stats.bulletDefeats,
+      blitzWins: user.stats.blitzWins,
+      blitzDraws: user.stats.blitzDraws,
+      blitzDefeats: user.stats.blitzDefeats,
+      fastWins: user.stats.fastWins,
+      fastDraws: user.stats.fastDraws,
+      fastDefeats: user.stats.fastDefeats
+    },
     createdAt: user.createdAt,
     updatedAt: user.updatedAt
   }
@@ -53,6 +66,8 @@ export const parseExtendedUser = (user: UserDocument): User => {
 
 interface Game {
   id: string
+  lightUsername?: string
+  darkUsername?: string
   lightPlayer?: string
   darkPlayer?: string
   board: string
@@ -63,10 +78,10 @@ interface Game {
     lightTimer?: number
     darkTimer?: number
   }
-  winner?: 'LIGHT' | 'DARK'
-  gameType?: 'AI' | 'COMPETITIVE' | 'CUSTOM'
-  endState?: 'CHECKMATE' | 'DRAW' | 'TIMEOUT' | 'SURRENDER'
-  state: 'GETTING_STARTED' | 'IN_PROGRESS' | 'CANCELLED' | 'FINISHED'
+  winner?: PlayerColor
+  gameType?: GameType
+  endState?: EndState
+  state: State
   createdAt: Date
   updatedAt: Date
 }
@@ -87,7 +102,7 @@ export const parseGame = (Games: GameDocument): Game => {
     winner: Games.winner,
     gameType: Games.gameType,
     endState: Games.endState,
-    state: Games.finished ? 'FINISHED' : 'IN_PROGRESS',
+    state: Games.state,
     createdAt: Games.createdAt,
     updatedAt: Games.updatedAt
   }
@@ -96,7 +111,6 @@ export const parseGame = (Games: GameDocument): Game => {
 interface Match {
   id: string
   game: string
-  name: string
   nextMatchId: string | null
   tournamentRoundText: string
   startTime: string
@@ -132,9 +146,8 @@ export const parseTournament = (Tournament: TournamentDocument): Tournament => {
       return {
         id: matchJSON._id,
         game: `https://api.gracehopper.xyz/v1/games/${String(matchJSON._id)}`,
-        name: '',
         nextMatchId: matchJSON.nextMatchId,
-        tournamentRoundText: '',
+        tournamentRoundText: matchJSON.tournamentRoundText,
         startTime: matchJSON.startTime,
         state: 'NO_SHOW',
         participants: []

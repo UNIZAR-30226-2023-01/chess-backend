@@ -2,13 +2,19 @@ import { Request, Response } from 'express'
 import { pbkdf2, randomBytes, timingSafeEqual } from 'crypto'
 import dayjs from 'dayjs'
 import jwt from 'jsonwebtoken'
-import { UserModel } from '@models/user'
+import { ReservedUsernames, UserModel } from '@models/user'
 import { setStatus } from '@lib/status'
 import { invalidateToken } from '@lib/token-blacklist'
 import { parseUser } from '@lib/parsers'
 import sgMail from '@sendgrid/mail'
 
 export const signUp = (req: Request, res: Response): void => {
+  // Check if the username is reserved
+  if (Object.values(ReservedUsernames).includes(req.body.username)) {
+    res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
+    return
+  }
+
   const salt = randomBytes(16)
   pbkdf2(req.body.password, salt, 310000, 64, 'sha512', async (err, derivedKey) => {
     if (err) return res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
@@ -20,11 +26,40 @@ export const signUp = (req: Request, res: Response): void => {
       salt
     })
       .then((user) => {
-        res
-          .status(201)
-          .json({
-            data: parseUser(user),
-            status: setStatus(req, 0, 'Successful')
+        const { _id: id, email } = user.toJSON()
+        const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
+        const payload = { id, email }
+        const token = jwt.sign(payload, secret, { expiresIn: '15m' })
+        const url = `https://reign.gracehopper.xyz/auth/verify/${String(id)}/${token}`
+        const data = { id, url }
+
+        const msg = {
+          to: email,
+          from: 'hi@gracehopper.xyz',
+          templateId: 'd-2b5bee891e744e05a027478bd276ccee',
+          dynamicTemplateData: {
+            subject: 'Verifica tu cuenta de Reign',
+            url
+          }
+        }
+
+        sgMail.setApiKey(String(process.env.SENDGRID_API_KEY))
+        sgMail.send(msg)
+          .then(() => {
+            return res
+              .status(201)
+              .json({
+                data: parseUser(user),
+                status: setStatus(req, 0, 'Successful')
+              })
+          })
+          .catch(() => {
+            return res
+              .status(500)
+              .json({
+                data,
+                status: setStatus(req, 500, 'Internal Server Error')
+              })
           })
       })
       .catch((err: Error) => {
@@ -51,7 +86,13 @@ export const signIn = (req: Request, res: Response): void => {
           .json({ status: setStatus(req, 404, 'Not Found') })
       }
 
-      const { _id: id, username, password, salt } = user
+      const { _id: id, username, password, salt, verified } = user
+
+      if (!verified) {
+        return res
+          .status(403)
+          .json({ status: setStatus(req, 403, 'Forbidden') })
+      }
 
       return pbkdf2(
         req.body.password,
@@ -107,10 +148,34 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
   }
 }
 
-export const verify = (req: Request, res: Response): void => {
+export const authenticate = (req: Request, res: Response): void => {
   res
     .status(200)
     .json({ status: setStatus(req, 200, 'Successful') })
+}
+
+export const verify = (req: Request, res: Response): void => {
+  const { id, token } = req.params
+  UserModel.findByIdAndUpdate(id, { verified: true })
+    .then((user) => {
+      if (!user) {
+        return res
+          .status(404)
+          .json({ status: setStatus(req, 404, 'Not Found') })
+      }
+
+      const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
+      jwt.verify(token, secret)
+
+      return res
+        .status(200)
+        .json({ status: setStatus(req, 200, 'Successful') })
+    })
+    .catch(() => {
+      res
+        .status(500)
+        .json({ status: setStatus(req, 500, 'Internal Server Error') })
+    })
 }
 
 export const forgotPassword = (req: Request, res: Response): void => {

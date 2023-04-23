@@ -14,12 +14,11 @@ This API reference includes all the technical documentation developers need to m
 
 For developers eager to hit the ground running with the Reign API here are a few quick steps to make your first call with the API.
 
-1. **Sign up for a free.** You can sign up at reign.gracehopper.xyz - This is our live production environment with the latest data.
+1. **Sign up for free.** You can sign up at reign.gracehopper.xyz - This is our live production environment with the latest data.
 2. **Sign in to gain access.** Once you register and confirm your account you'll have all the API endpoints at your disposal. remember that some require authentication and to access them you will need to log in.
-3. **Make a test call using your key.** You can use the code examples below to perform a test call with the programming language of your choice. This example makes a ping call to test the connection to the protected endpoints.
-Be sure to replace the API Key in sample code with your own and use API domain api.gracehopper.xyz.
-4. **Postman Collection** To help with development, we provide a fully featured postman collection that you can import and use immediately! You can download it [here](https://www.postman.com/downloads/). After you set up Postman, you can import Reign's latest Postman collection by adding this URL: https://api.postman.com/collections/17239372-07f36979-473f-4f23-b168-648841a32ce1?access_key=PMAT-01GWC18AT2XR4XVW5C87NCRAVZ in the import collection secction in your main page inside postman
-5. **Implement your application.** Now that you've confirmed your API Key is working, get familiar with the API by reading the rest of this API Reference and commence building your application!
+3. **Make a test call using your key.** You can use the code examples below to perform a test call with the programming language of your choice. This example makes a ping call to test the connection. Be sure that you are using the API domain api.gracehopper.xyz while testing.
+4. **Postman Collection** To help with development, we provide a fully featured postman collection that you can import and use immediately! You can download it [here](https://www.postman.com/downloads/). After you set up Postman, you can import Reign's latest Postman collection by adding this URL: https://api.postman.com/collections/17239372-07f36979-473f-4f23-b168-648841a32ce1?access_key=PMAT-01GYPTWD0DS0736ZT47P8J49RF in the import collection secction in your main page inside postman. 
+5. **Implement your application.** Now that you've confirmed your API Key is working, get familiar with the API by reading the rest of this API Reference and start building your application!
 
 ***Note:** Making HTTP requests on the client side with Javascript is currently prohibited through CORS configuration. This is to protect your API Key which should not be visible to users of your application so your API Key is not stolen. Secure your API Key by routing calls through your own backend service.*
 
@@ -28,13 +27,13 @@ Be sure to replace the API Key in sample code with your own and use API domain a
   <details class="nested">
     <summary>cURL</summary>
     
-    curl --location 'https://api.gracehopper.xyz/api/v1/ping'
+    curl --location 'https://api.gracehopper.xyz/v1/health/ping'
 
   </details>
   <details class="nested">
     <summary>Node.js</summary>
     
-    fetch("https://api.gracehopper.xyz/api/v1/ping")
+    fetch("https://api.gracehopper.xyz/v1/health/ping")
       .then(response => response.json())
       .catch(error => console.log('error', error));
 
@@ -43,7 +42,7 @@ Be sure to replace the API Key in sample code with your own and use API domain a
     <summary>Python</summary>
     
     import requests
-    response = requests.request("GET", "https://api.gracehopper.xyz/api/v1/ping")
+    response = requests.request("GET", "https://api.gracehopper.xyz/v1/health/ping")
     print(response.json())
 
   </details>
@@ -56,7 +55,7 @@ Be sure to replace the API Key in sample code with your own and use API domain a
       final dio = Dio();
 
       try {
-        final response = await dio.get('https://api.gracehopper.xyz/api/v1/ping');
+        final response = await dio.get('https://api.gracehopper.xyz/v1/health/ping');
         print(response.data);
       } catch (e) {
         print('Error: $e');
@@ -67,6 +66,13 @@ Be sure to replace the API Key in sample code with your own and use API domain a
 
 </details>
 
+<br>
+
+### Postman Instructions
+
+<br>
+
+<video src="./postmanInstructions.mp4" controls="controls"></video>
 
 # Authentication
 
@@ -78,9 +84,8 @@ Most HTTP requests made against the Reign API must be validated with an API Key.
 
 You may use any server side programming language that can make HTTP requests to target the Reign API. All requests should target domain https://api.gracehopper.xyz. 
 
-You can supply your API Key in REST API calls in one of two ways:
-- **Preferred method:** Via a cookie named `api-auth`
-- **Convenience method:** Via a custom header named `X-REIGN_API_KEY`
+You can supply your API Key in REST API calls in this way:
+- **Cookie:** Via a cookie named `api-auth`
 
 ***Security Warning:** It's important to secure your API Key against public access. The cookie option is strongly recommended over the custom header option for passing your API Key in a production environment.*
 
@@ -97,12 +102,12 @@ The Reign API is divided into 5 top-level categories
 | [/health/*](#tag/Health)          | Endpoints informing whether the api is accessible.                                                                     |
 | [/auth/*](#tag/Auth)              | Endpoints handling authentication, credential recovery and more.                                                       |
 | [/users/*](#tag/User)             | Endpoints that return user information, user, allows updating and deleting information                                 |
-| [/history/*](#tag/History)        | Endpoints that return information of the games played to date, allows filtering by date, players, among others.        |
+| [/games/*](#tag/Games)            | Endpoints that return information of the games played to date, allows filtering by date, players, among others.        |
 | [/tournaments/*](#tag/Tournament) | Final points that return information of the tournaments held to date, allows filtering by date, players, among others. |
 
-<h3>Cryptocurrency and exchange endpoints provide 2 different ways of accessing data depending on purpose</h3>
+<h3>Users, games and tournaments endpoints provide 2 different ways of accessing data depending on purpose</h3>
 
-- **Listing endpoints:** Flexible paginated endpoints allow sorting and filtering of data lists such as users by number of games won.
+- **Listing endpoints:** Flexible paginated endpoints allow sorting and filtering of data lists such as games by gameType.
 - **Item endpoints:** Convenient ID-based resource endpoints allow you to extract information from a specific ID.
 
 
@@ -115,9 +120,13 @@ Each HTTP request must contain the header `Accept: application/json`. You should
 All endpoints return data in JSON format with the results of your query under `data` if the call is successful.
 
 A `Status` object is always included for both successful calls and failures when possible. The `Status` object always includes the current time on the server when the call was executed as `timestamp`, and the number of milliseconds it took to process the request as `elapsed`. Any details about errors encountered can be found under the `error_code` and `error_message`. See [Errors and Rate Limits](#section/Errors-and-Rate-Limits) for details on errors.
+The `meta` object is only included in listing requests.
 
 ```
 {
+  "meta" : {
+    ...
+  },
   "data" : {
     ...
   },
@@ -131,6 +140,7 @@ A `Status` object is always included for both successful calls and failures when
 }
 ```
 
+<br>
 <h2>Date and Time Formats</h2>
 
 - All endpoints requiring date/time parameters require timestamps to be passed in ISO 8601 format (e.g. 2018-06-06T01:46:40Z). Timestamps passed in ISO 8601 format support basic and extended notations; if no timezone is included, UTC will be the default.
@@ -175,12 +185,6 @@ A `Status` object is always included in the JSON response payload for both succe
 # Best Practices
 
 This section contains a few recommendations on how to efficiently utilize the Reign API for your enterprise application, particularly if you already have a large base of users for your application.
-
-<h2>Socket Connections</h2>
-
-Socket connections are ment to be held using the [Socket.io](https://socket.io/) library. Clients must continuously send an event for the server to know if connection is still on. If a client has not sent any event after one minute, the server will close the connection.
-
-***Note:** Instead of sending events that modify the game state, the **heartbeat** event can be sent with an empty body.*
 
 <h2>Implement a Caching Strategy If Needed</h2>
 

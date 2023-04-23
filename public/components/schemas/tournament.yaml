@@ -39,8 +39,6 @@ properties:
       game: 
         type: string
         format: url
-      name: 
-        type: string
       nextMatchId: 
         type: [string, null]
       tournamentRoundText:
@@ -57,6 +55,7 @@ properties:
           - 'DONE'
           - 'SCORE_DONE'
       participants:
+        default: []
         type: array of objects
 
   createdAt:

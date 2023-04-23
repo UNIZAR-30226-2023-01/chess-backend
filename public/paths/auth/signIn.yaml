@@ -94,6 +94,9 @@ post:
     401:
       description: Unauthorized
       $ref: '../../components/schemas/responses/401.yaml'
+    403:
+      description: Forbbiden
+      $ref: '../../components/schemas/responses/403.yaml'
     404:
       description: Not Found
       $ref: '../../components/schemas/responses/404.yaml'
@@ -103,6 +106,12 @@ post:
     500:
       description: Internal Server Error
       $ref: '../../components/schemas/responses/500.yaml'
-x-codeSamples:
+  x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location 'https://api.gracehopper.xyz/v1/auth/sign-in' \
+              --header 'Content-Type: application/json' \
+              --data '{
+                  "username": "johndoe",
+                  "password": "12345678"
+              }'

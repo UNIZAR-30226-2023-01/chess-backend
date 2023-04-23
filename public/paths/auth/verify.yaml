@@ -5,10 +5,22 @@ post:
   tags:
     - Auth
   summary: Verify
-  description: Check that the user is logged in
+  description: Verify a user's account
   operationId: verify
-  security:
-    - api_key: []
+  security: []
+  parameters:
+    - in: path
+      name: id
+      schema:
+        type: string
+      required: true
+      description: Unique identifier of a user.
+    - in: path
+      name: token
+      schema:
+        type: string
+      required: true
+      description: Unique token to validate the session.
   responses:
     200:
       description: Successful
@@ -24,4 +36,5 @@ post:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl --location 'https://api.gracehopper.xyz/v1/auth/verify/USER_ID/VERIFICATION_TOKEN'

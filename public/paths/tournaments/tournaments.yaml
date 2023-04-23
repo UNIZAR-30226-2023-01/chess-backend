@@ -19,7 +19,15 @@ get:
   responses:
     200:
       description: Successful
-      $ref: '../../components/schemas/responses/200.yaml'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '../../components/schemas/tournament.yaml'
+              status:
+                $ref: '../../components/schemas/status.yaml'
     401:
       description: Unauthorized
       $ref: '../../components/schemas/responses/401.yaml'
@@ -31,7 +39,9 @@ get:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location 'https://api.gracehopper.xyz/v1/tournaments/TOURNAMENT_ID' \
+              --header 'Cookie: api-auth=JWT_TOKEN'
 
 patch: 
   servers: 
@@ -59,12 +69,8 @@ patch:
           schema:
             type: object
             properties:
-              meta:
-                $ref: '../../components/schemas/meta.yaml'
               data:
-                type: array
-                items:
-                  $ref: '../../components/schemas/tournament.yaml'
+                $ref: '../../components/schemas/tournament.yaml'
               status:
                   $ref: '../../components/schemas/status.yaml'
     401:
@@ -78,7 +84,9 @@ patch:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location --request PATCH 'https://api.gracehopper.xyz/v1/tournaments/TOURNAMENT_ID' \
+              --header 'Cookie: api-auth=JWT_TOKEN'
       
 delete:
   servers: 
@@ -113,4 +121,6 @@ delete:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl --location --request DELETE 'https://api.gracehopper.xyz/v1/tournaments/TOURNAMENT_ID' \
+             --header 'Cookie: api-auth=JWT_TOKEN'

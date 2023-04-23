@@ -37,9 +37,7 @@ post:
   responses:
     '200':
       description: event(room) 
-        Emits to every player the initial state of the game,
-        or the id of the room in case the `find_room` event was
-        sent to create a custom game.
+        Initial state of the game.
       content:
         application/json:
           schema:
@@ -127,9 +125,6 @@ post:
                 timerDark: 125000
                 timerLight: 125000
                 gameType: "AI"
-            "created custom game":
-              value:
-                roomID: "123456"
             "joined custom game":
               value:
                 roomID: "123456"
@@ -156,6 +151,24 @@ post:
                 timerDark: 300000
                 timerLight: 300000
                 gameType: "COMPETITIVE"
+    '100':
+      description: event(room_created) 
+        Id of the room.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              roomID:
+                type: string
+                description: |
+                  Id of the room where the game takes place.
+                  It can be shared in order to invite a player or 
+                  to let other users spectate the match.
+          examples:
+            "created custom game":
+              value:
+                roomID: "123456"
     '400':
       description: event(error)
         Something went wrong.

@@ -5,9 +5,10 @@ import { ChessTimer, chessTimers } from '@lib/timer'
 import { PlayerColor, GameState, START_BOARD, GameType, EndState } from '@lib/types/game'
 import { FindRoomMsg, GameOverMsg, MovedMsg } from '@lib/types/socket-msg'
 import { ReservedUsernames, UserModel } from '@models/user'
+import { io } from '@server'
 import { Chess } from 'chess.ts'
 import { Types } from 'mongoose'
-import { Server, Socket } from 'socket.io'
+import { Socket } from 'socket.io'
 
 const skillLevel = [1, 3, 7, 20]
 
@@ -17,7 +18,6 @@ const randomTimeToThink = (): number => {
 
 export const findGame = async (
   socket: Socket,
-  io: Server,
   data: FindRoomMsg
 ): Promise<void> => {
   const check = gameLib.checkRoomCreationMsg(data)
@@ -37,36 +37,24 @@ export const findGame = async (
 
   const roomID = await roomLib.generateUniqueRoomCode()
 
-  let darkSocketId: string = ReservedUsernames.AI_USER
-  let lightSocketId: string = ReservedUsernames.AI_USER
-
   let darkId: Types.ObjectId | undefined
   let lightId: Types.ObjectId | undefined
 
-  let dark: string = ReservedUsernames.AI_USER
-  let light: string = ReservedUsernames.AI_USER
-
   if (data.hostColor === PlayerColor.DARK) {
-    darkSocketId = socket.id
     darkId = socket.data.userID
-    dark = (await UserModel.findById(darkId))
-      ?.username ?? ReservedUsernames.GUEST_USER
   } else {
-    lightSocketId = socket.id
     lightId = socket.data.userID
-    light = (await UserModel.findById(lightId))
-      ?.username ?? ReservedUsernames.GUEST_USER
   }
 
   const game: GameState = {
     turn: PlayerColor.LIGHT,
-    darkSocketId,
-    lightSocketId,
+    darkSocketId: '',
+    lightSocketId: '',
     darkId,
     lightId,
 
-    dark,
-    light,
+    dark: '',
+    light: '',
     board: START_BOARD,
     moves: [],
 
@@ -94,9 +82,37 @@ export const findGame = async (
     gameType: GameType.AI,
     difficulty: data.difficulty
   }
-
-  console.log(game)
+  await completeUserInfo(socket, game)
   await gameLib.setGame(roomID, game)
+  await gameLib.newGameInDB(game, roomID)
+  await startAIGame(socket, game, roomID)
+}
+
+export const completeUserInfo = async (
+  socket: Socket,
+  game: GameState
+): Promise<void> => {
+  if (game.darkId?.equals(socket.data.userID)) {
+    game.dark = (await UserModel.findById(game.darkId))?.username ??
+      ReservedUsernames.GUEST_USER
+    game.light = ReservedUsernames.AI_USER
+    game.darkSocketId = socket.id
+    game.lightSocketId = ''
+  } else {
+    game.light = (await UserModel.findById(game.lightId))?.username ??
+      ReservedUsernames.GUEST_USER
+    game.dark = ReservedUsernames.AI_USER
+    game.lightSocketId = socket.id
+    game.darkSocketId = ''
+  }
+}
+
+export const startAIGame = async (
+  socket: Socket,
+  game: GameState,
+  roomID: string
+): Promise<void> => {
+  await gameLib.startGameInDB(game, roomID)
 
   const res = gameLib.createFoundRoomMsg(socket.id, roomID, game)
 
@@ -106,65 +122,70 @@ export const findGame = async (
 
   if (game.useTimer &&
         game.timerIncrement !== undefined &&
-        game.initialTimer !== undefined) {
+        game.timerLight !== undefined &&
+        game.timerDark !== undefined) {
     const gameTimer = new ChessTimer(
-      game.initialTimer * 1000,
+      game.turn,
+      game.timerLight,
+      game.timerDark,
       game.timerIncrement * 1000,
-      gameLib.timeoutProtocol(io, roomID)
+      gameLib.timeoutProtocol(roomID)
     )
 
     chessTimers.set(roomID, gameTimer)
   }
 
-  // AI starts if player moves dark pieces
-  if (data.hostColor === PlayerColor.DARK) {
+  if ((game.dark === ReservedUsernames.AI_USER &&
+        game.turn === PlayerColor.DARK) ||
+      (game.light === ReservedUsernames.AI_USER &&
+        game.turn === PlayerColor.LIGHT)) {
     const move = await bestMove(
       game.board,
       skillLevel[game.difficulty ?? 1],
       randomTimeToThink()
     )
     if (move) {
-      await moveAI(socket, io, roomID, move)
+      await moveAI(socket, roomID, move)
     }
   }
 }
 
 export const move = async (
   socket: Socket,
-  io: Server,
   roomID: string,
   move: string,
   aiMove?: boolean
 ): Promise<void> => {
+  // DEBUG
   console.log('move:', move)
 
   const game = await gameLib.getGame(roomID, async (game) => {
-    if (!game) { // TODO: Internal server error
-      socket.emit('error', `No game with roomID: ${roomID}`)
+    if (!game) {
+      if (!aiMove) socket.emit('error', `No game with roomID: ${roomID}`)
       return
     }
 
     if (game.finished) {
-      socket.emit('error', 'Game has already been finished')
+      if (!aiMove) socket.emit('error', 'Game has already been finished')
       return
     }
 
     if (!aiMove && !gameLib.isPlayerOfGame(socket, game)) {
-      socket.emit('error', 'You are not a player of this game')
+      if (!aiMove) socket.emit('error', 'You are not a player of this game')
       return
     }
 
     let color = gameLib.getColor(socket, game)
     if (aiMove) color = gameLib.alternativeColor(color)
     if (color !== game.turn) {
-      socket.emit('error', 'It is not your turn')
+      if (!aiMove) socket.emit('error', 'It is not your turn')
       return
     }
 
     const chess = new Chess(game.board)
     const moveRes = chess.move(move, { sloppy: true })
     if (moveRes === null) {
-      socket.emit('error', 'Illegal move')
+      if (!aiMove) socket.emit('error', 'Illegal move')
       return
     }
 
@@ -172,7 +193,7 @@ export const move = async (
       // Switch timers
       const gameTimer = chessTimers.get(roomID)
       if (!gameTimer) {
-        socket.emit('error', 'Internal server error')
+        if (!aiMove) socket.emit('error', 'Internal server error')
         return
       }
 
@@ -194,6 +215,7 @@ export const move = async (
     game.board = chess.fen()
     game.turn = gameLib.alternativeColor(game.turn)
 
+    // Unify move format before pushing and emiting it
     if (moveRes.promotion) {
       move = moveRes.from + moveRes.to + moveRes.promotion
     } else {
@@ -225,7 +247,7 @@ export const move = async (
       gameOverMessage.winner = game.winner
     }
     io.to(roomID).emit('game_over', gameOverMessage)
-    await gameLib.endProtocol(io, roomID, game)
+    await gameLib.endProtocol(roomID, game)
   }
 
   // Execute AI's move if game is not over and
@@ -237,16 +259,15 @@ export const move = async (
       randomTimeToThink()
     )
     if (move) {
-      await moveAI(socket, io, roomID, move)
+      await moveAI(socket, roomID, move)
     }
   }
 }
 
 const moveAI = async (
   socket: Socket,
-  io: Server,
   roomID: string,
   bestMove: string
 ): Promise<void> => {
-  await move(socket, io, roomID, bestMove, true)
+  await move(socket, roomID, bestMove, true)
 }

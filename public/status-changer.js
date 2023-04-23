@@ -3,7 +3,7 @@ function sleep(ms) {
 }
 
 function getEvent(text) {
-  return text.match(/event\((.+)\)/)[1]
+  return text.match(/event\(([^ ]+)\)/)[1]
 }
 
 
