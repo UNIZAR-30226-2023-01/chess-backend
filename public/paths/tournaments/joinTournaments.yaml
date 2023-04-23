@@ -34,4 +34,6 @@ get:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location 'https://api.gracehopper.xyz/v1/tournaments/join/TOURNAMENT_ID' \
+              --header 'Cookie: api-auth=JWT_TOKEN'

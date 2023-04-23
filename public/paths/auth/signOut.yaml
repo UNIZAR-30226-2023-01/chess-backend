@@ -24,4 +24,6 @@ post:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location --request POST 'https://api.gracehopper.xyz/v1/auth/sign-out' \
+              --header 'Cookie: api-auth=JWT_TOKEN'

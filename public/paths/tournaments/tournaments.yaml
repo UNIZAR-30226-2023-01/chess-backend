@@ -39,7 +39,9 @@ get:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location 'https://api.gracehopper.xyz/v1/tournaments/TOURNAMENT_ID' \
+              --header 'Cookie: api-auth=JWT_TOKEN'
 
 patch: 
   servers: 
@@ -82,7 +84,9 @@ patch:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location --request PATCH 'https://api.gracehopper.xyz/v1/tournaments/TOURNAMENT_ID' \
+              --header 'Cookie: api-auth=JWT_TOKEN'
       
 delete:
   servers: 
@@ -117,4 +121,6 @@ delete:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl --location --request DELETE 'https://api.gracehopper.xyz/v1/tournaments/TOURNAMENT_ID' \
+             --header 'Cookie: api-auth=JWT_TOKEN'

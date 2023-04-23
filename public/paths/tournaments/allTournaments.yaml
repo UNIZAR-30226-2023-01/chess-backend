@@ -50,7 +50,14 @@ post:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location 'https://api.gracehopper.xyz/v1/tournaments' \
+              --header 'Content-Type: application/json' \
+              --header 'Cookie: api-auth=JWT_TOKEN' \
+              --data '{
+                  "startTime": "2023-04-02T18:08:59.561Z",
+                  "rounds": 3
+              }'
 
 get:
   servers: 
@@ -101,4 +108,6 @@ get:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location 'https://api.gracehopper.xyz/v1/tournaments' \
+              --header 'Cookie: api-auth=JWT_TOKEN'

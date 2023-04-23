@@ -74,7 +74,9 @@ get:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location 'https://api.gracehopper.xyz/v1/users/USER_ID' \
+              --header 'Cookie: api-auth=JWT_TOKEN'
 
 patch:
   servers: 
@@ -193,7 +195,13 @@ patch:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location --request PATCH 'https://api.gracehopper.xyz/v1/users/USER_ID' \
+              --header 'Content-Type: application/json' \
+              --header 'Cookie: api-auth=JWT_TOKEN' \
+              --data '{
+                  "username": "johndoe"
+              }'
 
 delete:
   servers: 
@@ -231,4 +239,6 @@ delete:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location --request DELETE 'https://api.gracehopper.xyz/v1/users/USER_ID' \
+              --header 'Cookie: api-auth=JWT_TOKEN'

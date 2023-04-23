@@ -79,4 +79,11 @@ post:
 
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: |
+        curl  --location 'https://api.gracehopper.xyz/v1/auth/sign-up' \
+              --header 'Content-Type: application/json' \
+              --data-raw '{
+                  "username": "johndoe",
+                  "email": "johndoe@example.com",
+                  "password": "12345678"
+              }'

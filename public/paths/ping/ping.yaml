@@ -20,4 +20,5 @@ get:
       $ref: '../../components/schemas/responses/500.yaml'
   x-codeSamples:
     - lang: cURL
-      source: ""
+      source: | 
+        curl --location 'https://api.gracehopper.xyz/v1/health/ping'
