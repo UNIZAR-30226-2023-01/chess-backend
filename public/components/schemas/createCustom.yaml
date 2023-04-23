@@ -10,8 +10,8 @@ properties:
     type: integer
     default: 300
     description: Available time, in seconds, for every player to move.
-      If it is set to 0, players have no time restriction and `increment`
-      is not considered.
+      Must be a positive number. If a non-integer number is set, it
+      will be truncated.
   increment:
     type: integer
     default: 5

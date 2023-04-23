@@ -66,4 +66,8 @@ dump.rdb
 
 # certificados
 nginx/api.gracehopper.xyz/*
+
+# test especificos
+test.sh
+
 *.pem

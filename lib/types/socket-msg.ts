@@ -4,6 +4,10 @@ export interface RoomIDMsg {
   roomID: string
 }
 
+export interface GameIDMsg {
+  gameID: string
+}
+
 export interface GameOverMsg {
   endState: EndState
   winner?: PlayerColor

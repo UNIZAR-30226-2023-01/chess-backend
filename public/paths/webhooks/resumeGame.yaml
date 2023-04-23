@@ -1,43 +1,18 @@
-post:
+get:
   servers: 
     - url: 'https://localhost:4001'
     - url: 'https://api.gracehopper.xyz:8443'
   tags: 
     - Room
-  summary: Find Room
-  operationId: findRoom
+  summary: Resume
+  operationId: resume
+  description: event(resume) 
+    Allows retrieving a saved **custom** or **ai** game to be resumed.
   security: []
-  description: |
-    event(find_room)
-    Allows a user to search for a match against a random opponent
-    or create a custom game against AI or a friend.
-
-    * **AI**: start a game against the AI.
-    * **competitive**: find a game against a random player to climb in rankings
-      *(requires an authenticated socket)*.
-    * **createCustom**: start a custom game
-      *(requires an authenticated socket)*.
-    * **joinCustom**: join a custom game.
-  requestBody:
-    content:
-      application/json:
-        schema:
-          oneOf:
-            - $ref: ../../components/schemas/AI.yaml
-            - $ref: ../../components/schemas/competitive.yaml
-            - $ref: ../../components/schemas/createCustom.yaml
-            - $ref: ../../components/schemas/joinCustom.yaml
-          #discriminator: 
-            #propertyName: gameType
-            #mapping:
-              #"\"AI\"": ../../components/schemas/AI.yaml
-              #"\"COMPETITIVE\"": ../../components/schemas/competitive.yaml
-              #"\"CUSTOM\" (create a game)": ../../components/schemas/createCustom.yaml
-              #"\"CUSTOM\" (join a game)": ../../components/schemas/joinCustom.yaml
   responses:
     '200':
       description: event(room) 
-        Initial state of the game.
+        Recovered state of the game.
       content:
         application/json:
           schema:
@@ -177,19 +152,3 @@ post:
           schema:
             description: Details of what caused the error.
             type: string
-          examples:
-            not supported game type:
-              value: Not supported game type
-            busy socket:
-              value: This socket is already playing or in queue
-            invalid hostColor property:
-              value: Host color "RED" is not a valid option
-            time property is not a number:
-              value: Initial timer is not a number
-            time property is negative:
-              value: Initial timer value cannot be negative
-            increment property is not a number:
-              value: Timer increment is not a number
-            increment property is negative:
-              value: Timer increment value cannot be negative
-            

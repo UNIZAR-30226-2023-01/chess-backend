@@ -57,3 +57,38 @@ export async function findCompetitiveGame (
 
   return match
 }
+
+export async function cancelSearch (roomID: string): Promise<boolean> {
+  let cancelled = false
+
+  const pattern = compose(ResourceName.PLAYER_Q, '*')
+  let i = 0
+  let query: any
+  do {
+    query = await client.call('scan', i++, 'MATCH', pattern)
+    console.log('query: ', query)
+    for (const k of query[1]) {
+      const key: string = k
+      const lockName = composeLock(key)
+      let lock = await redlock.acquire([lockName], 5000) // LOCK
+      try {
+        const awaiting = await client.get(key)
+        lock = await lock.extend(5000) // EXTEND
+
+        if (awaiting !== null) {
+          const parsedData: QueuePlayer = JSON.parse(awaiting)
+
+          // Remove from Queue
+          if (roomID === parsedData.roomID) {
+            cancelled = true
+            await client.del(key)
+          }
+        }
+      } finally {
+        await lock.release() // UNLOCK
+      }
+    }
+  } while (query[0] !== '0')
+
+  return cancelled
+}

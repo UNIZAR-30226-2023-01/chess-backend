@@ -2,13 +2,19 @@ import { Request, Response } from 'express'
 import { pbkdf2, randomBytes, timingSafeEqual } from 'crypto'
 import dayjs from 'dayjs'
 import jwt from 'jsonwebtoken'
-import { UserModel } from '@models/user'
+import { ReservedUsernames, UserModel } from '@models/user'
 import { setStatus } from '@lib/status'
 import { invalidateToken } from '@lib/token-blacklist'
 import { parseUser } from '@lib/parsers'
 import sgMail from '@sendgrid/mail'
 
 export const signUp = (req: Request, res: Response): void => {
+  // Check if the username is reserved
+  if (Object.values(ReservedUsernames).includes(req.body.username)) {
+    res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
+    return
+  }
+
   const salt = randomBytes(16)
   pbkdf2(req.body.password, salt, 310000, 64, 'sha512', async (err, derivedKey) => {
     if (err) return res.status(409).json({ status: setStatus(req, 409, 'Conflict') })

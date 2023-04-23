@@ -1,4 +1,4 @@
-import { Server, Socket } from 'socket.io'
+import { Socket } from 'socket.io'
 import * as matchmaking from '@lib/matchmaking'
 import { chessTimers, ChessTimer } from '@lib/timer'
 import * as gameLib from '@lib/game'
@@ -6,6 +6,7 @@ import { FindRoomMsg } from '@lib/types/socket-msg'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 import { Types } from 'mongoose'
 import { UserModel } from '@models/user'
+import { io } from '@server'
 const _ = require('lodash')
 
 const initialTimes = [3 * 60, 5 * 60, 10 * 60] // seconds
@@ -13,7 +14,6 @@ const increments = [0, 0, 0] // seconds
 
 export const findGame = async (
   socket: Socket,
-  io: Server,
   data: FindRoomMsg
 ): Promise<void> => {
   if (!data.time) {
@@ -47,7 +47,7 @@ export const findGame = async (
   await socket.join(match.roomID)
   if (!match.player2 || !match.socket2) return // jugador que espera
 
-  let darkId: Types.ObjectId, lightId: Types.ObjectId
+  let darkId, lightId: Types.ObjectId
   let darkSocketId: string, lightSocketId: string
   if (Math.random() >= 0.5) {
     darkId = match.player1
@@ -101,6 +101,8 @@ export const findGame = async (
 
   const roomID = match.roomID.toString()
   await gameLib.setGame(roomID, game)
+  await gameLib.newGameInDB(game, roomID)
+  await gameLib.startGameInDB(game, roomID)
 
   const res1 = gameLib.createFoundRoomMsg(match.socket1, roomID, game)
   const res2 = gameLib.createFoundRoomMsg(match.socket2, roomID, game)
@@ -109,10 +111,20 @@ export const findGame = async (
   io.to(match.socket2).emit('room', res2)
 
   const gameTimer = new ChessTimer(
+    game.turn,
+    data.time * 1000,
     data.time * 1000,
     increment * 1000,
-    gameLib.timeoutProtocol(io, roomID)
+    gameLib.timeoutProtocol(roomID)
   )
 
   chessTimers.set(match.roomID, gameTimer)
+}
+
+export const cancelSearch = async (
+  socket: Socket, roomID: string
+): Promise<void> => {
+  socket.emit('cancelled')
+  await gameLib.unsetGame(roomID)
+  await socket.leave(roomID)
 }

@@ -1,4 +1,5 @@
 import { PlayerColor } from '@lib/types/game'
+import * as gameLib from '@lib/game'
 
 export class ChessTimer {
   private lastTimestamp: number
@@ -12,17 +13,21 @@ export class ChessTimer {
   private timeout: NodeJS.Timeout
 
   constructor (
-    time: number,
+    turn: PlayerColor,
+    timeLight: number,
+    timeDark: number,
     increment: number,
     timeoutAction: (winner: PlayerColor) => void
   ) {
     const timestamp = Date.now()
+    this.turn = turn
     this.lastTimestamp = timestamp
-    this.timeDark = time
-    this.timeLight = time
+    this.timeDark = timeDark
+    this.timeLight = timeLight
     this.increment = increment
     this.timeoutAction = timeoutAction
-    this.timeout = setTimeout(this.timeoutAction, this.timeLight, PlayerColor.DARK)
+    this.timeout = setTimeout(
+      this.timeoutAction, this.timeLight, gameLib.alternativeColor(turn))
   }
 
   switchCountDown (): void {

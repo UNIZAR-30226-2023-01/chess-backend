@@ -1,6 +1,7 @@
 import { GameDocument } from '@models/game'
 import { TournamentDocument } from '@models/tournament'
 import { UserDocument } from '@models/user'
+import { EndState, GameType, PlayerColor, State } from '@lib/types/game'
 
 interface User {
   id: string
@@ -63,10 +64,10 @@ interface Game {
     lightTimer?: number
     darkTimer?: number
   }
-  winner?: 'LIGHT' | 'DARK'
-  gameType?: 'AI' | 'COMPETITIVE' | 'CUSTOM'
-  endState?: 'CHECKMATE' | 'DRAW' | 'TIMEOUT' | 'SURRENDER'
-  state: 'GETTING_STARTED' | 'IN_PROGRESS' | 'CANCELLED' | 'FINISHED'
+  winner?: PlayerColor
+  gameType?: GameType
+  endState?: EndState
+  state: State
   createdAt: Date
   updatedAt: Date
 }
@@ -87,7 +88,7 @@ export const parseGame = (Games: GameDocument): Game => {
     winner: Games.winner,
     gameType: Games.gameType,
     endState: Games.endState,
-    state: Games.finished ? 'FINISHED' : 'IN_PROGRESS',
+    state: Games.state,
     createdAt: Games.createdAt,
     updatedAt: Games.updatedAt
   }

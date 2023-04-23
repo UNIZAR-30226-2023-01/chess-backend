@@ -26,7 +26,7 @@ post:
   responses:
     '200':
       description: event(room) 
-        Emits to this socket the current state of the game.
+        Current state of the game.
       content:
         application/json:
           schema:

@@ -1,18 +1,20 @@
 import * as gameLib from '@lib/game'
 import { FindRoomMsg } from '@lib/types/socket-msg'
-import { Server, Socket } from 'socket.io'
-import * as roomGen from '@lib/room'
+import { Socket } from 'socket.io'
+import * as roomLib from '@lib/room'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 import { ChessTimer, chessTimers } from '@lib/timer'
 import { ReservedUsernames, UserModel } from '@models/user'
+import { io } from '@server'
+import { Types } from 'mongoose'
+import { GameModel } from '@models/game'
 
 export const findGame = async (
   socket: Socket,
-  io: Server,
   data: FindRoomMsg
 ): Promise<void> => {
   if (data.roomID) {
-    await joinGame(socket, io, data.roomID)
+    await joinGame(socket, data.roomID)
     return
   }
 
@@ -35,19 +37,25 @@ const createGame = async (
     return
   }
 
-  const roomID = await roomGen.generateUniqueRoomCode()
+  const roomID = await roomLib.generateUniqueRoomCode()
 
-  let darkSocketId: string = ''
-  let lightSocketId: string = ''
-  if (data.hostColor === PlayerColor.DARK) darkSocketId = socket.id
-  else lightSocketId = socket.id
+  let darkSocketId = ''
+  let lightSocketId = ''
+  let darkId, lightId: Types.ObjectId | undefined
+  if (data.hostColor === PlayerColor.DARK) {
+    darkSocketId = socket.id
+    darkId = socket.data.userID
+  } else {
+    lightSocketId = socket.id
+    lightId = socket.data.userID
+  }
 
   const game: GameState = {
     turn: PlayerColor.LIGHT,
     darkSocketId,
     lightSocketId,
-    darkId: undefined,
-    lightId: undefined,
+    darkId,
+    lightId,
 
     dark: '',
     light: '',
@@ -80,15 +88,34 @@ const createGame = async (
 
   console.log(game)
   await gameLib.setGame(roomID, game)
+  void gameLib.newGameInDB(game, roomID)
 
   await socket.join(roomID)
 
   socket.emit('room_created', { roomID })
 }
 
+export const completeUserInfo = async (
+  socket: Socket,
+  game: GameState
+): Promise<void> => {
+  if (game.darkId?.equals(socket.data.userID)) {
+    game.dark = (await UserModel.findById(game.darkId))?.username ??
+      ReservedUsernames.GUEST_USER
+    game.light = ''
+    game.darkSocketId = socket.id
+    game.lightSocketId = ''
+  } else {
+    game.light = (await UserModel.findById(game.lightId))?.username ??
+      ReservedUsernames.GUEST_USER
+    game.dark = ''
+    game.lightSocketId = socket.id
+    game.darkSocketId = ''
+  }
+}
+
 const joinGame = async (
   socket: Socket,
-  io: Server,
   roomID: string
 ): Promise<void> => {
   let darkSocket: Socket, lightSocket: Socket
@@ -104,10 +131,26 @@ const joinGame = async (
       return
     }
 
-    if (game.darkSocketId === '') {
+    if (game.darkId !== undefined &&
+        game.lightId !== undefined &&
+        !socket.data.authenticated) {
+      socket.emit('error', 'You are not player of this game')
+      return
+    }
+
+    if ((socket.data.userID?.equals(game.darkId) && game.darkSocketId !== '') ||
+        (socket.data.userID?.equals(game.lightId) && game.lightSocketId !== '')) {
+      socket.emit('error', 'This player has already joined this game')
+      return
+    }
+
+    if (game.darkSocketId === '' && game.lightSocketId !== '') {
       game.darkSocketId = socket.id
-    } else {
+    } else if (game.lightSocketId === '' && game.darkSocketId !== '') {
       game.lightSocketId = socket.id
+    } else {
+      socket.emit('error', 'This game is not ready to join')
+      return
     }
 
     const _darkSocket = io.sockets.sockets.get(game.darkSocketId)
@@ -121,19 +164,12 @@ const joinGame = async (
     darkSocket = _darkSocket
     lightSocket = _lightSocket
 
-    let darkId: string | undefined
-    if (darkSocket.data.authenticated) {
-      darkId = darkSocket.data.userID
-    }
+    if (darkSocket.data.authenticated) game.darkId = darkSocket.data.userID
+    if (lightSocket.data.authenticated) game.lightId = lightSocket.data.userID
 
-    let lightId: string | undefined
-    if (lightSocket.data.authenticated) {
-      lightId = lightSocket.data.userID
-    }
-
-    game.dark = (await UserModel.findById(darkId))
+    game.dark = (await UserModel.findById(game.darkId))
       ?.username ?? ReservedUsernames.GUEST_USER
-    game.light = (await UserModel.findById(lightId))
+    game.light = (await UserModel.findById(game.lightId))
       ?.username ?? ReservedUsernames.GUEST_USER
 
     await gameLib.setGame(roomID, game)
@@ -151,13 +187,42 @@ const joinGame = async (
 
   if (game.useTimer &&
         game.timerIncrement !== undefined &&
-        game.initialTimer !== undefined) {
+        game.timerLight !== undefined &&
+        game.timerDark !== undefined) {
     const gameTimer = new ChessTimer(
-      game.initialTimer * 1000,
+      game.turn,
+      game.timerLight,
+      game.timerDark,
       game.timerIncrement * 1000,
-      gameLib.timeoutProtocol(io, roomID)
+      gameLib.timeoutProtocol(roomID)
     )
 
     chessTimers.set(roomID, gameTimer)
   }
+
+  await gameLib.startGameInDB(game, roomID)
+}
+
+export const cancelCreation = async (
+  socket: Socket, roomID: string
+): Promise<void> => {
+  const game = await gameLib.getGame(roomID, async (game) => {
+    if (!game) {
+      socket.emit('error', `No game with roomID: ${roomID}`)
+      return
+    }
+
+    if (gameLib.isGameStarted(game)) {
+      socket.emit('error', 'This game has already been started')
+      return
+    }
+
+    await gameLib.unsetGame(roomID)
+    return game
+  })
+  if (!game) return
+
+  await GameModel.remove({ roomID })
+  socket.emit('cancelled')
+  await socket.leave(roomID)
 }

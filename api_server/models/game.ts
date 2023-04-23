@@ -1,29 +1,33 @@
-import { model, Schema, Document } from 'mongoose'
+import { EndState, GameType, PlayerColor, State } from '@lib/types/game'
+import { model, Schema, Document, Types } from 'mongoose'
 
 export interface GameDocument extends Document {
-  darkId?: Schema.Types.ObjectId
-  lightId?: Schema.Types.ObjectId
+  darkId?: Types.ObjectId
+  lightId?: Types.ObjectId
   board: string // FEN codification of board state
   moves: string[] // UCI LAN format
   initialTimer?: number
   timerIncrement?: number
   timerDark?: number
   timerLight?: number
-  finished: boolean
-  endState?: 'CHECKMATE' | 'DRAW' | 'TIMEOUT' | 'SURRENDER'
-  winner?: 'LIGHT' | 'DARK'
-  gameType: 'AI' | 'COMPETITIVE' | 'CUSTOM'
+
+  gameType: GameType
+  state: State
+  endState?: EndState
+  winner?: PlayerColor
+  roomID?: string
+
   createdAt: Date
   updatedAt: Date
 }
 
 const gameSchema = new Schema<GameDocument>({
   darkId: {
-    type: Schema.Types.ObjectId,
+    type: Types.ObjectId,
     ref: 'User'
   },
   lightId: {
-    type: Schema.Types.ObjectId,
+    type: Types.ObjectId,
     ref: 'User'
   },
   board: {
@@ -46,19 +50,23 @@ const gameSchema = new Schema<GameDocument>({
   timerLight: {
     type: Number
   },
-  finished: {
-    type: Boolean,
-    required: true
-  },
-  endState: {
-    type: String
-  },
+
   winner: {
     type: String
   },
   gameType: {
     type: String, // GameType
     required: true
+  },
+  state: {
+    type: String,
+    required: true
+  },
+  endState: {
+    type: String
+  },
+  roomID: {
+    type: String
   }
 }, {
   timestamps: true

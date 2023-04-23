@@ -8,10 +8,36 @@ get:
   operationId: voteSave
   description: event(vote_save) 
     Allows voting for saving the game if this socket
-    is currently a player of a **custom** game room.
-    If both players have voted, then the game is saved
-    and can be resumed in a future.
-    
-    
-    NOT IMPLEMENTED YET
+    is currently a player of a **custom** or **ai** game room.
+    If both players have voted (or the game is single-player),
+    then the game is saved and can be resumed in a future.
   security: []
+  responses:
+    '100':
+      description: event(voted_save)
+        This socket has voted for saving the game.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              color:
+                type: string
+                description: |
+                  Color of the player that has voted.
+                enum:
+                  - LIGHT
+                  - DARK
+          example:
+            color: "LIGHT"
+    '200':
+      description: event(game_saved) 
+        The game has been saved.
+    '400':
+      description: event(error)
+        Something went wrong.
+      content:
+        text/plain:
+          schema:
+            description: Details of what caused the error.
+            type: string
