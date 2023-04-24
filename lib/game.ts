@@ -9,6 +9,7 @@ import * as roomLib from '@lib/room'
 import { Types } from 'mongoose'
 import { ReservedUsernames, UserModel } from '@models/user'
 import { io } from '@server'
+import * as achievement from '@lib/achievements'
 
 // 2 minutes after a game is over, it is deleted from redis
 export const GAME_OVER_TTL = 2 * 60
@@ -292,9 +293,12 @@ export const endGameInDB = async (
     })
 
     if (game.gameType === GameType.COMPETITIVE) {
-      if (game.darkId) void updateUserStats(game, game.darkId, PlayerColor.DARK)
-      if (game.lightId) void updateUserStats(game, game.lightId, PlayerColor.LIGHT)
+      if (game.darkId) { void updateUserStats(game, game.darkId, PlayerColor.DARK) }
+      if (game.lightId) { void updateUserStats(game, game.lightId, PlayerColor.LIGHT) }
+      void achievement.updateRankingAchievements()
     }
+    if (game.darkId) { void achievement.afterGameAchievementsCheck(game.darkId, game.gameType) }
+    if (game.lightId) { void achievement.afterGameAchievementsCheck(game.lightId, game.gameType) }
   } catch (error: any) {
     console.error(error)
     return false
