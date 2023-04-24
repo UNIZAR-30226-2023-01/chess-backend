@@ -32,11 +32,10 @@ const checkAndUpdateGamesPlayed = async (
       ]
     })
     if (numGamesPlayed >= numGames) {
-      const result = await UserModel.updateOne(
+      await UserModel.updateOne(
         { _id: userId },
         { $addToSet: { achievements: achievement } }
       )
-      console.log(`Updated ${result.modifiedCount} user(s)`)
     }
   } catch (err: any) {
     console.error(err)
@@ -59,14 +58,11 @@ const checkAndUpdateTournamentsPlayed = async (
     const count: number = result.length > 0 ? result[0].total : 0
 
     if (count >= numTournaments) {
-      const result = await UserModel.updateOne(
+      await UserModel.updateOne(
         { _id: userId },
         { $addToSet: { achievements: achievement } }
       )
-      console.log(`Updated ${result.modifiedCount} user(s)`)
     }
-
-    console.log(`User has participated in ${count} tournaments`)
   })
 }
 
@@ -84,11 +80,10 @@ const checkAndUpdateDraws = async (
       ]
     })
     if (numGamesDrawed >= numGames) {
-      const result = await UserModel.updateOne(
+      await UserModel.updateOne(
         { _id: userId },
         { $addToSet: { achievements: achievement } }
       )
-      console.log(`Updated ${result.modifiedCount} user(s)`)
     }
   } catch (err: any) {
     console.error(err)
@@ -134,7 +129,6 @@ const updateTopRankingAchievement = async (
       { $push: { achievements: achievement } }
     ))
     Promise.all(updatePromises).then(() => {
-      console.log('Achievements updated for top 100 users.')
     }).catch(err => {
       console.error(err)
     })
@@ -149,9 +143,8 @@ export const updateRankingAchievements = async (): Promise<void> => {
 export const setFirstLoginAchievement = async (
   userId: Types.ObjectId
 ): Promise<void> => {
-  const result = await UserModel.updateOne(
+  await UserModel.updateOne(
     { _id: userId },
     { $addToSet: { achievements: Achievements.FIRST_LOGIN } }
   )
-  console.log(`Updated ${result.modifiedCount} user(s)`)
 }

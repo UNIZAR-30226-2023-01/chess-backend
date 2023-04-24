@@ -17,6 +17,7 @@ interface User {
   games?: string
   createdAt?: Date
   updatedAt?: Date
+  achievements?: string[]
 }
 
 export const parseUser = (user: UserDocument): User => {
@@ -59,6 +60,7 @@ export const parseExtendedUser = (user: UserDocument): User => {
       fastDraws: user.stats.fastDraws,
       fastDefeats: user.stats.fastDefeats
     },
+    achievements: user.achievements,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt
   }
