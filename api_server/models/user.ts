@@ -129,11 +129,11 @@ const userSchema = new Schema<UserDocument>({
       fastWins: 0,
       fastDefeats: 0,
       fastDraws: 0
-    },
-    achievements: {
-      type: [String],
-      default: []
     }
+  },
+  achievements: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true
