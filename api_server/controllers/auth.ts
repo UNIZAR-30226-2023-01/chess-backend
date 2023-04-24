@@ -7,6 +7,7 @@ import { setStatus } from '@lib/status'
 import { invalidateToken } from '@lib/token-blacklist'
 import { parseUser } from '@lib/parsers'
 import sgMail from '@sendgrid/mail'
+import * as achievement from '@lib/achievements'
 
 export const signUp = (req: Request, res: Response): void => {
   // Check if the username is reserved
@@ -117,6 +118,8 @@ export const signIn = (req: Request, res: Response): void => {
             domain: process.env.NODE_ENV === 'production' ? '.gracehopper.xyz' : undefined,
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
           })
+
+          void achievement.setFirstLoginAchievement(user.id)
 
           return res
             .status(200)

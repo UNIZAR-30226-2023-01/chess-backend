@@ -2,6 +2,7 @@ import { model, Schema, Document } from 'mongoose'
 import { UserModel } from '@models/user'
 
 export interface MatchDocument extends Document {
+  gameId: Schema.Types.ObjectId
   nextMatchId: Schema.Types.ObjectId
   tournamentRoundText: String
   startTime: Date
@@ -9,9 +10,13 @@ export interface MatchDocument extends Document {
 }
 
 const MatchSchema = new Schema<MatchDocument>({
-  nextMatchId: {
+  gameId: {
     type: Schema.Types.ObjectId,
     ref: 'Game'
+  },
+  nextMatchId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Match'
   },
   tournamentRoundText: {
     type: String
