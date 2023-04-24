@@ -46,6 +46,19 @@ properties:
       type: string
   stats: 
     $ref: './stats.yaml'
+  achievements:
+    type: array
+    items: 
+      type: string
+      enum: 
+      - FIRST LOGIN
+      - TOP 1
+      - TOP 100 
+      - PLAY 10 COMPETITIVE
+      - PLAY 10 AI
+      - PLAY 10 CUSTOM
+      - PLAY 10 TOURNAMENT
+      - DRAW 10 GAMES
   createdAt:
     type: string
     format: date
