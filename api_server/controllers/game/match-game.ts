@@ -57,8 +57,7 @@ export const surrender = async (
     endState: game.endState
   }
 
-  io.to(roomID).emit('game_over', message)
-  await gameLib.endProtocol(roomID, game)
+  await gameLib.endProtocol(roomID, game, message)
 }
 
 export const voteDraw = async (
@@ -113,8 +112,7 @@ export const voteDraw = async (
       endState: game.endState
     }
 
-    io.to(roomID).emit('game_over', message)
-    await gameLib.endProtocol(roomID, game)
+    await gameLib.endProtocol(roomID, game, message)
   } else {
     io.to(roomID).emit('voted_draw', { color: gameLib.getColor(socket, game) })
   }
@@ -212,7 +210,7 @@ export const move = async (
     if (game.endState === EndState.CHECKMATE) {
       gameOverMessage.winner = game.winner
     }
-    io.to(roomID).emit('game_over', gameOverMessage)
-    await gameLib.endProtocol(roomID, game)
+
+    await gameLib.endProtocol(roomID, game, gameOverMessage)
   }
 }

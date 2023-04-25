@@ -2,7 +2,9 @@ import { model, Schema, Document } from 'mongoose'
 
 export enum ReservedUsernames {
   GUEST_USER = 'Guest',
-  AI_USER = 'AI'
+  AI_USER = 'AI',
+  DEV_USER_1 = 'dev1',
+  DEV_USER_2 = 'dev2'
 }
 
 export interface UserDocument extends Document {

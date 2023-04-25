@@ -10,6 +10,8 @@ import { Types } from 'mongoose'
 import { ReservedUsernames, UserModel } from '@models/user'
 import { io } from '@server'
 import * as achievement from '@lib/achievements'
+import { MatchResult, updateEloOfUsers } from '@lib/elo'
+const _ = require('lodash')
 
 // 2 minutes after a game is over, it is deleted from redis
 export const GAME_OVER_TTL = 2 * 60
@@ -307,6 +309,42 @@ export const endGameInDB = async (
   return true
 }
 
+interface MatchGameOverMsg {
+  darkMsg: GameOverMsg
+  lightMsg: GameOverMsg
+}
+
+export const updateElo = async (
+  game: GameState,
+  message: GameOverMsg
+): Promise<MatchGameOverMsg | undefined> => {
+  const darkMsg = _.cloneDeep(message)
+  const lightMsg = _.cloneDeep(message)
+
+  if (game.gameType === GameType.COMPETITIVE &&
+    game.lightId && game.darkId) {
+    const resultForLight = ((): MatchResult => {
+      if (game.winner) {
+        if (game.winner === PlayerColor.LIGHT) {
+          return MatchResult.VICTORY
+        }
+        return MatchResult.DEFEAT
+      }
+      return MatchResult.DRAW
+    })()
+
+    const newElo = await updateEloOfUsers(game.lightId, game.darkId, resultForLight)
+    if (newElo) {
+      lightMsg.eloDiff = newElo.eloDiffA
+      lightMsg.newElo = newElo.newEloPlayerA
+      darkMsg.eloDiff = newElo.eloDiffB
+      darkMsg.newElo = newElo.newEloPlayerB
+      return { darkMsg, lightMsg }
+    }
+  }
+  return undefined
+}
+
 export const removeTimer = (roomID: string): void => {
   const gameTimer = chessTimers.get(roomID)
   if (gameTimer) {
@@ -317,8 +355,20 @@ export const removeTimer = (roomID: string): void => {
 
 export const endProtocol = async (
   roomID: string,
-  game: GameState
+  game: GameState,
+  message: GameOverMsg
 ): Promise<void> => {
+  const eloMsg = await updateElo(game, message)
+  if (eloMsg) {
+    io.to(roomID)
+      .except([game.darkSocketId, game.lightSocketId])
+      .emit('game_over', message)
+    io.to(game.lightSocketId).emit('game_over', eloMsg.lightMsg)
+    io.to(game.darkSocketId).emit('game_over', eloMsg.darkMsg)
+  } else {
+    io.to(roomID).emit('game_over', message)
+  }
+
   // After a game is over every socket in the room is forced to leave
   io.in(roomID).socketsLeave(roomID)
 
@@ -359,9 +409,7 @@ export const timeoutProtocol = (
       endState: EndState.TIMEOUT
     }
 
-    io.to(roomID).emit('game_over', message)
-
-    await endProtocol(roomID, game)
+    await endProtocol(roomID, game, message)
   }
 }
 

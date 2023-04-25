@@ -246,8 +246,8 @@ export const move = async (
     if (game.endState === EndState.CHECKMATE) {
       gameOverMessage.winner = game.winner
     }
-    io.to(roomID).emit('game_over', gameOverMessage)
-    await gameLib.endProtocol(roomID, game)
+
+    await gameLib.endProtocol(roomID, game, gameOverMessage)
   }
 
   // Execute AI's move if game is not over and
