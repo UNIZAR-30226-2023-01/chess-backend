@@ -10,18 +10,22 @@ properties:
     type: string
     format: url
     description: URI to join the tournament.
+    example: https://api.gracehopper.xyz/v1/tournaments/join/642ff637124419bec84934cb
   leave:
     type: string
     format: url
     description: URI to leave the tournament.
+    example: https://api.gracehopper.xyz/v1/tournaments/leave/642ff637124419bec84934cb
   owner:
     type: string
     format: url
     description: URI to query the owner's information.
+    example: https://api.gracehopper.xyz/v1/users/6427012084270ee46cd8300c
   startTime:
     type: string
     format: date
     description: Tournament start date.
+    example: 2023-03-26T15:30:34.785Z
   rounds:
     type: integer
     description: Number of tournament rounds.
@@ -46,6 +50,7 @@ properties:
       startTime: 
         type: string
         format: date
+        example: 2023-03-26T15:30:34.785Z
       state:
         type: string
         enum:
@@ -62,8 +67,10 @@ properties:
     type: string
     format: date
     description: The date and time when the tournament's account was created.
+    example: 2023-03-26T15:30:34.785Z
   updatedAt:
     type: string
     format: date
     description: The date and time when the tournament's information was last updated.
+    example: 2023-03-26T15:30:34.785Z
  
