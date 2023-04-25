@@ -2,16 +2,22 @@ import { model, Schema, Document } from 'mongoose'
 import { UserModel } from '@models/user'
 
 export interface MatchDocument extends Document {
+  gameId: Schema.Types.ObjectId
   nextMatchId: Schema.Types.ObjectId
   tournamentRoundText: String
   startTime: Date
   state: 'NO_SHOW' | 'WALK_OVER' | 'NO_PARTY' | 'DONE' | 'SCORE_DONE'
+  participants: any[]
 }
 
 const MatchSchema = new Schema<MatchDocument>({
-  nextMatchId: {
+  gameId: {
     type: Schema.Types.ObjectId,
     ref: 'Game'
+  },
+  nextMatchId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Match'
   },
   tournamentRoundText: {
     type: String
@@ -22,7 +28,11 @@ const MatchSchema = new Schema<MatchDocument>({
   state: {
     type: String,
     default: 'NO_SHOW'
-  }
+  },
+  participants: [{
+    type: Schema.Types.ObjectId,
+    ref: 'UserModel'
+  }]
 }, {
   timestamps: true
 })

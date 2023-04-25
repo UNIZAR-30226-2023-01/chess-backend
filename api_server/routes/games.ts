@@ -8,5 +8,6 @@ const router = express.Router()
 
 router.get('/', userMiddleware.isAuthenticated, paginate(GameModel), gamesCtrl.getAll)
 router.get('/:id', userMiddleware.isAuthenticated, gamesCtrl.getOne)
+router.get('/notify', userMiddleware.isAuthenticated, gamesCtrl.getOne)
 
 export default router
