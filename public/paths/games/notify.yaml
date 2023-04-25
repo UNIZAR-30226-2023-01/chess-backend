@@ -1,0 +1,42 @@
+get:
+  servers: 
+    - url: 'http://localhost:4000/v1'
+    - url: 'https://api.gracehopper.xyz/v1'
+  tags:
+    - Games
+  summary: Notify
+  description: Returns the users that have been notified. These users are waiting to play a game in the next ten minutes.
+  operationId: notify
+  security: 
+    - api_key: []
+  responses:
+    200:
+      description: Successful
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '../../components/schemas/user.yaml'
+              status:
+                $ref: '../../components/schemas/status.yaml'
+    204:
+      description: No Content
+      $ref: '../../components/schemas/responses/204.yaml'
+    401:
+      description: Too Many Request
+      $ref: '../../components/schemas/responses/401.yaml'
+    429:
+      description: Too Many Request
+      $ref: '../../components/schemas/responses/429.yaml'
+    500:
+      description: Internal Server Error
+      $ref: '../../components/schemas/responses/500.yaml'
+  x-codeSamples:
+    - lang: cURL
+      source: |
+        curl  --location 'https://api.gracehopper.xyz/v1/games/notify'
+              --header 'Cookie: api-auth=JWT_TOKEN'
