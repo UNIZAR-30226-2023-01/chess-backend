@@ -7,6 +7,7 @@ export interface MatchDocument extends Document {
   tournamentRoundText: String
   startTime: Date
   state: 'NO_SHOW' | 'WALK_OVER' | 'NO_PARTY' | 'DONE' | 'SCORE_DONE'
+  participants: any[]
 }
 
 const MatchSchema = new Schema<MatchDocument>({
@@ -27,7 +28,11 @@ const MatchSchema = new Schema<MatchDocument>({
   state: {
     type: String,
     default: 'NO_SHOW'
-  }
+  },
+  participants: [{
+    type: Schema.Types.ObjectId,
+    ref: 'UserModel'
+  }]
 }, {
   timestamps: true
 })
