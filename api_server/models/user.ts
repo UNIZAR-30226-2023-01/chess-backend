@@ -30,6 +30,7 @@ export interface UserDocument extends Document {
     fastDefeats: number
     fastDraws: number
   }
+  achievements: string[]
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -129,6 +130,10 @@ const userSchema = new Schema<UserDocument>({
       fastDefeats: 0,
       fastDraws: 0
     }
+  },
+  achievements: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true
