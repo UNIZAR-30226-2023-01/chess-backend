@@ -39,6 +39,11 @@ export const findGame = async (
   const match = await matchmaking
     .findCompetitiveGame(socket.data.userID, data.time, socket)
 
+  if (match.abort) {
+    socket.emit('error', 'Cannot play against yourself')
+    return
+  }
+
   if (!match.player1 || !match.socket1) {
     socket.emit('error', 'Internal server error')
     return

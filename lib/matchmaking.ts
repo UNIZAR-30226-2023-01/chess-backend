@@ -6,13 +6,14 @@ import { Types } from 'mongoose'
 
 interface QueuePlayer {
   roomID: string
-  player1: Types.ObjectId | undefined
-  socket1: string | undefined
+  player1: Types.ObjectId
+  socket1: string
 }
 
 export interface Match extends QueuePlayer {
-  player2: Types.ObjectId | undefined
-  socket2: string | undefined
+  player2?: Types.ObjectId
+  socket2?: string
+  abort: boolean
 }
 
 export async function findCompetitiveGame (
@@ -34,9 +35,14 @@ export async function findCompetitiveGame (
         socket2: socket.id,
         player1: parsedData.player1,
         player2: player,
-        roomID: parsedData.roomID
+        roomID: parsedData.roomID,
+        abort: false
       }
-      await client.del(resource)
+      if (match.player2?.equals(match.player1)) {
+        match.abort = true
+      } else {
+        await client.del(resource)
+      }
     } else {
       const roomID = await roomGen.generateUniqueRoomCode()
       const queuePlayer = { socket1: socket.id, player1: player, roomID }
@@ -45,7 +51,8 @@ export async function findCompetitiveGame (
         socket2: undefined,
         player1: player,
         player2: undefined,
-        roomID
+        roomID,
+        abort: false
       }
       await client.set(resource, JSON.stringify(queuePlayer))
     }

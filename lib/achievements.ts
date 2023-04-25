@@ -124,20 +124,16 @@ const updateTopRankingAchievement = async (
       console.error(err)
       return
     }
-    const updatePromises = users.map(user => UserModel.updateMany(
+    void users.map(async user => await UserModel.updateMany(
       { _id: user._id },
-      { $push: { achievements: achievement } }
+      { $addToSet: { achievements: achievement } }
     ))
-    Promise.all(updatePromises).then(() => {
-    }).catch(err => {
-      console.error(err)
-    })
   })
 }
 
 export const updateRankingAchievements = async (): Promise<void> => {
   void updateTopRankingAchievement(1, Achievements.TOP_1)
-  void updateTopRankingAchievement(1, Achievements.TOP_100)
+  void updateTopRankingAchievement(100, Achievements.TOP_100)
 }
 
 export const setFirstLoginAchievement = async (
