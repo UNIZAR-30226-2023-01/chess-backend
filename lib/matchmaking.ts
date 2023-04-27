@@ -31,7 +31,6 @@ interface AwaitingPlayer {
   socket: string
   elo: number
   courtesy: number // +- K
-  timeout?: NodeJS.Timeout
 }
 
 interface PlayerQueue {
@@ -93,7 +92,7 @@ const checkQueueOrAwakenOrCancelled = async (
                    m.socket2 === player.socket
           })
 
-          match.baton = true
+          match.baton = false
         } else {
           // I'm looking for some opponent
           for (const opponent of queue) {
@@ -104,11 +103,10 @@ const checkQueueOrAwakenOrCancelled = async (
                 socket1: player.socket,
                 player2: opponent.id,
                 socket2: opponent.socket,
-                baton: false,
+                baton: true,
                 cancelled: false
               }
 
-              clearTimeout(opponent.timeout)
               awakened.push(match)
               _.remove(queue, (q: AwaitingPlayer) => {
                 return q.socket === opponent.socket ||
@@ -184,13 +182,12 @@ export const findCompetitiveGame = async (
     match = await checkQueueOrAwakenOrCancelled(queueName, player)
     if (!match) {
       // SITUACION PELIAGUDA
-      console.log('timeout(', DEBUG, ') ', player.timeout)
+      console.log('timeout(', DEBUG, ') ')
 
       await addToQueue(queueName, player)
       await new Promise(resolve => {
         setTimeout(resolve, TIME_TO_WAIT)
       }) // SLEEP
-      player.timeout = undefined
       player.courtesy += K_INC
       if (player.courtesy >= K_MAX) {
         player.courtesy = K_MAX
