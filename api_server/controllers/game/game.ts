@@ -9,6 +9,7 @@ import * as roomLib from '@lib/room'
 import * as matchmaking from '@lib/matchmaking'
 import { FindRoomMsg, MoveMsg } from '@lib/types/socket-msg'
 import { GameType } from '@lib/types/game'
+import { ResourceName } from '@lib/namespaces'
 
 const moveFunctions = new Map<GameType, Function>([
   [GameType.AI, ai.move],
@@ -35,7 +36,8 @@ export const move = async (
 
   const game = await gameLib.getGame(roomID)
   if (!game) {
-    socket.emit('error', `No game with roomID: ${roomID}`)
+    // socket.emit('error', `No game with roomID: ${roomID}`)
+    socket.emit('error', 'This socket is not playing any game')
     return
   }
 
@@ -61,7 +63,8 @@ export const surrender = async (
 
   const game = await gameLib.getGame(roomID)
   if (!game) {
-    socket.emit('error', `No game with roomID: ${roomID}`)
+    // socket.emit('error', `No game with roomID: ${roomID}`)
+    socket.emit('error', 'This socket is not playing any game')
     return
   }
 
@@ -85,7 +88,8 @@ export const voteDraw = async (
 
   const game = await gameLib.getGame(roomID)
   if (!game) {
-    socket.emit('error', `No game with roomID: ${roomID}`)
+    // socket.emit('error', `No game with roomID: ${roomID}`)
+    socket.emit('error', 'This socket is not playing any game')
     return
   }
 
@@ -130,12 +134,19 @@ export const cancelGameCreation = async (
   socket: Socket
 ): Promise<void> => {
   const roomID = roomLib.getGameRoom(socket)
+
+  if (roomID === ResourceName.PLAYER_Q &&
+      await matchmaking.cancelSearch(socket)) {
+    await competitive.cancelSearch(socket, roomID)
+    return
+  }
+
   if (!roomID) {
     socket.emit('error', 'This socket is not playing any game')
     return
   }
 
-  const isCompetitive = await matchmaking.cancelSearch(roomID)
+  const isCompetitive = await matchmaking.cancelSearch(socket)
 
   if (isCompetitive) {
     await competitive.cancelSearch(socket, roomID)
@@ -144,7 +155,7 @@ export const cancelGameCreation = async (
 
   const game = await gameLib.getGame(roomID)
   if (!game) {
-    socket.emit('error', `No game with roomID: ${roomID}`)
+    socket.emit('error', 'This socket is not playing any game')
     return
   } else if (game.gameType !== GameType.CUSTOM &&
              game.gameType !== GameType.COMPETITIVE) {
