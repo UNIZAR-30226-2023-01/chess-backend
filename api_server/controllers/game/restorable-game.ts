@@ -27,7 +27,8 @@ export const saveGame = async (
   let save = false
   const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) {
-      socket.emit('error', `No game with roomID: ${roomID}`)
+      // socket.emit('error', `No game with roomID: ${roomID}`)
+      socket.emit('error', 'This socket is not playing any game')
       return
     }
 

@@ -2,11 +2,13 @@ import { Socket } from 'socket.io'
 import * as matchmaking from '@lib/matchmaking'
 import { chessTimers, ChessTimer } from '@lib/timer'
 import * as gameLib from '@lib/game'
+import * as roomGen from '@lib/room'
 import { FindRoomMsg } from '@lib/types/socket-msg'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 import { Types } from 'mongoose'
 import { UserModel } from '@models/user'
 import { io } from '@server'
+import { ResourceName } from '@lib/namespaces'
 const _ = require('lodash')
 
 const initialTimes = [3 * 60, 5 * 60, 10 * 60] // seconds
@@ -34,23 +36,19 @@ export const findGame = async (
 
   const increment = increments[index]
 
+  // Temp room not to let the socket find another game
+  await socket.join(ResourceName.PLAYER_Q)
+
   console.log('Matching...')
 
   const match = await matchmaking
     .findCompetitiveGame(socket.data.userID, data.time, socket)
 
-  if (match.abort) {
-    socket.emit('error', 'Cannot play against yourself')
-    return
-  }
+  if (!match.baton) return // Only the baton can create the room
 
-  if (!match.player1 || !match.socket1) {
-    socket.emit('error', 'Internal server error')
-    return
-  }
+  // ----------------------------
 
-  await socket.join(match.roomID)
-  if (!match.player2 || !match.socket2) return // jugador que espera
+  const roomID = await roomGen.generateUniqueRoomCode()
 
   let darkId, lightId: Types.ObjectId
   let darkSocketId: string, lightSocketId: string
@@ -104,13 +102,18 @@ export const findGame = async (
 
   console.log(game)
 
-  const roomID = match.roomID.toString()
   await gameLib.setGame(roomID, game)
   await gameLib.newGameInDB(game, roomID)
   await gameLib.startGameInDB(game, roomID)
 
   const res1 = gameLib.createFoundRoomMsg(match.socket1, roomID, game)
   const res2 = gameLib.createFoundRoomMsg(match.socket2, roomID, game)
+
+  io.in(match.socket1).socketsJoin(roomID)
+  io.in(match.socket2).socketsJoin(roomID)
+
+  io.in(match.socket1).socketsLeave(ResourceName.PLAYER_Q)
+  io.in(match.socket2).socketsLeave(ResourceName.PLAYER_Q)
 
   io.to(match.socket1).emit('room', res1)
   io.to(match.socket2).emit('room', res2)
@@ -123,7 +126,7 @@ export const findGame = async (
     gameLib.timeoutProtocol(roomID)
   )
 
-  chessTimers.set(match.roomID, gameTimer)
+  chessTimers.set(roomID, gameTimer)
 }
 
 export const cancelSearch = async (

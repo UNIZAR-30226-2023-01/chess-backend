@@ -28,6 +28,16 @@ get:
                 type: string
                 description: |
                   Winner of the game.
+              eloDiff:
+                type: number
+                description: |
+                  Rating gain for the player listening to this socket
+                  *(only in competitive games)*.
+              newElo: 
+                type: number
+                description: |
+                  New elo score of the player listening to this socket
+                  *(only in competitive games)*.
           example:
             endState: "SURRENDER"
             winner: "LIGHT"

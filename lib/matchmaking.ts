@@ -1,72 +1,211 @@
 import { Socket } from 'socket.io'
 import { client, redlock } from '@config/database'
-import * as roomGen from '@lib/room'
+
 import { ResourceName, compose, composeLock } from '@lib/namespaces'
 import { Types } from 'mongoose'
+import { getElo } from '@lib/elo'
+const _ = require('lodash')
 
-interface QueuePlayer {
-  roomID: string
+const K_BASE = 35
+const K_INC = 35
+const K_MAX = 400
+const TIME_TO_WAIT = 5 * 1000
+// const NUM_TRIES = 250
+
+export interface Match {
   player1: Types.ObjectId
   socket1: string
+  player2: Types.ObjectId
+  socket2: string
+
+  // Flag to select which location where this function was called is
+  // responsible of creating the game room and
+  baton: boolean
+
+  // true if the user has cancelled the search
+  cancelled: boolean
 }
 
-export interface Match extends QueuePlayer {
-  player2?: Types.ObjectId
-  socket2?: string
-  abort: boolean
+interface AwaitingPlayer {
+  id: Types.ObjectId
+  socket: string
+  elo: number
+  courtesy: number // +- K
+  timeout?: NodeJS.Timeout
 }
 
-export async function findCompetitiveGame (
-  player: Types.ObjectId, time: number, socket: Socket
-): Promise<Match> {
-  const lockName = composeLock(ResourceName.PLAYER_Q, time.toString())
-  const resource = compose(ResourceName.PLAYER_Q, time.toString())
+interface PlayerQueue {
+  queue: AwaitingPlayer[]
+  awakened: Match[]
+  cancelled: AwaitingPlayer[]
+}
 
-  let match: Match
+const checkEloCompatibility = (
+  player1: AwaitingPlayer,
+  player2: AwaitingPlayer
+): boolean => {
+  const eloDiff = Math.abs(player1.elo - player2.elo)
+  return player1.courtesy >= eloDiff || player2.courtesy >= eloDiff
+}
+
+const checkQueueOrAwakenOrCancelled = async (
+  queueName: string,
+  player: AwaitingPlayer
+): Promise<Match | undefined> => {
+  let match: Match | undefined
+
+  const lockName = composeLock(queueName)
   let lock = await redlock.acquire([lockName], 5000) // LOCK
   try {
-    const awaiting = await client.get(resource)
+    const awaiting = await client.get(queueName)
     lock = await lock.extend(5000) // EXTEND
 
-    if (awaiting !== null) { // match
-      const parsedData: QueuePlayer = JSON.parse(awaiting)
-      match = {
-        socket1: parsedData.socket1,
-        socket2: socket.id,
-        player1: parsedData.player1,
-        player2: player,
-        roomID: parsedData.roomID,
-        abort: false
-      }
-      if (match.player2?.equals(match.player1)) {
-        match.abort = true
+    if (awaiting !== null) {
+      const { queue, awakened, cancelled }: PlayerQueue = JSON.parse(awaiting)
+
+      // Check if the player has cancelled the search
+      const isCancelled = _.find(cancelled, (q: AwaitingPlayer) => {
+        return q.socket === player.socket
+      })
+      if (isCancelled) {
+        _.remove(cancelled, (q: AwaitingPlayer) => {
+          return q.socket === player.socket
+        })
+        match = {
+          player1: player.id,
+          socket1: player.socket,
+          player2: player.id,
+          socket2: player.socket,
+          baton: false,
+          cancelled: true
+        }
       } else {
-        await client.del(resource)
+        // Check if the player has been awakened
+        match = _.find(awakened, (m: Match) => {
+          return m.socket1 === player.socket ||
+                 m.socket2 === player.socket
+        })
+
+        if (match) {
+          // I've been awakened
+          _.remove(awakened, (m: Match) => {
+            return m.socket1 === player.socket ||
+                   m.socket2 === player.socket
+          })
+
+          match.baton = true
+        } else {
+          // I'm looking for some opponent
+          for (const opponent of queue) {
+            if (!player.id.equals(opponent.id) &&
+                checkEloCompatibility(player, opponent)) {
+              match = {
+                player1: player.id,
+                socket1: player.socket,
+                player2: opponent.id,
+                socket2: opponent.socket,
+                baton: false,
+                cancelled: false
+              }
+
+              clearTimeout(opponent.timeout)
+              awakened.push(match)
+              _.remove(queue, (q: AwaitingPlayer) => {
+                return q.socket === opponent.socket ||
+                       q.socket === player.socket
+              })
+
+              break
+            }
+          }
+        }
       }
-    } else {
-      const roomID = await roomGen.generateUniqueRoomCode()
-      const queuePlayer = { socket1: socket.id, player1: player, roomID }
-      match = {
-        socket1: socket.id,
-        socket2: undefined,
-        player1: player,
-        player2: undefined,
-        roomID,
-        abort: false
-      }
-      await client.set(resource, JSON.stringify(queuePlayer))
+      await client.set(queueName, JSON.stringify({ queue, awakened, cancelled }))
     }
   } finally {
     await lock.release() // UNLOCK
   }
+  return match
+}
 
-  console.log('Game matched roomID: ', match.roomID)
+const addToQueue = async (
+  queueName: string,
+  player: AwaitingPlayer
+): Promise<void> => {
+  const lockName = composeLock(queueName)
+  let lock = await redlock.acquire([lockName], 5000) // LOCK
+  try {
+    const awaiting = await client.get(queueName)
+    lock = await lock.extend(5000) // EXTEND
+
+    if (awaiting !== null) {
+      const { queue, awakened, cancelled }: PlayerQueue = JSON.parse(awaiting)
+
+      // Check if the player is in queue
+      const index: number = _.findIndex(queue, (q: AwaitingPlayer) => {
+        return q.socket === player.socket
+      })
+
+      if (index === -1) {
+        queue.push(player)
+      } else {
+        queue[index] = player
+      }
+
+      await client.set(queueName, JSON.stringify({ queue, awakened, cancelled }))
+    } else {
+      const playerQueue: PlayerQueue = {
+        queue: [player],
+        awakened: [],
+        cancelled: []
+      }
+      await client.set(queueName, JSON.stringify(playerQueue))
+    }
+  } finally {
+    await lock.release() // UNLOCK
+  }
+}
+
+export const findCompetitiveGame = async (
+  id: Types.ObjectId, time: number, socket: Socket
+): Promise<Match> => {
+  const queueName = compose(ResourceName.PLAYER_Q, time.toString())
+  const player: AwaitingPlayer = {
+    id,
+    socket: socket.id,
+    elo: await getElo(id),
+    courtesy: K_BASE
+  }
+
+  let DEBUG = 0
+
+  let match: Match | undefined
+  while (!match) {
+    match = await checkQueueOrAwakenOrCancelled(queueName, player)
+    if (!match) {
+      // SITUACION PELIAGUDA
+      console.log('timeout(', DEBUG, ') ', player.timeout)
+
+      await addToQueue(queueName, player)
+      await new Promise(resolve => {
+        setTimeout(resolve, TIME_TO_WAIT)
+      }) // SLEEP
+      player.timeout = undefined
+      player.courtesy += K_INC
+      if (player.courtesy >= K_MAX) {
+        player.courtesy = K_MAX
+      }
+    }
+    DEBUG++
+  }
 
   return match
 }
 
-export async function cancelSearch (roomID: string): Promise<boolean> {
-  let cancelled = false
+export const cancelSearch = async (
+  socket: Socket
+): Promise<boolean> => {
+  let hasBeenCancelled = false
 
   const pattern = compose(ResourceName.PLAYER_Q, '*')
   let i = 0
@@ -74,22 +213,36 @@ export async function cancelSearch (roomID: string): Promise<boolean> {
   do {
     query = await client.call('scan', i++, 'MATCH', pattern)
     console.log('query: ', query)
-    for (const k of query[1]) {
-      const key: string = k
-      const lockName = composeLock(key)
+    for (const key of query[1]) {
+      const queueName: string = key
+      const lockName = composeLock(queueName)
       let lock = await redlock.acquire([lockName], 5000) // LOCK
       try {
-        const awaiting = await client.get(key)
+        const awaiting = await client.get(queueName)
         lock = await lock.extend(5000) // EXTEND
 
         if (awaiting !== null) {
-          const parsedData: QueuePlayer = JSON.parse(awaiting)
+          const { queue, awakened, cancelled }: PlayerQueue = JSON.parse(awaiting)
+          console.log('Cancelling...\n queue:', queue)
 
-          // Remove from Queue
-          if (roomID === parsedData.roomID) {
-            cancelled = true
-            await client.del(key)
+          // Check if the player is in queue
+          const inQueue = _.find(queue, (q: AwaitingPlayer) => {
+            return q.socket === socket.id
+          })
+
+          if (inQueue) {
+            hasBeenCancelled = true
+            // Remove from Queue
+            _.remove(queue, (q: AwaitingPlayer) => {
+              if (q.socket === socket.id) {
+                cancelled.push(q)
+                return true
+              }
+              return false
+            })
+            await client.set(queueName, JSON.stringify({ queue, awakened, cancelled }))
           }
+          console.log('new queue:', queue)
         }
       } finally {
         await lock.release() // UNLOCK
@@ -97,5 +250,5 @@ export async function cancelSearch (roomID: string): Promise<boolean> {
     }
   } while (query[0] !== '0')
 
-  return cancelled
+  return hasBeenCancelled
 }

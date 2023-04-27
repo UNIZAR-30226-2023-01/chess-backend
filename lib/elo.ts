@@ -79,3 +79,8 @@ export const updateEloOfUsers = async (
   )
   return newElo
 }
+
+export const getElo = async (id: Types.ObjectId): Promise<number> => {
+  const player = await UserModel.findById(id)
+  return player ? player.elo : 0
+}
