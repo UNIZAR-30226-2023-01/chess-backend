@@ -68,10 +68,8 @@ export const parseExtendedUser = (user: UserDocument): User => {
 
 interface Game {
   id: string
-  lightUsername?: string
-  darkUsername?: string
-  lightPlayer?: string
-  darkPlayer?: string
+  lightPlayer: string | null
+  darkPlayer: string | null
   board: string
   moves: string[]
   times?: {
@@ -91,8 +89,8 @@ interface Game {
 export const parseGame = (Games: GameDocument): Game => {
   return {
     id: Games._id,
-    lightPlayer: `https://api.gracehopper.xyz/v1/users/${String(Games.lightId)}`,
-    darkPlayer: `https://api.gracehopper.xyz/v1/users/${String(Games.darkId)}`,
+    lightPlayer: Games.lightId ? `https://api.gracehopper.xyz/v1/users/${String(Games.lightId)}` : null,
+    darkPlayer: Games.darkId ? `https://api.gracehopper.xyz/v1/users/${String(Games.darkId)}` : null,
     board: Games.board,
     moves: Games.moves,
     times: {
