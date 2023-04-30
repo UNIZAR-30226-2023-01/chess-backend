@@ -3,6 +3,7 @@ import { setStatus } from '@lib/status'
 import { GameModel } from '@models/game'
 import { parseGame } from '@lib/parsers'
 import { TournamentModel } from '@models/tournament'
+import { ObjectId } from 'mongodb'
 // import sgMail from '@sendgrid/mail'
 
 export const getAll = (req: Request, res: Response): void => {
@@ -19,13 +20,16 @@ export const getAll = (req: Request, res: Response): void => {
 
 export const getOne = (req: Request, res: Response): void => {
   const { id } = req.params
-  GameModel.findById(id).populate(['lightId', 'darkId'])
+  const filter = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { roomID: id }
+  GameModel.findOne(filter)
     .then((game) => {
       if (!game) {
         return res
           .status(404)
           .json({ status: setStatus(req, 404, 'Not Found') })
       }
+
+      console.log(game)
 
       return res
         .status(200)
