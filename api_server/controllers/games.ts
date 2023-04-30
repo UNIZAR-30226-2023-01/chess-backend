@@ -19,7 +19,7 @@ export const getAll = (req: Request, res: Response): void => {
 
 export const getOne = (req: Request, res: Response): void => {
   const { id } = req.params
-  GameModel.findById(id)
+  GameModel.findById(id).populate(['lightId', 'darkId'])
     .then((game) => {
       if (!game) {
         return res
