@@ -32,7 +32,6 @@ export const signUp = (req: Request, res: Response): void => {
         const payload = { id, email }
         const token = jwt.sign(payload, secret, { expiresIn: '15m' })
         const url = `https://reign.gracehopper.xyz/auth/verify/${String(id)}/${token}`
-        const data = { id, url }
 
         const msg = {
           to: email,
@@ -57,10 +56,7 @@ export const signUp = (req: Request, res: Response): void => {
           .catch(() => {
             return res
               .status(500)
-              .json({
-                data,
-                status: setStatus(req, 500, 'Internal Server Error')
-              })
+              .json({ status: setStatus(req, 500, 'Internal Server Error') })
           })
       })
       .catch((err: Error) => {
