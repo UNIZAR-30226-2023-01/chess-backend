@@ -38,8 +38,8 @@ properties:
       * `2` is equivalent to Stockfish's skill level **7**, which is the hardest
         a human should be able to beat.
       * `3` is equivalent to Stockfish's highest skill level.
-    minimum: 1
-    maximum: 4
+    minimum: 0
+    maximum: 3
 example:
   gameType: "AI"
   time: 300

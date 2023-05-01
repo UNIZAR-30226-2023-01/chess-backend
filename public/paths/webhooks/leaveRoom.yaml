@@ -17,9 +17,17 @@ get:
         text/plain:
           schema:
             description: Details of what caused the error.
-            type: string
-          examples:
-            not watching any game:
-              value: This socket is not watching any game
-            players cannot leave:
-              value: Players cannot leave a room
+            type: object
+            properties:
+              code:
+                type: integer
+                description: |
+                  Error code with a meaning similar to HTTP status errors.
+              error:
+                type: string
+                description: |
+                  Error type.
+              message:
+                type: string
+                description: |
+                  Description of what caused the error.

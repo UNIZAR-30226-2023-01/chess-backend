@@ -111,6 +111,42 @@ The Reign API is divided into 5 top-level categories
 - **Item endpoints:** Convenient ID-based resource endpoints allow you to extract information from a specific ID.
 
 
+# Event Overview
+
+<h2>Client Side Events</h2>
+
+The client side events are offer to the user to play or watch chess games.
+
+| Event        | Description                                                                                                                  |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `find_room`  | Allows a user to search for a match against a random opponent or create a custom game against AI or a friend.                |
+| `resume`     | Allows retrieving a saved **custom** or **AI** game to be resumed.                                                           |
+| `cancel`     | Allows user to cancel the creation of a **custom** game or the matchmaking of a **competitive** game before the game starts. |
+| `join_room`  | Allows a user to join as spectator of a game in progress.                                                                    |
+| `leave_room` | Allows an spectator to leave the game room.                                                                                  |
+| `move`       | Allows player to execute a chess move.                                                                                       |
+| `surrender`  | Allows player to surrender and grant victory to the opponent.                                                                |
+| `vote_draw`  | Allows voting for a draw in a two-player game.                                                                               |
+| `vote_save`  | Allows voting for saving a **custom** or **AI** game.                                                                        |
+
+<h2>Server Side Events</h2>
+
+The client side events are emitted as replies to the events sent by the user.
+
+| Event          | Description                                                                                                       |
+| -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `room_created` | Response to a `find_room` or `resume` event on creating a **custom** game.                                        |
+| `room`         | Sends the current state of the game when searching for a game, joining a room or restoring one from the database. |
+| `cancelled`    | Response to a `cancel` event on success.                                                                          |
+| `moved`        | This is sent to every socket within the same room when a player executes a move.                                  |
+| `voted_draw`   | This is sent to every socket within the same room to acknowledge the vote of a player for a draw.                 |
+| `voted_save`   | This is sent to every socket within the same room to acknowledge the vote of a player to save the game.           |
+| `game_over`    | This is sent to every socket within the same room when the game has ended.                                        |
+| `game_saved`   | This is sent to every socket within the same room when the game has been saved.                                   |
+| `error`        | Contains an error code and a message that describes the reason.                                                   |
+
+
+
 # Standards and Conventions
 
 Each HTTP request must contain the header `Accept: application/json`. You should also send an `Accept-Encoding: deflate, gzip` header to receive data fast and efficiently.
@@ -181,6 +217,28 @@ A `Status` object is always included in the JSON response payload for both succe
 |     429     | 1006  `API_KEY_DAILY_RATE_LIMIT_REACHED`   | You've exceeded your API Key's daily rate limit.                                             |
 |     429     | 1007  `API_KEY_MONTHLY_RATE_LIMIT_REACHED` | You've exceeded your API Key's monthly rate limit.                                           |
 |     429     | 1008  `IP_RATE_LIMIT_REACHED`              | You've hit an IP rate limit.                                                                 |
+
+<h2>Error Event Codes</h2>
+
+If some event sent from the client side causes an error, an `error` event will be sent as the only reply and the first event will have no effect. A `SocketError` object is always sent with this type of event. The error codes are related to the standard HTTP error status codes.
+
+| Error Code  | Error Type                | Default Message                                       |
+| :---------: | :-------------------------| :---------------------------------------------------- |
+|     400     | `INVALID_PARAMETER`       | Invalid parameters.                                   |
+|     400     | `NOT_YOUR_TURN`           | It is not your turn to move.                          |
+|     400     | `ILLEGAL_MOVE`            | Illegal move.                                         |
+|     401     | `MUST_BE_AUTHENTICATED`   | This action requires an authenticated socket.         |
+|     403     | `NOT_PLAYER_OF_THIS_GAME` | This socket is not player of this game.               |
+|     405     | `NOT_SUPPORTED_ACTION`    | This action is not supported by the game type.        |
+|     409     | `GAME_NOT_READY`          | This game is not ready yet.                           |
+|     409     | `GAME_ALREADY_STARTED`    | This game has already been started.                   |
+|     409     | `GAME_NOT_PAUSED`         | This game is not paused.                              |
+|     409     | `GAME_ALREADY_FINISHED`   | This game has already been finished.                  |
+|     409     | `NOT_PLAYING_ANY_GAME`    | This socket is not playing any game.                  |
+|     409     | `NOT_WATCHING_ANY_GAME`   | This socket is not watching any game.                 |
+|     409     | `ALREADY_JOINED`          | This socket has already joined a room.                |
+|     409     | `ALREADY_PLAYING`         | This socket is already playing or in queue.           |
+|     500     | `INTERNAL_SERVER_ERROR`   | Internal server error.                                |
 
 # Best Practices
 
