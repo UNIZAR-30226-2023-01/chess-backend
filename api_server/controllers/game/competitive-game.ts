@@ -3,6 +3,7 @@ import * as matchmaking from '@lib/matchmaking'
 import { chessTimers, ChessTimer } from '@lib/timer'
 import * as gameLib from '@lib/game'
 import * as roomGen from '@lib/room'
+import * as error from '@lib/socket-error'
 import { FindRoomMsg } from '@lib/types/socket-msg'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 import { Types } from 'mongoose'
@@ -11,32 +12,45 @@ import { io } from '@server'
 import { ResourceName } from '@lib/namespaces'
 const _ = require('lodash')
 
+/** All possible times in **seconds** for a competitive game. */
 const initialTimes = [3 * 60, 5 * 60, 10 * 60] // seconds
+
+/** All possible increments in **seconds** for a competitive game. */
 const increments = [0, 0, 0] // seconds
 
+/**
+ * Finds an opponent for the player to play a competitive game.
+ * This function does not end until the matchmaking is
+ * completed or cancelled.
+ *
+ * @param socket Authenticated socket connexion of the player.
+ * @param data Game configuration.
+ */
 export const findGame = async (
   socket: Socket,
   data: FindRoomMsg
 ): Promise<void> => {
   if (!data.time) {
-    socket.emit('error', 'Missing parameters')
+    socket.emit('error', error.invalidParams('Missing parameters.'))
     return
   }
 
   if (!socket.data.authenticated) {
-    socket.emit('error', 'Must be authenticated to find a game')
+    socket.emit('error', error.mustBeAuthenticated())
     return
   }
 
   const index = _.indexOf(initialTimes, data.time)
   if (index === -1) {
-    socket.emit('error', 'Specified time is not available')
+    socket.emit('error', error.invalidParams('Specified time is not available.'))
     return
   }
 
+  // ---- End of validation ---- //
+
   const increment = increments[index]
 
-  // Temp room not to let the socket find another game
+  // Temporary room not to let the socket find another game
   await socket.join(ResourceName.PLAYER_Q)
 
   console.log('Matching...')
@@ -46,7 +60,7 @@ export const findGame = async (
 
   if (!match.baton) return // Only the baton can create the room
 
-  // ----------------------------
+  // ---- End of matchmaking ---- //
 
   const roomID = await roomGen.generateUniqueRoomCode()
 
@@ -129,8 +143,15 @@ export const findGame = async (
   chessTimers.set(roomID, gameTimer)
 }
 
+/**
+ * Cancels the search of a competitive game.
+ *
+ * @param socket Authenticated socket connexion of the player.
+ * @param roomID Identifier of the room where the game is allocated.
+ */
 export const cancelSearch = async (
-  socket: Socket, roomID: string
+  socket: Socket,
+  roomID: string
 ): Promise<void> => {
   socket.emit('cancelled')
   await gameLib.unsetGame(roomID)

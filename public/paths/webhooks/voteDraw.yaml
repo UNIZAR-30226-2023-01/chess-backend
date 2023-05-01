@@ -7,7 +7,7 @@ get:
   summary: Vote Draw
   operationId: voteDraw
   description: event(vote_draw) 
-    Allows voting for a draw to the opponent if this socket
+    Allows voting for a draw if this socket
     is currently a player of a **competitive**, **custom** or **tournament**
     game room. If both players have voted for a draw, then the game is over
     with a surrender end state.
@@ -53,9 +53,17 @@ get:
         text/plain:
           schema:
             description: Details of what caused the error.
-            type: string
-          examples:
-            not currently playing:
-              value: This socket is not playing any game
-            not a player of this game:
-              value: You are not a player of this game
+            type: object
+            properties:
+              code:
+                type: integer
+                description: |
+                  Error code with a meaning similar to HTTP status errors.
+              error:
+                type: string
+                description: |
+                  Error type.
+              message:
+                type: string
+                description: |
+                  Description of what caused the error.

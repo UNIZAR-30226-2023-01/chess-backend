@@ -176,20 +176,18 @@ post:
         text/plain:
           schema:
             description: Details of what caused the error.
-            type: string
-          examples:
-            not supported game type:
-              value: Not supported game type
-            busy socket:
-              value: This socket is already playing or in queue
-            invalid hostColor property:
-              value: Host color "RED" is not a valid option
-            time property is not a number:
-              value: Initial timer is not a number
-            time property is negative:
-              value: Initial timer value cannot be negative
-            increment property is not a number:
-              value: Timer increment is not a number
-            increment property is negative:
-              value: Timer increment value cannot be negative
+            type: object
+            properties:
+              code:
+                type: integer
+                description: |
+                  Error code with a meaning similar to HTTP status errors.
+              error:
+                type: string
+                description: |
+                  Error type.
+              message:
+                type: string
+                description: |
+                  Description of what caused the error.
             

@@ -1,6 +1,6 @@
 import { Types } from 'mongoose'
 
-// Board to test checkmate with tomato and the lettucero horse
+// Board to test checkmate
 // Next two moves: [f1g1, a8h8]
 // export const START_BOARD = 'r7/pb3kb1/1p2p3/2nP2q1/8/2N5/PPP2P2/R4R1K w - - 3 24'
 
@@ -33,9 +33,7 @@ export enum State {
   ENDED = 'ENDED'
 }
 
-/**
- * State of a game stored in ram database
- */
+/** State of a game stored in ram database */
 export interface GameState {
   turn: PlayerColor
   darkSocketId: string
