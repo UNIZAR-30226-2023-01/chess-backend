@@ -127,9 +127,8 @@ interface Tournament {
   owner: string
   startTime: Date
   rounds: number
-  participants: number
+  participants: any[]
   matches: Match[]
-  // matches: any[]
   createdAt: Date
   updatedAt: Date
 }
@@ -142,7 +141,7 @@ export const parseTournament = (Tournament: TournamentDocument): Tournament => {
     owner: `${URI}/v1/users/${String(Tournament.owner)}`,
     startTime: Tournament.startTime,
     rounds: Number(Tournament.rounds),
-    participants: Tournament.participants.length,
+    participants: Tournament.participants,
     matches: Tournament.matches.map((match) => {
       const matchJSON = JSON.parse(JSON.stringify(match))
       return {
