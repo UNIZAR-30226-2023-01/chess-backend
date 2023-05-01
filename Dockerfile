@@ -5,7 +5,7 @@ RUN apk upgrade && apk add git gcc g++ make util-linux
 RUN git clone https://github.com/official-stockfish/Stockfish.git
 COPY stockfish-compile.sh Stockfish/src
 RUN cd Stockfish/src && chmod u+x stockfish-compile.sh \
-&& ./stockfish-compile.sh && mv stockfish /bin && make clean && cd
+  && ./stockfish-compile.sh && mv stockfish /bin && make clean && cd
 
 
 RUN apk upgrade && apk add nodejs npm
@@ -22,7 +22,8 @@ COPY package*.json ./
 RUN npm install
 
 # Bundle app source
-ENV NODE_ENV=production
+# ENV NODE_ENV=production
+ENV NODE_ENV=development
 COPY ./.env .
 COPY ./build .
 
