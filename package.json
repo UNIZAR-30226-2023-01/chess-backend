@@ -8,7 +8,7 @@
     "npm": "8.15.0"
   },
   "scripts": {
-    "start": "set NODE_ENV=production && node build/app.js",
+    "start": "set NODE_ENV=development && node build/app.js",
     "dev": "set NODE_ENV=development && ts-node-dev -r tsconfig-paths/register app.ts",
     "tsc": "tsc && tsc-alias",
     "lint": "eslint . --ext .ts --fix",
