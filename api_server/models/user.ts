@@ -52,7 +52,7 @@ const userSchema = new Schema<UserDocument>({
   },
   avatar: {
     type: String,
-    default: 'avatar'
+    default: '/animales/1.webp'
   },
   password: {
     type: Buffer,
