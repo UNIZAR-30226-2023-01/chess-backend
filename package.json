@@ -8,9 +8,9 @@
     "npm": "8.15.0"
   },
   "scripts": {
-    "start": "set NODE_ENV=development && node build/app.js",
+    "start": "set NODE_ENV=production && node build/app.js",
     "dev": "set NODE_ENV=development && ts-node-dev -r tsconfig-paths/register app.ts",
-    "tsc": "tsc && tsc-alias",
+    "tsc": "tsc && tsc-alias && copyfiles -u 1 public/assets/**/* build/public",
     "lint": "eslint . --ext .ts --fix",
     "prepare": "husky install",
     "test": "set NODE_ENV=test && nyc mocha --exit --timeout 5000 -r ts-node/register -r tsconfig-paths/register \"test/**/*.ts\""
@@ -69,6 +69,7 @@
     "autocannon": "^7.10.0",
     "chai": "^4.3.7",
     "chai-http": "^4.3.0",
+    "copyfiles": "^2.4.1",
     "husky": "^8.0.3",
     "lint-staged": "^13.1.0",
     "mocha": "^10.2.0",
