@@ -2,6 +2,7 @@ import * as gameLib from '@lib/game'
 import { FindRoomMsg } from '@lib/types/socket-msg'
 import { Socket } from 'socket.io'
 import * as roomLib from '@lib/room'
+import * as error from '@lib/socket-error'
 import { GameState, GameType, PlayerColor, START_BOARD } from '@lib/types/game'
 import { ChessTimer, chessTimers } from '@lib/timer'
 import { ReservedUsernames, UserModel } from '@models/user'
@@ -9,6 +10,13 @@ import { io } from '@server'
 import { Types } from 'mongoose'
 import { GameModel } from '@models/game'
 
+/**
+ * Creates a custom game with the given configuration or
+ * joins a game if the `data` object contains a room id.
+ *
+ * @param socket Socket connexion of the player.
+ * @param data Game configuration or room id of the game to join.
+ */
 export const findGame = async (
   socket: Socket,
   data: FindRoomMsg
@@ -20,22 +28,31 @@ export const findGame = async (
 
   const check = gameLib.checkRoomCreationMsg(data)
   if (check.error) {
-    socket.emit('error', check.error)
+    socket.emit('error', error.invalidParams(check.error))
     return
   }
 
   await createGame(socket, data, check.useTimer)
 }
 
+/**
+ * Creates a custom game with the given configuration.
+ *
+ * @param socket Authenticated socket connexion of the player.
+ * @param data Game configuration or room id of the game to join.
+ * @param useTimer Set to true if the game uses a timer.
+ */
 const createGame = async (
   socket: Socket,
   data: FindRoomMsg,
   useTimer: boolean
 ): Promise<void> => {
   if (!socket.data.authenticated) {
-    socket.emit('error', 'Must be authenticated to create a custom game')
+    socket.emit('error', error.mustBeAuthenticated())
     return
   }
+
+  // ---- End of validation ---- //
 
   const roomID = await roomLib.generateUniqueRoomCode()
 
@@ -87,6 +104,7 @@ const createGame = async (
   }
 
   console.log(game)
+
   await gameLib.setGame(roomID, game)
   void gameLib.newGameInDB(game, roomID)
 
@@ -95,6 +113,15 @@ const createGame = async (
   socket.emit('room_created', { roomID })
 }
 
+/**
+ * Fills the player-related properties of the game and
+ * binds the socket id to the game object.
+ *
+ * Unauthenticated players are named as **guest** users.
+ *
+ * @param socket Socket connexion of the player.
+ * @param game Game object with the properties to be changed.
+ */
 export const completeUserInfo = async (
   socket: Socket,
   game: GameState
@@ -114,6 +141,12 @@ export const completeUserInfo = async (
   }
 }
 
+/**
+ * Joins a custom game with the given room id.
+ *
+ * @param socket Socket connexion of the player.
+ * @param data Object containing the room id of the game to join.
+ */
 const joinGame = async (
   socket: Socket,
   roomID: string
@@ -122,25 +155,25 @@ const joinGame = async (
 
   const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) {
-      socket.emit('error', `No game with roomID: ${roomID}`)
+      socket.emit('error', error.notPlaying())
       return
     }
 
     if (game.finished) {
-      socket.emit('error', 'Game has already been finished')
+      socket.emit('error', error.gameAlreadyFinished())
       return
     }
 
     if (game.darkId !== undefined &&
         game.lightId !== undefined &&
         !socket.data.authenticated) {
-      socket.emit('error', 'You are not player of this game')
+      socket.emit('error', error.notPlayerOfThisGame())
       return
     }
 
     if ((socket.data.userID?.equals(game.darkId) && game.darkSocketId !== '') ||
         (socket.data.userID?.equals(game.lightId) && game.lightSocketId !== '')) {
-      socket.emit('error', 'This player has already joined this game')
+      socket.emit('error', error.alreadyJoined())
       return
     }
 
@@ -149,7 +182,7 @@ const joinGame = async (
     } else if (game.lightSocketId === '' && game.darkSocketId !== '') {
       game.lightSocketId = socket.id
     } else {
-      socket.emit('error', 'This game is not ready to join')
+      socket.emit('error', error.gameNotReady('This game is not ready to join.'))
       return
     }
 
@@ -157,9 +190,11 @@ const joinGame = async (
     const _lightSocket = io.sockets.sockets.get(game.lightSocketId)
 
     if (!_darkSocket || !_lightSocket) {
-      socket.emit('error', 'Internal server error')
+      socket.emit('error', error.internalServerError())
       return
     }
+
+    // ---- End of validation ---- //
 
     darkSocket = _darkSocket
     lightSocket = _lightSocket
@@ -203,19 +238,28 @@ const joinGame = async (
   await gameLib.startGameInDB(game, roomID)
 }
 
+/**
+ * Cancels a custom game with the given room id if it hasn't been started yet.
+ *
+ * @param socket Authenticated socket connexion of the player.
+ * @param roomID Identifier of the room where the game is allocated.
+ */
 export const cancelCreation = async (
-  socket: Socket, roomID: string
+  socket: Socket,
+  roomID: string
 ): Promise<void> => {
   const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) {
-      socket.emit('error', `No game with roomID: ${roomID}`)
+      socket.emit('error', error.notPlaying())
       return
     }
 
     if (gameLib.isGameStarted(game)) {
-      socket.emit('error', 'This game has already been started')
+      socket.emit('error', error.gameAlreadyStarted())
       return
     }
+
+    // ---- End of validation ---- //
 
     await gameLib.unsetGame(roomID)
     return game

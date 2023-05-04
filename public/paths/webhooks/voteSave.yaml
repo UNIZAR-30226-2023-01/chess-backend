@@ -40,4 +40,17 @@ get:
         text/plain:
           schema:
             description: Details of what caused the error.
-            type: string
+            type: object
+            properties:
+              code:
+                type: integer
+                description: |
+                  Error code with a meaning similar to HTTP status errors.
+              error:
+                type: string
+                description: |
+                  Error type.
+              message:
+                type: string
+                description: |
+                  Description of what caused the error.
