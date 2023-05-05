@@ -69,4 +69,6 @@ jobs:
         mkdir -p nginx/api.gracehopper.xyz && echo "$CERT" | base64 -d > nginx/api.gracehopper.xyz/cert.pem
         mkdir -p nginx/api.gracehopper.xyz && echo "$KEY" | base64 -d > nginx/api.gracehopper.xyz/privkey.pem
     - name: Test
+      env:
+        NODE_ENV: test
       run: npm run test

@@ -8,17 +8,23 @@ import { invalidateToken } from '@lib/token-blacklist'
 import { parseUser } from '@lib/parsers'
 import sgMail from '@sendgrid/mail'
 import * as achievement from '@lib/achievements'
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 export const signUp = (req: Request, res: Response): void => {
   // Check if the username is reserved
-  if (Object.values(ReservedUsernames).includes(req.body.username)) {
+  if (process.env.NODE_ENV !== 'test' &&
+      Object.values(ReservedUsernames).includes(req.body.username)) {
     res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
     return
   }
 
   const salt = randomBytes(16)
   pbkdf2(req.body.password, salt, 310000, 64, 'sha512', async (err, derivedKey) => {
-    if (err) return res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
+    if (err) {
+      console.log('err:', err)
+      return res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
+    }
 
     return await UserModel.create({
       username: req.body.username,
@@ -41,6 +47,16 @@ export const signUp = (req: Request, res: Response): void => {
             subject: 'Verifica tu cuenta de Reign',
             url
           }
+        }
+
+        // NO EMAIL CHECKING IN TEST MODE
+        if (process.env.NODE_ENV === 'test') {
+          UserModel.findByIdAndUpdate(id, { verified: true }).then(_ => {}).catch(_ => {})
+          res.status(201).json({
+            data: parseUser(user),
+            status: setStatus(req, 0, 'Successful')
+          })
+          return
         }
 
         sgMail.setApiKey(String(process.env.SENDGRID_API_KEY))
@@ -115,7 +131,7 @@ export const signIn = (req: Request, res: Response): void => {
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
           })
 
-          void achievement.setFirstLoginAchievement(user.id)
+          achievement.setFirstLoginAchievement(user.id).then(_ => {}).catch(_ => {})
 
           return res
             .status(200)
@@ -202,6 +218,16 @@ export const forgotPassword = (req: Request, res: Response): void => {
           subject: 'Ha solicitado un restablecimiento de contraseña',
           url
         }
+      }
+
+      // NO EMAIL CHECKING IN TEST MODE
+      if (process.env.NODE_ENV === 'test') {
+        await UserModel.findByIdAndUpdate(id, { verified: true })
+        res.status(200).json({
+          data,
+          status: setStatus(req, 0, 'Successful')
+        })
+        return
       }
 
       sgMail.setApiKey(String(process.env.SENDGRID_API_KEY))

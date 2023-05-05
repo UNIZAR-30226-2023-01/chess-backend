@@ -124,7 +124,7 @@ const updateTopRankingAchievement = async (
       console.error(err)
       return
     }
-    void users.map(async user => await UserModel.updateMany(
+    users.map(async user => await UserModel.updateMany(
       { _id: user._id },
       { $addToSet: { achievements: achievement } }
     ))

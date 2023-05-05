@@ -1,19 +1,17 @@
-import { UserModel } from '@models/user'
+import * as fake from './fake-data'
+
+console.log('NODE_ENV:', process.env.NODE_ENV, '\n')
 
 before((done) => {
-  UserModel.deleteMany({})
-    .then(_ => { done() })
-    .catch(err => {
-      console.error(err.message)
-      done()
-    })
+  fake.clearClientWithCallback(async () => {
+    await fake.setGame()
+    done()
+  })
 })
 
-afterEach((done) => {
-  UserModel.deleteMany({})
-    .then(_ => { done() })
-    .catch(err => {
-      console.error(err.message)
-      done()
-    })
+after((done) => {
+  fake.clearClientWithCallback(async () => {
+    await fake.clearGame()
+    done()
+  })
 })
