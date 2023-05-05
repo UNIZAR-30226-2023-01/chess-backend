@@ -36,6 +36,13 @@ export const parseUser = (user: UserDocument): User => {
 }
 
 export const parseExtendedUser = (user: UserDocument): User => {
+  const filter = {
+    $or: [
+      { darkId: String(user._id) },
+      { lightId: String }
+    ]
+  }
+
   return {
     id: user._id,
     avatar: user.avatar,
@@ -43,7 +50,7 @@ export const parseExtendedUser = (user: UserDocument): User => {
     email: user.email,
     google: !!user.googleId,
     verified: user.verified,
-    games: `${URI}/v1/history?userId=${String(user._id)}`,
+    games: `${URI}/v1/games?limit=25&page=1&sort=-createdAt&filter=${encodeURIComponent(JSON.stringify(filter))}`,
     elo: user.elo,
     skins: {
       board: user.board,
