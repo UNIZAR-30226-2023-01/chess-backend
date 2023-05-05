@@ -29,8 +29,6 @@ export const getOne = (req: Request, res: Response): void => {
           .json({ status: setStatus(req, 404, 'Not Found') })
       }
 
-      console.log(game)
-
       return res
         .status(200)
         .json({

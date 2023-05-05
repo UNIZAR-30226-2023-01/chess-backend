@@ -297,10 +297,18 @@ export const endGameInDB = async (
     if (game.gameType === GameType.COMPETITIVE) {
       if (game.darkId) { void updateUserStats(game, game.darkId, PlayerColor.DARK) }
       if (game.lightId) { void updateUserStats(game, game.lightId, PlayerColor.LIGHT) }
-      void achievement.updateRankingAchievements()
+      achievement.updateRankingAchievements().then(_ => {}).catch(_ => {})
     }
-    if (game.darkId) { void achievement.afterGameAchievementsCheck(game.darkId, game.gameType) }
-    if (game.lightId) { void achievement.afterGameAchievementsCheck(game.lightId, game.gameType) }
+    if (game.darkId) {
+      achievement
+        .afterGameAchievementsCheck(game.darkId, game.gameType)
+        .then(_ => {}).catch(_ => {})
+    }
+    if (game.lightId) {
+      achievement
+        .afterGameAchievementsCheck(game.lightId, game.gameType)
+        .then(_ => {}).catch(_ => {})
+    }
   } catch (error: any) {
     console.error(error)
     return false

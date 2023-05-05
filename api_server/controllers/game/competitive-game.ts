@@ -114,8 +114,6 @@ export const findGame = async (
     gameType: GameType.COMPETITIVE
   }
 
-  console.log(game)
-
   await gameLib.setGame(roomID, game)
   await gameLib.newGameInDB(game, roomID)
   await gameLib.startGameInDB(game, roomID)

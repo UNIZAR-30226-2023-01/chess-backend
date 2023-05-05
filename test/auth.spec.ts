@@ -2,25 +2,16 @@ import * as chai from 'chai'
 import chaiHttp from 'chai-http'
 import request from 'supertest'
 import app from '@app'
+import * as fake from './fake-data'
 
 chai.use(chaiHttp)
 
-const newClient = {
-  username: 'johndoe',
-  email: 'johndoe@example.com',
-  password: 'qwerty123'
-}
-
-const client = {
-  email: 'johndoe@example.com',
-  password: 'qwerty123'
-}
-
 describe('POST /v1/auth/sign-up', () => {
   it('Successful', async () => {
+    await fake.clearClient()
     await request(app)
       .post('/v1/auth/sign-up')
-      .send(newClient)
+      .send(fake.newClient)
       .expect(201)
       .then(res => {
         chai.expect(res.body).to.have.property('data')
@@ -39,8 +30,8 @@ describe('POST /v1/auth/sign-up', () => {
   })
 
   it('Conflict', async () => {
-    await request(app).post('/v1/auth/sign-up').send(newClient)
-    await request(app).post('/v1/auth/sign-up').send(newClient)
+    await fake.setClient()
+    await request(app).post('/v1/auth/sign-up').send(fake.newClient)
       .expect(409)
       .then(res => {
         chai.expect(res.body).to.have.property('status')
@@ -60,10 +51,10 @@ describe('POST /v1/auth/sign-in', () => {
   })
 
   it('should return 401 if password is incorrect', async () => {
-    await request(app).post('/v1/auth/sign-up').send(newClient)
+    await fake.setClient()
     await request(app)
       .post('/v1/auth/sign-in')
-      .send({ email: newClient.email, password: 'wrongPassword' })
+      .send({ username: fake.newClient.username, password: 'wrongPassword' })
       .expect(401)
       .then(res => {
         chai.expect(res.body).to.have.property('status')
@@ -71,10 +62,10 @@ describe('POST /v1/auth/sign-in', () => {
   })
 
   it('should return 200 and a token if login is successful', async () => {
-    await request(app).post('/v1/auth/sign-up').send(newClient)
+    await fake.setClient()
     await request(app)
       .post('/v1/auth/sign-in')
-      .send({ username: newClient.username, password: newClient.password })
+      .send(fake.client)
       .expect(200)
       .then(res => {
         chai.expect(res.body).to.have.property('data')
@@ -86,8 +77,8 @@ describe('POST /v1/auth/sign-in', () => {
 
 describe('POST /v1/auth/sign-out', () => {
   it('should invalidate token and clear api-auth cookie', async () => {
-    await request(app).post('/v1/auth/sign-up').send(newClient)
-    await request(app).post('/v1/auth/sign-in').send(client)
+    await fake.setClient()
+    await request(app).post('/v1/auth/sign-in').send(fake.client)
       .then(async res => {
         await request(app)
           .post('/v1/auth/sign-out')
@@ -113,10 +104,10 @@ describe('POST /v1/auth/sign-out', () => {
 
 describe('POST /v1/auth/forgot-password', () => {
   it('should return 200 and the reset password URL', async () => {
-    await request(app).post('/v1/auth/sign-up').send(newClient)
+    await fake.setClient()
     await request(app)
       .post('/v1/auth/forgot-password')
-      .send({ email: client.email })
+      .send({ email: fake.newClient.email })
       .expect(200)
       .expect(res => {
         chai.expect(res.body).to.have.property('status')
@@ -136,8 +127,9 @@ describe('POST /v1/auth/forgot-password', () => {
 
 describe('POST /v1/auth/reset-password', () => {
   it('should return a success message with a valid token', async () => {
-    await request(app).post('/v1/auth/sign-up').send(newClient)
-    await request(app).post('/v1/auth/forgot-password').send({ email: newClient.email })
+    await fake.setClient()
+    await request(app).post('/v1/auth/forgot-password')
+      .send({ email: fake.newClient.email })
       .then(async res => {
         const data = res.body.data
         const url = data.url
