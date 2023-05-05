@@ -5,7 +5,7 @@ interface Match {
   nextMatchId: ObjectId | null
 }
 
-function generateGames (rondas: number): Match[][] {
+function generateGames (rondas: number, start: Date): Match[][] {
   const roundLlist = []
   for (let ronda = 0; ronda < rondas; ronda++) {
     const gameLlist = []
@@ -14,7 +14,7 @@ function generateGames (rondas: number): Match[][] {
         _id: new ObjectId(),
         nextMatchId: null,
         tournamentRoundText: `Ronda ${ronda + 1}`,
-        startTime: getDate(rondas - ronda)
+        startTime: getDate(rondas - ronda, start)
       }
       gameLlist.push(data)
     }
@@ -37,15 +37,14 @@ function linkItems (roundLlist: Match[][]): void {
   }
 }
 
-function getDate (n: number): Date {
-  const today = new Date()
-  const tomorrow = new Date(today)
-  tomorrow.setDate(today.getDate() + n)
+function getDate (n: number, start: Date): Date {
+  const tomorrow = new Date(start)
+  tomorrow.setDate(start.getDate() + n)
   return tomorrow
 }
 
-export function generateMatches (rounds: number): Match[] {
-  const gameList = generateGames(rounds) // game list per rounds
+export function generateMatches (rounds: number, start: Date): Match[] {
+  const gameList = generateGames(rounds, start) // game list per rounds
   linkItems(gameList)
   return gameList.flat() // flatten array
 }

@@ -26,7 +26,7 @@ export const create = (req: Request, res: Response): void => {
         startTime,
         rounds,
         participants: [],
-        matches: generateMatches(rounds)
+        matches: generateMatches(rounds, new Date(startTime))
       })
         .then((tournament) => {
           return res
@@ -127,7 +127,7 @@ export const join = async (req: Request, res: Response): Promise<void> => {
   const token = req.cookies['api-auth']
   const { id } = JSON.parse(JSON.stringify(jwt.verify(token, String(process.env.JWT_SECRET))))
 
-  const tournament = await TournamentModel.findById(req.params.id)
+  const tournament = await TournamentModel.findById(req.params.id).populate('matches')
 
   if (!tournament) {
     res
@@ -146,19 +146,33 @@ export const join = async (req: Request, res: Response): Promise<void> => {
     return
   }
 
+  const matches: any = tournament.matches.filter((m: any) => {
+    const firstRound = Number(m.tournamentRoundText.split(' ')[1]) === tournament.rounds
+    const notFull = m.participants.length < 2
+    return firstRound && notFull
+  })
+
   tournament.participants.push(id)
+  matches[0].participants.push(id)
   await tournament.save()
 
   res
-    .status(201)
-    .json({ status: setStatus(req, 201, 'Successful') })
+    .status(200)
+    .json({ status: setStatus(req, 200, 'Successful') })
 }
 
 export const leave = async (req: Request, res: Response): Promise<void> => {
   const token = req.cookies['api-auth']
   const { id } = JSON.parse(JSON.stringify(jwt.verify(token, String(process.env.JWT_SECRET))))
 
-  TournamentModel.updateOne({ _id: req.params.id }, { $pull: { participants: id } }, { new: true })
+  TournamentModel.updateOne({
+    _id: req.params.id
+  }, {
+    $pull: {
+      participants: id,
+      'matches.$[].participants': id
+    }
+  }, { new: true })
     .then(() => {
       res
         .status(200)

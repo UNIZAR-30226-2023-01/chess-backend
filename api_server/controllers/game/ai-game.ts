@@ -1,5 +1,6 @@
 import * as gameLib from '@lib/game'
 import * as roomLib from '@lib/room'
+import * as error from '@lib/socket-error'
 import { bestMove } from '@lib/stockfish'
 import { ChessTimer, chessTimers } from '@lib/timer'
 import { PlayerColor, GameState, START_BOARD, GameType, EndState } from '@lib/types/game'
@@ -10,30 +11,47 @@ import { Chess } from 'chess.ts'
 import { Types } from 'mongoose'
 import { Socket } from 'socket.io'
 
+/** Actual Stockfish Skill Level values. */
 const skillLevel = [1, 3, 7, 20]
 
+const MIN_TIME_TO_THINK = 200 // ms
+const MAX_TIME_TO_THINK = 500 // ms
+
+/**
+ * Get a random time in **ms** for Stockfish to get a move.
+ */
 const randomTimeToThink = (): number => {
-  return Math.floor(Math.random() * (1 - 500 + 1) + 2000)
+  return Math.floor(Math.random() *
+    (1 - MIN_TIME_TO_THINK + 1) + MAX_TIME_TO_THINK)
 }
 
+/**
+ * Creates a new AI game room for the player to play.
+ *
+ * @param socket Socket connexion of the player.
+ * @param data Game configuration.
+ */
 export const findGame = async (
   socket: Socket,
   data: FindRoomMsg
 ): Promise<void> => {
   const check = gameLib.checkRoomCreationMsg(data)
   if (check.error) {
-    socket.emit('error', check.error)
+    socket.emit('error', error.invalidParams(check.error))
     return
   }
 
   if (data.difficulty) {
     if (data.difficulty < 0 || data.difficulty > 3) {
-      socket.emit('error', 'Specified difficulty is out of range')
+      socket.emit('error',
+        error.invalidParams('Specified difficulty is out of range.'))
       return
     }
   } else {
     data.difficulty = 1
   }
+
+  // ---- End of validation ---- //
 
   const roomID = await roomLib.generateUniqueRoomCode()
 
@@ -88,6 +106,16 @@ export const findGame = async (
   await startAIGame(socket, game, roomID)
 }
 
+/**
+ * Fills the player-related properties of the game and
+ * binds the socket id to the game object.
+ *
+ * Unauthenticated players are named as **guest** users and the
+ * opponent is named as an **AI** user.
+ *
+ * @param socket Socket connexion of the player.
+ * @param game Game object with the properties to be changed.
+ */
 export const completeUserInfo = async (
   socket: Socket,
   game: GameState
@@ -97,16 +125,24 @@ export const completeUserInfo = async (
       ReservedUsernames.GUEST_USER
     game.light = ReservedUsernames.AI_USER
     game.darkSocketId = socket.id
-    game.lightSocketId = ''
+    game.lightSocketId = 'ai'
   } else {
     game.light = (await UserModel.findById(game.lightId))?.username ??
       ReservedUsernames.GUEST_USER
     game.dark = ReservedUsernames.AI_USER
     game.lightSocketId = socket.id
-    game.darkSocketId = ''
+    game.darkSocketId = 'ai'
   }
 }
 
+/**
+ * Updates the game state on the database to enable
+ * the user to start playing.
+ *
+ * @param socket Socket connexion of the player.
+ * @param game Current game state.
+ * @param roomID Identifier of the room where the game is allocated.
+ */
 export const startAIGame = async (
   socket: Socket,
   game: GameState,
@@ -135,6 +171,7 @@ export const startAIGame = async (
     chessTimers.set(roomID, gameTimer)
   }
 
+  // If the AI player is light side apply the first move
   if ((game.dark === ReservedUsernames.AI_USER &&
         game.turn === PlayerColor.DARK) ||
       (game.light === ReservedUsernames.AI_USER &&
@@ -150,50 +187,57 @@ export const startAIGame = async (
   }
 }
 
+/**
+ * Executes the given move to the game with the given room id.
+ *
+ * @param socket Socket connexion of the player.
+ * @param roomID Identifier of the room where the game is allocated.
+ * @param move Move to apply in long algebraic notation.
+ * @param aiMove Set to `true` if the move is executed by the AI user.
+ */
 export const move = async (
   socket: Socket,
   roomID: string,
   move: string,
   aiMove?: boolean
 ): Promise<void> => {
-  // DEBUG
-  console.log('move:', move)
-
   const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) {
-      if (!aiMove) socket.emit('error', `No game with roomID: ${roomID}`)
+      if (!aiMove) socket.emit('error', error.notPlaying())
       return
     }
 
     if (game.finished) {
-      if (!aiMove) socket.emit('error', 'Game has already been finished')
+      if (!aiMove) socket.emit('error', error.gameAlreadyFinished())
       return
     }
 
     if (!aiMove && !gameLib.isPlayerOfGame(socket, game)) {
-      if (!aiMove) socket.emit('error', 'You are not a player of this game')
+      if (!aiMove) socket.emit('error', error.notPlayerOfThisGame())
       return
     }
 
     let color = gameLib.getColor(socket, game)
     if (aiMove) color = gameLib.alternativeColor(color)
     if (color !== game.turn) {
-      if (!aiMove) socket.emit('error', 'It is not your turn')
+      if (!aiMove) socket.emit('error', error.notYourTurn())
       return
     }
 
     const chess = new Chess(game.board)
     const moveRes = chess.move(move, { sloppy: true })
     if (moveRes === null) {
-      if (!aiMove) socket.emit('error', 'Illegal move')
+      if (!aiMove) socket.emit('error', error.illegalMove())
       return
     }
+
+    // ---- End of validation ---- //
 
     if (game.useTimer) {
       // Switch timers
       const gameTimer = chessTimers.get(roomID)
       if (!gameTimer) {
-        if (!aiMove) socket.emit('error', 'Internal server error')
+        if (!aiMove) socket.emit('error', error.internalServerError())
         return
       }
 
@@ -246,12 +290,12 @@ export const move = async (
     if (game.endState === EndState.CHECKMATE) {
       gameOverMessage.winner = game.winner
     }
-    io.to(roomID).emit('game_over', gameOverMessage)
-    await gameLib.endProtocol(roomID, game)
+
+    await gameLib.endProtocol(roomID, game, gameOverMessage)
   }
 
   // Execute AI's move if game is not over and
-  // this move was executed by a player
+  // this move was executed by a real user
   if (!aiMove && !game.finished) {
     const move = await bestMove(
       game.board,
@@ -264,6 +308,13 @@ export const move = async (
   }
 }
 
+/**
+ * Executes the given move to the game as an AI user with the given room id.
+ *
+ * @param socket Socket connexion of the player.
+ * @param roomID Identifier of the room where the game is allocated.
+ * @param bestMove Move to apply in long algebraic notation.
+ */
 const moveAI = async (
   socket: Socket,
   roomID: string,

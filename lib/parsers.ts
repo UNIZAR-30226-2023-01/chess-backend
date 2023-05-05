@@ -3,6 +3,8 @@ import { TournamentDocument } from '@models/tournament'
 import { UserDocument } from '@models/user'
 import { EndState, GameType, PlayerColor, State } from '@lib/types/game'
 
+const URI = process.env.NODE_ENV === 'production' ? 'https://api.gracehopper.xyz' : 'http://localhost:4000'
+
 interface User {
   id: string
   username: string
@@ -17,12 +19,13 @@ interface User {
   games?: string
   createdAt?: Date
   updatedAt?: Date
+  achievements?: string[]
 }
 
 export const parseUser = (user: UserDocument): User => {
   return {
     id: user._id,
-    avatar: `https://api.gracehopper.xyz/assets/${user.avatar}`,
+    avatar: user.avatar,
     username: user.username,
     email: user.email,
     google: !!user.googleId,
@@ -35,12 +38,12 @@ export const parseUser = (user: UserDocument): User => {
 export const parseExtendedUser = (user: UserDocument): User => {
   return {
     id: user._id,
-    avatar: `https://api.gracehopper.xyz/assets/${user.avatar}`,
+    avatar: user.avatar,
     username: user.username,
     email: user.email,
     google: !!user.googleId,
     verified: user.verified,
-    games: `https://api.gracehopper.xyz/v1/history?userId=${String(user._id)}`,
+    games: `${URI}/v1/history?userId=${String(user._id)}`,
     elo: user.elo,
     skins: {
       board: user.board,
@@ -59,6 +62,7 @@ export const parseExtendedUser = (user: UserDocument): User => {
       fastDraws: user.stats.fastDraws,
       fastDefeats: user.stats.fastDefeats
     },
+    achievements: user.achievements,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt
   }
@@ -66,10 +70,8 @@ export const parseExtendedUser = (user: UserDocument): User => {
 
 interface Game {
   id: string
-  lightUsername?: string
-  darkUsername?: string
-  lightPlayer?: string
-  darkPlayer?: string
+  lightPlayer: string | null
+  darkPlayer: string | null
   board: string
   moves: string[]
   times?: {
@@ -89,8 +91,8 @@ interface Game {
 export const parseGame = (Games: GameDocument): Game => {
   return {
     id: Games._id,
-    lightPlayer: `https://api.gracehopper.xyz/v1/users/${String(Games.lightId)}`,
-    darkPlayer: `https://api.gracehopper.xyz/v1/users/${String(Games.darkId)}`,
+    lightPlayer: Games.lightId ? `${URI}/v1/users/${String(Games.lightId)}` : null,
+    darkPlayer: Games.darkId ? `${URI}/v1/users/${String(Games.darkId)}` : null,
     board: Games.board,
     moves: Games.moves,
     times: {
@@ -125,9 +127,8 @@ interface Tournament {
   owner: string
   startTime: Date
   rounds: number
-  participants: number
+  participants: any[]
   matches: Match[]
-  // matches: any[]
   createdAt: Date
   updatedAt: Date
 }
@@ -135,17 +136,17 @@ interface Tournament {
 export const parseTournament = (Tournament: TournamentDocument): Tournament => {
   return {
     id: Tournament._id,
-    join: `https://api.gracehopper.xyz/v1/tournaments/join/${String(Tournament._id)}`,
-    leave: `https://api.gracehopper.xyz/v1/tournaments/leave/${String(Tournament._id)}`,
-    owner: `https://api.gracehopper.xyz/v1/users/${String(Tournament.owner)}`,
+    join: `${URI}/v1/tournaments/join/${String(Tournament._id)}`,
+    leave: `${URI}/v1/tournaments/leave/${String(Tournament._id)}`,
+    owner: `${URI}/v1/users/${String(Tournament.owner)}`,
     startTime: Tournament.startTime,
     rounds: Number(Tournament.rounds),
-    participants: Tournament.participants.length,
+    participants: Tournament.participants,
     matches: Tournament.matches.map((match) => {
       const matchJSON = JSON.parse(JSON.stringify(match))
       return {
         id: matchJSON._id,
-        game: `https://api.gracehopper.xyz/v1/games/${String(matchJSON._id)}`,
+        game: `${URI}/v1/games/${String(matchJSON._id)}`,
         nextMatchId: matchJSON.nextMatchId,
         tournamentRoundText: matchJSON.tournamentRoundText,
         startTime: matchJSON.startTime,

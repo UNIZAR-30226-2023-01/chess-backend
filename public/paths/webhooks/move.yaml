@@ -80,6 +80,16 @@ post:
                 description: |
                   Winner of the game 
                   *(only if the game ended with checkmate)*.
+              eloDiff:
+                type: number
+                description: |
+                  Rating gain for the player listening to this socket
+                  *(only in competitive games)*.
+              newElo: 
+                type: number
+                description: |
+                  New elo score of the player listening to this socket
+                  *(only in competitive games)*.
           examples:
             checkmate:
               value:
@@ -88,6 +98,18 @@ post:
             draw:
               value:
                 endState: "DRAW"
+            competitive victory:
+              value:
+                endState: "CHECKMATE"
+                winner: "LIGHT"
+                eloDiff: 15
+                newElo: 843
+            competitive defeat:
+              value:
+                endState: "CHECKMATE"
+                winner: "DARK"
+                eloDiff: -13
+                newElo: 726
     '400':
       description: event(error)
         Something went wrong.
@@ -95,13 +117,17 @@ post:
         text/plain:
           schema:
             description: Details of what caused the error.
-            type: string
-          examples:
-            not currently playing:
-              value: This socket is not playing any game
-            not a player of this game:
-              value: You are not a player of this game
-            illegal move:
-              value: Illegal move
-            not your turn:
-              value: It is not your turn
+            type: object
+            properties:
+              code:
+                type: integer
+                description: |
+                  Error code with a meaning similar to HTTP status errors.
+              error:
+                type: string
+                description: |
+                  Error type.
+              message:
+                type: string
+                description: |
+                  Description of what caused the error.

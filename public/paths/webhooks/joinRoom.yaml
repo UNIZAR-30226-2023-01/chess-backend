@@ -132,14 +132,18 @@ post:
         text/plain:
           schema:
             description: Details of what caused the error.
-            type: string
-          examples:
-            missing parameters:
-              value: Missing parameters
-            non existing game:
-              value: No game with roomID "123456"
-            already watching a game: 
-              value: You have already joined a room
-            game has not started:
-              value: This game has not started yet
+            type: object
+            properties:
+              code:
+                type: integer
+                description: |
+                  Error code with a meaning similar to HTTP status errors.
+              error:
+                type: string
+                description: |
+                  Error type.
+              message:
+                type: string
+                description: |
+                  Description of what caused the error.
               

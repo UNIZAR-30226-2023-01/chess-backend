@@ -15,22 +15,29 @@ export const generateUniqueRoomCode = async (): Promise<string> => {
       .toString()
       .padStart(6, '0')
 
-    const lockName = composeLock(ResourceName.ROOM, newCode)
-    const resource = compose(ResourceName.ROOM, newCode)
-
-    let lock = await redlock.acquire([lockName], 5000) // LOCK
-    try {
-      const record = await client.get(resource)
-      lock = await lock.extend(5000) // EXTEND
-      if (record === null) { // room code is free
-        code = newCode
-        await client.set(resource, 'locked')
-      }
-    } finally {
-      await lock.release() // UNLOCK
+    if (await reserveRoomCode(newCode)) {
+      code = newCode
     }
   }
   return code
+}
+
+export const reserveRoomCode = async (code: string): Promise<boolean> => {
+  const lockName = composeLock(ResourceName.ROOM, code)
+  const resource = compose(ResourceName.ROOM, code)
+
+  let lock = await redlock.acquire([lockName], 5000) // LOCK
+  try {
+    const record = await client.get(resource)
+    lock = await lock.extend(5000) // EXTEND
+    if (record === null) { // room code is free
+      await client.set(resource, 'locked')
+      return true
+    }
+  } finally {
+    await lock.release() // UNLOCK
+  }
+  return false
 }
 
 export const getGameRoom = (socket: Socket): string | null => {

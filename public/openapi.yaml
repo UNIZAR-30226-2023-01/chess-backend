@@ -76,6 +76,8 @@ paths:
     $ref: paths/games/getAllGames.yaml
   /games/{id}:
     $ref: paths/games/getGame.yaml
+  /games/notify:
+    $ref: paths/games/notify.yaml
   /tournaments:
     $ref: paths/tournaments/allTournaments.yaml
   /tournaments/{id}:

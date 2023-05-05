@@ -56,6 +56,12 @@ get:
                     fastWins: 0
                     fastDraws: 0
                     fastDefeats: 0
+                  achievements: [
+                      "FIRST LOGIN",
+                      "PLAY 10 COMPETITIVE",
+                      "TOP 1",
+                      "TOP 100"
+                    ]
                   createdAt: 2023-03-30T17:24:17.230Z
                   updatedAt: 2023-03-30T17:24:17.230Z
                 status:
@@ -171,6 +177,12 @@ patch:
                     fastWins: 0
                     fastDraws: 0
                     fastDefeats: 0
+                  achievements: [
+                      "FIRST LOGIN",
+                      "PLAY 10 COMPETITIVE",
+                      "TOP 1",
+                      "TOP 100"
+                    ]
                   createdAt: 2023-03-30T17:24:17.230Z
                   updatedAt: 2023-03-30T17:24:17.230Z
                 status:

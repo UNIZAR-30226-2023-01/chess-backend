@@ -11,6 +11,8 @@ export interface GameIDMsg {
 export interface GameOverMsg {
   endState: EndState
   winner?: PlayerColor
+  newElo?: number
+  eloDiff?: number
 }
 
 export interface MoveMsg {

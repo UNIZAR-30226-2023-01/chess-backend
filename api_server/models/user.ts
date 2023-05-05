@@ -2,7 +2,9 @@ import { model, Schema, Document } from 'mongoose'
 
 export enum ReservedUsernames {
   GUEST_USER = 'Guest',
-  AI_USER = 'AI'
+  AI_USER = 'AI',
+  DEV_USER_1 = 'dev1',
+  DEV_USER_2 = 'dev2'
 }
 
 export interface UserDocument extends Document {
@@ -30,6 +32,7 @@ export interface UserDocument extends Document {
     fastDefeats: number
     fastDraws: number
   }
+  achievements: string[]
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -49,7 +52,7 @@ const userSchema = new Schema<UserDocument>({
   },
   avatar: {
     type: String,
-    default: 'avatar'
+    default: '/animales/1.webp'
   },
   password: {
     type: Buffer,
@@ -129,6 +132,10 @@ const userSchema = new Schema<UserDocument>({
       fastDefeats: 0,
       fastDraws: 0
     }
+  },
+  achievements: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true

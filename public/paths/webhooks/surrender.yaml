@@ -28,6 +28,16 @@ get:
                 type: string
                 description: |
                   Winner of the game.
+              eloDiff:
+                type: number
+                description: |
+                  Rating gain for the player listening to this socket
+                  *(only in competitive games)*.
+              newElo: 
+                type: number
+                description: |
+                  New elo score of the player listening to this socket
+                  *(only in competitive games)*.
           example:
             endState: "SURRENDER"
             winner: "LIGHT"
@@ -38,9 +48,17 @@ get:
         text/plain:
           schema:
             description: Details of what caused the error.
-            type: string
-          examples:
-            not currently playing:
-              value: This socket is not playing any game
-            not a player of this game:
-              value: You are not a player of this game
+            type: object
+            properties:
+              code:
+                type: integer
+                description: |
+                  Error code with a meaning similar to HTTP status errors.
+              error:
+                type: string
+                description: |
+                  Error type.
+              message:
+                type: string
+                description: |
+                  Description of what caused the error.
