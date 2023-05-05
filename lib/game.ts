@@ -446,10 +446,9 @@ export const isIdOnGame = (
   id: Types.ObjectId,
   game: GameState
 ): boolean => {
-  if (game.lightId && game.darkId) {
-    return game.lightId.equals(id) || game.darkId.equals(id)
-  }
-  return false
+  const isLightPlayer: boolean = game.lightId?.equals(id) ?? false
+  const isDarkPlayer: boolean = game.darkId?.equals(id) ?? false
+  return isLightPlayer || isDarkPlayer
 }
 
 export const getColor = (
