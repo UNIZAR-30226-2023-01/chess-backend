@@ -103,10 +103,8 @@ const createGame = async (
     gameType: GameType.CUSTOM
   }
 
-  console.log(game)
-
   await gameLib.setGame(roomID, game)
-  void gameLib.newGameInDB(game, roomID)
+  await gameLib.newGameInDB(game, roomID)
 
   await socket.join(roomID)
 
