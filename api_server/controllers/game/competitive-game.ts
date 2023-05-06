@@ -58,6 +58,11 @@ export const findGame = async (
   const match = await matchmaking
     .findCompetitiveGame(socket.data.userID, data.time, socket)
 
+  if (match.cancelled) {
+    await cancelSearch(socket, ResourceName.PLAYER_Q)
+    return
+  }
+
   if (!match.baton) return // Only the baton can create the room
 
   // ---- End of matchmaking ---- //

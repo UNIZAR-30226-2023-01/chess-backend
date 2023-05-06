@@ -1,16 +1,16 @@
 import { Socket } from 'socket.io'
 import { client, redlock } from '@config/database'
-
+import { io } from '@server'
 import { ResourceName, compose, composeLock } from '@lib/namespaces'
 import { Types } from 'mongoose'
 import { getElo } from '@lib/elo'
 const _ = require('lodash')
 
-const K_BASE = 35
-const K_INC = 35
-const K_MAX = 400
+const K_BASE = 32
+const K_INC = 32
+const K_MAX = 250
 const TIME_TO_WAIT = 5 * 1000
-// const NUM_TRIES = 250
+const NUM_TRIES = 24 // 2 min timeout
 
 export interface Match {
   player1: Types.ObjectId
@@ -47,11 +47,23 @@ const checkEloCompatibility = (
   return player1.courtesy >= eloDiff || player2.courtesy >= eloDiff
 }
 
-const checkQueueOrAwakenOrCancelled = async (
+const removeDisconnectedSockets = (playerQueue: PlayerQueue): PlayerQueue => {
+  const { queue, awakened, cancelled } = playerQueue
+  _.remove(queue, (q: AwaitingPlayer) => {
+    if (!io.sockets.sockets.has(q.socket)) {
+      cancelled.push(q)
+      return true
+    }
+    return false
+  })
+  return { queue, awakened, cancelled }
+}
+
+const getQueue = async (
   queueName: string,
-  player: AwaitingPlayer
-): Promise<Match | undefined> => {
-  let match: Match | undefined
+  action?: (playerQueue?: PlayerQueue) => Promise<PlayerQueue | undefined>
+): Promise<PlayerQueue | undefined> => {
+  let queue: PlayerQueue | undefined
 
   const lockName = composeLock(queueName)
   let lock = await redlock.acquire([lockName], 5000) // LOCK
@@ -59,70 +71,93 @@ const checkQueueOrAwakenOrCancelled = async (
     const awaiting = await client.get(queueName)
     lock = await lock.extend(5000) // EXTEND
 
-    if (awaiting !== null) {
-      const { queue, awakened, cancelled }: PlayerQueue = JSON.parse(awaiting)
+    if (!awaiting) queue = undefined
+    else queue = JSON.parse(awaiting)
 
-      // Check if the player has cancelled the search
-      const isCancelled = _.find(cancelled, (q: AwaitingPlayer) => {
+    lock = await lock.extend(5000) // EXTEND
+    if (action) {
+      if (queue) queue = removeDisconnectedSockets(queue)
+      queue = await action(queue)
+    }
+  } catch (err) {
+    queue = undefined
+  } finally {
+    // This block executes even if a return statement is called
+    await lock.release() // UNLOCK
+  }
+  return queue
+}
+
+const checkQueueOrAwakenOrCancelled = async (
+  queueName: string,
+  player: AwaitingPlayer
+): Promise<Match | undefined> => {
+  let match: Match | undefined
+
+  await getQueue(queueName, async (playerQueue?: PlayerQueue) => {
+    if (!playerQueue) return
+    const { queue, awakened, cancelled } = playerQueue
+
+    // Check if the player has cancelled the search
+    const isCancelled = _.find(cancelled, (q: AwaitingPlayer) => {
+      return q.socket === player.socket
+    })
+    if (isCancelled) {
+      _.remove(cancelled, (q: AwaitingPlayer) => {
         return q.socket === player.socket
       })
-      if (isCancelled) {
-        _.remove(cancelled, (q: AwaitingPlayer) => {
-          return q.socket === player.socket
-        })
-        match = {
-          player1: player.id,
-          socket1: player.socket,
-          player2: player.id,
-          socket2: player.socket,
-          baton: false,
-          cancelled: true
-        }
-      } else {
-        // Check if the player has been awakened
-        match = _.find(awakened, (m: Match) => {
+      match = {
+        player1: player.id,
+        socket1: player.socket,
+        player2: player.id,
+        socket2: player.socket,
+        baton: false,
+        cancelled: true
+      }
+    } else {
+      // Check if the player has been awakened
+      match = _.find(awakened, (m: Match) => {
+        return m.socket1 === player.socket ||
+               m.socket2 === player.socket
+      })
+
+      if (match) {
+        // I've been awakened
+        _.remove(awakened, (m: Match) => {
           return m.socket1 === player.socket ||
                  m.socket2 === player.socket
         })
 
-        if (match) {
-          // I've been awakened
-          _.remove(awakened, (m: Match) => {
-            return m.socket1 === player.socket ||
-                   m.socket2 === player.socket
-          })
-
-          match.baton = false
-        } else {
-          // I'm looking for some opponent
-          for (const opponent of queue) {
-            if (!player.id.equals(opponent.id) &&
-                checkEloCompatibility(player, opponent)) {
-              match = {
-                player1: player.id,
-                socket1: player.socket,
-                player2: opponent.id,
-                socket2: opponent.socket,
-                baton: true,
-                cancelled: false
-              }
-
-              awakened.push(match)
-              _.remove(queue, (q: AwaitingPlayer) => {
-                return q.socket === opponent.socket ||
-                       q.socket === player.socket
-              })
-
-              break
+        match.baton = false
+      } else {
+        // I'm looking for some opponent
+        for (const opponent of queue) {
+          if (!player.id.equals(opponent.id) &&
+              checkEloCompatibility(player, opponent)) {
+            match = {
+              player1: player.id,
+              socket1: player.socket,
+              player2: opponent.id,
+              socket2: opponent.socket,
+              baton: true,
+              cancelled: false
             }
+
+            awakened.push(match)
+            _.remove(queue, (q: AwaitingPlayer) => {
+              return q.socket === opponent.socket ||
+                     q.socket === player.socket
+            })
+
+            break
           }
         }
       }
-      await client.set(queueName, JSON.stringify({ queue, awakened, cancelled }))
     }
-  } finally {
-    await lock.release() // UNLOCK
-  }
+    await client.set(queueName, JSON.stringify({ queue, awakened, cancelled }))
+    return { queue, awakened, cancelled }
+  })
+
   return match
 }
 
@@ -130,14 +165,9 @@ const addToQueue = async (
   queueName: string,
   player: AwaitingPlayer
 ): Promise<void> => {
-  const lockName = composeLock(queueName)
-  let lock = await redlock.acquire([lockName], 5000) // LOCK
-  try {
-    const awaiting = await client.get(queueName)
-    lock = await lock.extend(5000) // EXTEND
-
-    if (awaiting !== null) {
-      const { queue, awakened, cancelled }: PlayerQueue = JSON.parse(awaiting)
+  await getQueue(queueName, async (playerQueue?: PlayerQueue) => {
+    if (playerQueue) {
+      const { queue, awakened, cancelled } = playerQueue
 
       // Check if the player is in queue
       const index: number = _.findIndex(queue, (q: AwaitingPlayer) => {
@@ -151,6 +181,7 @@ const addToQueue = async (
       }
 
       await client.set(queueName, JSON.stringify({ queue, awakened, cancelled }))
+      return { queue, awakened, cancelled }
     } else {
       const playerQueue: PlayerQueue = {
         queue: [player],
@@ -158,10 +189,9 @@ const addToQueue = async (
         cancelled: []
       }
       await client.set(queueName, JSON.stringify(playerQueue))
+      return playerQueue
     }
-  } finally {
-    await lock.release() // UNLOCK
-  }
+  })
 }
 
 export const findCompetitiveGame = async (
@@ -175,14 +205,14 @@ export const findCompetitiveGame = async (
     courtesy: K_BASE
   }
 
-  let DEBUG = 0
-
   let match: Match | undefined
-  while (!match) {
+  for (let i = 0; !match; i++) {
+    if (i >= NUM_TRIES) await cancelSearch(socket)
+
     match = await checkQueueOrAwakenOrCancelled(queueName, player)
     if (!match) {
       // SITUACION PELIAGUDA
-      console.log('timeout(', DEBUG, ') ')
+      console.log('timeout(', i, ') ')
 
       await addToQueue(queueName, player)
       await new Promise(resolve => {
@@ -193,7 +223,6 @@ export const findCompetitiveGame = async (
         player.courtesy = K_MAX
       }
     }
-    DEBUG++
   }
 
   return match
@@ -209,41 +238,31 @@ export const cancelSearch = async (
   let query: any
   do {
     query = await client.call('scan', i++, 'MATCH', pattern)
-    console.log('query: ', query)
-    for (const key of query[1]) {
-      const queueName: string = key
-      const lockName = composeLock(queueName)
-      let lock = await redlock.acquire([lockName], 5000) // LOCK
-      try {
-        const awaiting = await client.get(queueName)
-        lock = await lock.extend(5000) // EXTEND
+    for (const queueName of query[1]) {
+      await getQueue(queueName, async (playerQueue?: PlayerQueue) => {
+        if (!playerQueue) return
+        const { queue, awakened, cancelled } = playerQueue
 
-        if (awaiting !== null) {
-          const { queue, awakened, cancelled }: PlayerQueue = JSON.parse(awaiting)
-          console.log('Cancelling...\n queue:', queue)
+        // Check if the player is in queue
+        const inQueue = _.find(queue, (q: AwaitingPlayer) => {
+          return q.socket === socket.id
+        })
 
-          // Check if the player is in queue
-          const inQueue = _.find(queue, (q: AwaitingPlayer) => {
-            return q.socket === socket.id
+        if (inQueue) {
+          hasBeenCancelled = true
+          // Remove from Queue
+          _.remove(queue, (q: AwaitingPlayer) => {
+            if (q.socket === socket.id) {
+              cancelled.push(q)
+              return true
+            }
+            return false
           })
-
-          if (inQueue) {
-            hasBeenCancelled = true
-            // Remove from Queue
-            _.remove(queue, (q: AwaitingPlayer) => {
-              if (q.socket === socket.id) {
-                cancelled.push(q)
-                return true
-              }
-              return false
-            })
-            await client.set(queueName, JSON.stringify({ queue, awakened, cancelled }))
-          }
-          console.log('new queue:', queue)
+          await client.set(queueName, JSON.stringify({ queue, awakened, cancelled }))
         }
-      } finally {
-        await lock.release() // UNLOCK
-      }
+
+        return { queue, awakened, cancelled }
+      })
     }
   } while (query[0] !== '0')
 
