@@ -39,7 +39,7 @@ export const parseExtendedUser = (user: UserDocument): User => {
   const filter = {
     $or: [
       { darkId: String(user._id) },
-      { lightId: String }
+      { lightId: String(user._id) }
     ]
   }
 
@@ -158,7 +158,13 @@ export const parseTournament = (Tournament: TournamentDocument): Tournament => {
         tournamentRoundText: matchJSON.tournamentRoundText,
         startTime: matchJSON.startTime,
         state: 'NO_SHOW',
-        participants: []
+        participants: matchJSON.participants.map((participant: any) => {
+          try {
+            return parseExtendedUser(participant)
+          } catch (e) {
+            return participant
+          }
+        })
       }
     }),
     createdAt: Tournament.createdAt,

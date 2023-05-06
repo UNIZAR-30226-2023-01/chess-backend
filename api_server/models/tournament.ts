@@ -31,7 +31,7 @@ const MatchSchema = new Schema<MatchDocument>({
   },
   participants: [{
     type: Schema.Types.ObjectId,
-    ref: 'UserModel'
+    ref: 'User'
   }]
 }, {
   timestamps: true
@@ -50,7 +50,7 @@ export interface TournamentDocument extends Document {
 const TournamentSchema = new Schema<TournamentDocument>({
   owner: {
     type: Schema.Types.ObjectId,
-    ref: 'UserModel'
+    ref: 'User'
   },
   startTime: {
     type: Date,
@@ -62,7 +62,7 @@ const TournamentSchema = new Schema<TournamentDocument>({
   },
   participants: [{
     type: Schema.Types.ObjectId,
-    ref: 'UserModel'
+    ref: 'User'
   }],
   matches: [MatchSchema]
 }, {
