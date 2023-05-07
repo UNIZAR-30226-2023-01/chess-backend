@@ -7,7 +7,7 @@ import { UserModel } from '@models/user'
 import * as tournLib from '@lib/tournament'
 import * as error from '@lib/socket-error'
 import { Socket } from 'socket.io'
-import { FindRoomMsg } from '@lib/types/socket-msg'
+import { FindRoomMsg, GameOverMsg } from '@lib/types/socket-msg'
 import { io } from '@server'
 
 export const startMatch = async (
@@ -119,6 +119,11 @@ const checkAbandon = async (id: string): Promise<void> => {
   } else if (singleLoss) {
     await gameLib.endGameInDB(game, id)
     await tournLib.endProtocol(id, game)
+    const message: GameOverMsg = {
+      winner: game.winner,
+      endState: EndState.SURRENDER
+    }
+    io.to(id).emit('game_over', message)
     io.socketsLeave(id)
   }
 }
@@ -175,6 +180,7 @@ export const findGame = async (
   if (!game) return
 
   await socket.join(roomID)
+  socket.emit('room_created', { roomID })
 
   if (game.darkSocketId !== '' && game.lightSocketId !== '') {
     // Start game and notify

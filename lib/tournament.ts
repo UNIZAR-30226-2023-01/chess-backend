@@ -121,7 +121,7 @@ export async function startNextRound (id: string): Promise<void> {
         { $set: { 'matches.$.played': true } }
       )
       if (match.participants.length > 0) {
-        const gameId = await startMatch(match._id, match)
+        const gameId = await startMatch(match._id.toString(), match)
         if (gameId) match.gameId = gameId
       }
     }
@@ -174,20 +174,20 @@ export const notify = async (): Promise<void> => {
   const tenMinutesLater = new Date(now.getTime() + 10 * 60 * 1000)
   const pairs = tournaments
     .map(tournament => [tournament.id, tournament.matches])
-    .filter(([_id, matches]) => {
-      for (const match of matches) {
-        // To not notify twice...
-        if (match.played) return false
+  const fPairs = pairs.filter(([_id, matches]) => {
+    for (const match of matches) {
+      // To not notify twice...
+      if (match.played) continue
 
-        const matchStart = new Date(match.startTime)
-        if (matchStart >= now && matchStart <= tenMinutesLater) {
-          return true
-        }
+      const matchStart = new Date(match.startTime)
+      if (matchStart >= now && matchStart <= tenMinutesLater) {
+        return true
       }
-      return false
-    })
+    }
+    return false
+  })
 
-  for (const [id, matches] of pairs) {
+  for (const [id, matches] of fPairs) {
     startNextRound(id).then(_ => {
       for (const match of matches) {
         for (const id of match.participants) {

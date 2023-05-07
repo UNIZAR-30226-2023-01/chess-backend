@@ -64,8 +64,8 @@ app.use('/v1/users', usersRouter)
 app.use('/v1/games', gameRouter)
 app.use('/v1/tournaments', tournamentsRouter)
 
-app.get('/v1/PREPARE/:id', async (req, res) => {
-  await DEBUG.startNextRound(req.params.id)
+app.get('/v1/PREPARE', async (_, res) => {
+  await DEBUG.notify()
   res.status(200).send()
 })
 
