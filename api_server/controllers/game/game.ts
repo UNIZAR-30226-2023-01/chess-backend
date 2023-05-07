@@ -4,6 +4,7 @@ import * as competitive from '@controllers/game/competitive-game'
 import * as ai from '@controllers/game/ai-game'
 import * as custom from '@controllers/game/custom-game'
 import * as restorable from '@controllers/game/restorable-game'
+import * as tournament from '@controllers/game/tournament'
 import * as gameLib from '@lib/game'
 import * as roomLib from '@lib/room'
 import * as matchmaking from '@lib/matchmaking'
@@ -124,8 +125,8 @@ export const voteDraw = async (
 const findRoomFunctions = new Map<GameType, Function>([
   [GameType.AI, ai.findGame],
   [GameType.CUSTOM, custom.findGame],
-  [GameType.COMPETITIVE, competitive.findGame]
-  // [GameType.TOURNAMENT, tournament.findRoom]
+  [GameType.COMPETITIVE, competitive.findGame],
+  [GameType.TOURNAMENT, tournament.findGame]
 ])
 
 /**
@@ -142,6 +143,11 @@ export const findRoom = async (
     socket.emit('error', error.alreadyPlaying())
     return
   }
+
+  findRoomFunctions.set(GameType.TOURNAMENT, tournament.findGame)
+
+  console.log(data.gameType)
+  console.log(findRoomFunctions)
 
   const findRoomFunction = findRoomFunctions.get(data.gameType)
   if (findRoomFunction) {

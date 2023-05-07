@@ -16,6 +16,8 @@ import passport from 'passport'
 import cookieSession from 'cookie-session'
 import { server } from '@server'
 import { Limiter, SpeedLimiter } from '@middlewares/limiters'
+import * as DEBUG from '@lib/tournament'
+import * as logger from '@lib/logger'
 dotenv.config()
 require('@auth/passport')
 require('@auth/passportGoogle')
@@ -48,10 +50,10 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 const PORT = process.env.PORT ?? 4000
 app.listen(PORT, () => {
-  console.log(`Server is running → PORT ${String(PORT)}`)
+  logger.log('INFO', `Server is running → PORT ${String(PORT)}`)
   connectDB()
-    .then(() => console.log('MongoDB has been connected'))
-    .catch((err) => console.error(err))
+    .then(() => logger.log('INFO', 'MongoDB has been connected'))
+    .catch((err) => logger.error(err))
 })
 
 app.use(Limiter, SpeedLimiter)
@@ -62,8 +64,13 @@ app.use('/v1/users', usersRouter)
 app.use('/v1/games', gameRouter)
 app.use('/v1/tournaments', tournamentsRouter)
 
+app.get('/v1/PREPARE/:id', async (req, res) => {
+  await DEBUG.startNextRound(req.params.id)
+  res.status(200).send()
+})
+
 server.listen(Number(PORT) + 1, () => {
-  console.log(`Socket.IO is running → PORT ${String(Number(PORT) + 1)}`)
+  logger.log('INFO', `Socket.IO is running → PORT ${String(Number(PORT) + 1)}`)
 })
 
 export default app

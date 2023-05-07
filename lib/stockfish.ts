@@ -1,7 +1,7 @@
 import { Readable, Writable } from 'node:stream'
 import { spawn } from 'node:child_process'
 import * as dotenv from 'dotenv'
-const _ = require('lodash')
+import _ from 'lodash'
 dotenv.config()
 
 export class StockfishStream {
