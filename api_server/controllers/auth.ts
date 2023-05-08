@@ -11,6 +11,8 @@ import * as achievement from '@lib/achievements'
 import * as dotenv from 'dotenv'
 dotenv.config()
 
+const URI = process.env.NODE_ENV === 'production' ? 'https://api.gracehopper.xyz' : 'http://localhost:3000'
+
 export const signUp = (req: Request, res: Response): void => {
   // Check if the username is reserved
   if (process.env.NODE_ENV !== 'test' &&
@@ -37,7 +39,7 @@ export const signUp = (req: Request, res: Response): void => {
         const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
         const payload = { id, email }
         const token = jwt.sign(payload, secret, { expiresIn: '15m' })
-        const url = `https://reign.gracehopper.xyz/auth/verify/${String(id)}/${token}`
+        const url = `${URI}/auth/verify/${String(id)}/${token}`
 
         const msg = {
           to: email,
@@ -213,7 +215,7 @@ export const forgotPassword = (req: Request, res: Response): void => {
       const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
       const payload = { id, email }
       const token = jwt.sign(payload, secret, { expiresIn: '15m' })
-      const url = `https://reign.gracehopper.xyz/auth/reset-password/${String(id)}/${token}`
+      const url = `${URI}/auth/reset-password/${String(id)}/${token}`
       const data = { id, url }
 
       const msg = {
