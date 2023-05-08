@@ -40,13 +40,18 @@ properties:
       id: 
         type: string
         uniqueItems: true
+        example: 6458b334a6f026752ab0dcf2
       game: 
         type: string
         format: url
+        example: http://localhost:4000/v1/games/6458b334a6f026752ab0dcf2
       nextMatchId: 
         type: [string, null]
+        uniqueItems: true
+        example: 6458b334a6f026752ab0dcf1
       tournamentRoundText:
         type: string
+        example: Ronda 2
       startTime: 
         type: string
         format: date

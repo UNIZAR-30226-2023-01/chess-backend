@@ -1,12 +1,12 @@
 import { TournamentDocument, TournamentModel } from '@models/tournament'
 import { ObjectId } from 'mongodb'
-import _ from 'lodash'
 import { Types } from 'mongoose'
 import { startMatch } from '@controllers/game/tournament'
 import { GameState, PlayerColor } from './types/game'
 // import sgMail from '@sendgrid/mail'
 import { UserModel } from '@models/user'
 import * as logger from '@lib/logger'
+import _ from 'lodash'
 
 interface Match {
   _id: ObjectId
@@ -138,9 +138,7 @@ export async function endProtocol (
 
   if (!tournament || !game.timerDark || !game.timerLight) return
 
-  const index = _.findIndex(tournament.matches, m => {
-    return m._id.equals(matchId)
-  })
+  const index = _.findIndex(tournament.matches, (m: any) => m._id.equals(matchId))
 
   const match = tournament.matches[index]
 

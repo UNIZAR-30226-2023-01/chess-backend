@@ -34,17 +34,17 @@ get:
               value:
                 data:
                   id: 6427012084270ee46cd8300c
-                  avatar: "https://api.gracehopper.xyz/assets/avatar"
+                  avatar: "/animales/1.webp"
                   username: johndoe
                   email: "johndoe@example.com"
                   google: true
                   verified: false
-                  games: https://api.gracehopper.xyz/v1/games?userId=6427012084270ee46cd8300c
+                  games: https://api.gracehopper.xyz/v1/games?limit=25&page=1&sort=-createdAt&filter=%7B%22%24or%22%3A%5B%7B%22darkId%22%3A%2264562da339a95f025485a3fe%22%7D%2C%7B%22lightId%22%3A%2264562da339a95f025485a3fe%22%7D%5D%7D
                   elo: 800
                   skins: 
-                    board: wood
-                    lightPieces: classic
-                    darkPieces: classic
+                    board: coral
+                    lightPieces: chess
+                    darkPieces: chess
                   availableSkins: []
                   stats: 
                     bulletWins: 0
