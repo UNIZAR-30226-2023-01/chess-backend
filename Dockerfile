@@ -18,8 +18,8 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # If you are building your code for production
-# RUN npm ci --save-prod
-RUN npm install
+RUN npm ci --save-prod
+# RUN npm install
 
 # Bundle app source
 ENV NODE_ENV=production

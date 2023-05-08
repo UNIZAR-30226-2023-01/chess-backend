@@ -11,6 +11,8 @@ import * as achievement from '@lib/achievements'
 import * as dotenv from 'dotenv'
 dotenv.config()
 
+const URI = process.env.NODE_ENV === 'production' ? 'https://api.gracehopper.xyz' : 'http://localhost:3000'
+
 export const signUp = (req: Request, res: Response): void => {
   // Check if the username is reserved
   if (process.env.NODE_ENV !== 'test' &&
@@ -37,7 +39,7 @@ export const signUp = (req: Request, res: Response): void => {
         const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
         const payload = { id, email }
         const token = jwt.sign(payload, secret, { expiresIn: '15m' })
-        const url = `https://reign.gracehopper.xyz/auth/verify/${String(id)}/${token}`
+        const url = `${URI}/auth/verify/${String(id)}/${token}`
 
         const msg = {
           to: email,
@@ -153,7 +155,13 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
     const authToken = req.cookies['api-auth']
     await invalidateToken(String(req.body.user.username), authToken)
     res
-      .clearCookie('api-auth')
+      .clearCookie('api-auth', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        expires: dayjs().add(1, 'day').toDate(),
+        domain: process.env.NODE_ENV === 'production' ? '.gracehopper.xyz' : undefined,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+      })
       .status(200)
       .json({ status: setStatus(req, 0, 'Successful') })
   } catch (err) {
@@ -207,7 +215,7 @@ export const forgotPassword = (req: Request, res: Response): void => {
       const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
       const payload = { id, email }
       const token = jwt.sign(payload, secret, { expiresIn: '15m' })
-      const url = `https://reign.gracehopper.xyz/auth/reset-password/${String(id)}/${token}`
+      const url = `${URI}/auth/reset-password/${String(id)}/${token}`
       const data = { id, url }
 
       const msg = {
@@ -333,4 +341,24 @@ export const changePassword = (req: Request, res: Response): void => {
         .status(500)
         .json({ status: setStatus(req, 500, 'Internal Server Error') })
     })
+}
+
+export const googleCallback = (req: Request, res: Response): void => {
+  const { id, username } = req.user as any
+
+  const token = jwt.sign(
+    { id, username },
+    String(process.env.JWT_SECRET),
+    { expiresIn: 24 * 60 * 60 * 1000 }
+  )
+
+  res
+    .cookie('api-auth', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      expires: dayjs().add(1, 'day').toDate(),
+      domain: process.env.NODE_ENV === 'production' ? '.gracehopper.xyz' : undefined,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    })
+    .redirect(String(process.env.SUCCESS_REDIRECT))
 }

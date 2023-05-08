@@ -3,10 +3,12 @@ import * as tournamentsCtrl from '@controllers/tournaments'
 import * as userMiddleware from '@middlewares/user'
 import { paginate } from '@middlewares/paginate'
 import { TournamentModel } from '@models/tournament'
+import { validateBody } from '@middlewares/parser'
+import { createTournament } from '@schemas/tournaments'
 
 const router = express.Router()
 
-router.post('/', userMiddleware.isAuthenticated, tournamentsCtrl.create)
+router.post('/', validateBody(createTournament), userMiddleware.isAuthenticated, tournamentsCtrl.create)
 router.get('/', userMiddleware.isAuthenticated, paginate(TournamentModel), tournamentsCtrl.getAll)
 router.patch('/:id', userMiddleware.isAuthenticated, tournamentsCtrl.updateOne)
 router.get('/:id', userMiddleware.isAuthenticated, tournamentsCtrl.getOne)

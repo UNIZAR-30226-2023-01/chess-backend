@@ -6,12 +6,13 @@ import { FindRoomMsg, FoundRoomMsg, GameOverMsg } from '@lib/types/socket-msg'
 import { GameModel } from '@models/game'
 import { composeLock, compose, ResourceName } from '@lib/namespaces'
 import * as roomLib from '@lib/room'
+import * as tournLib from '@lib/tournament'
 import { Types } from 'mongoose'
 import { ReservedUsernames, UserModel } from '@models/user'
 import { io } from '@server'
 import * as achievement from '@lib/achievements'
 import { MatchResult, updateEloOfUsers } from '@lib/elo'
-const _ = require('lodash')
+import _ from 'lodash'
 
 // 2 minutes after a game is over, it is deleted from redis
 export const GAME_OVER_TTL = 2 * 60
@@ -72,17 +73,19 @@ export const canGameBeStored = (
   const darkIsAuth: boolean = darkSocket?.data.authenticated
   const lightIsAuth: boolean = lightSocket?.data.authenticated
 
-  return darkIsAuth || lightIsAuth
+  return darkIsAuth || lightIsAuth || game.gameType === GameType.TOURNAMENT
 }
 
 export const newGameInDB = async (
   game: GameState,
   roomID: string
-): Promise<boolean> => {
-  if (!canGameBeStored(game)) return true
+): Promise<Types.ObjectId | null> => {
+  if (!canGameBeStored(game)) return null
+
+  let id: Types.ObjectId | null
 
   try {
-    await GameModel.create({
+    const doc = await GameModel.create({
       darkId: game.darkId,
       lightId: game.lightId,
 
@@ -100,12 +103,14 @@ export const newGameInDB = async (
       winner: game.winner,
       roomID
     })
+
+    id = doc._id
   } catch (error: any) {
     console.error(error)
-    return false
+    return null
   }
 
-  return true
+  return id
 }
 
 export const startGameInDB = async (
@@ -387,6 +392,10 @@ export const endProtocol = async (
   if (!await endGameInDB(game, roomID)) {
     console.error('Error at endGameInDB')
   }
+
+  if (game.gameType === GameType.TOURNAMENT) {
+    tournLib.endProtocol(roomID, game).catch(_ => _)
+  }
 }
 
 export const timeoutProtocol = (
@@ -454,8 +463,15 @@ export const isIdOnGame = (
   id: Types.ObjectId,
   game: GameState
 ): boolean => {
-  const isLightPlayer: boolean = game.lightId?.equals(id) ?? false
-  const isDarkPlayer: boolean = game.darkId?.equals(id) ?? false
+  let isLightPlayer = false
+  let isDarkPlayer = false
+  if (game.lightId) {
+    isLightPlayer = id.equals(game.lightId)
+  }
+  if (game.darkId) {
+    isDarkPlayer = id.equals(game.darkId)
+  }
+
   return isLightPlayer || isDarkPlayer
 }
 

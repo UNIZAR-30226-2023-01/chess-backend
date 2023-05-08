@@ -145,7 +145,6 @@ export const resumeGame = async (
     return
   }
 
-  console.log('UserID:', socket.data.userID)
   if (!gameLib.isIdOnGame(socket.data.userID, game)) {
     socket.emit('error', error.notPlayerOfThisGame())
     return

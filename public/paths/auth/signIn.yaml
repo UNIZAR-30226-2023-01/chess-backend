@@ -5,7 +5,7 @@ post:
   tags:
     - Auth
   summary: Sign In
-  description: Allows a user to log in to the system.
+  description: Allows a user to log in to the system.<br>You won't be able to log in if you haven't verified your email address.
   operationId: sign-in
   security: []
   requestBody:

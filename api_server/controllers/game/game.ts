@@ -4,6 +4,7 @@ import * as competitive from '@controllers/game/competitive-game'
 import * as ai from '@controllers/game/ai-game'
 import * as custom from '@controllers/game/custom-game'
 import * as restorable from '@controllers/game/restorable-game'
+import * as tournament from '@controllers/game/tournament'
 import * as gameLib from '@lib/game'
 import * as roomLib from '@lib/room'
 import * as matchmaking from '@lib/matchmaking'
@@ -11,14 +12,6 @@ import * as error from '@lib/socket-error'
 import { FindRoomMsg, MoveMsg } from '@lib/types/socket-msg'
 import { GameType } from '@lib/types/game'
 import { ResourceName } from '@lib/namespaces'
-
-/** All possible functions to handle a `move` event. */
-const moveFunctions = new Map<GameType, Function>([
-  [GameType.AI, ai.move],
-  [GameType.CUSTOM, match.move],
-  [GameType.COMPETITIVE, match.move],
-  [GameType.TOURNAMENT, match.move]
-])
 
 /**
  * Executes the given move to the game this socket has joined.
@@ -42,6 +35,13 @@ export const move = async (
     return
   }
 
+  /** All possible functions to handle a `move` event. */
+  const moveFunctions = new Map<GameType, Function>()
+  moveFunctions.set(GameType.AI, ai.move)
+  moveFunctions.set(GameType.CUSTOM, match.move)
+  moveFunctions.set(GameType.COMPETITIVE, match.move)
+  moveFunctions.set(GameType.TOURNAMENT, match.move)
+
   const game = await gameLib.getGame(roomID)
   if (!game) {
     socket.emit('error', error.notPlaying())
@@ -51,14 +51,6 @@ export const move = async (
   const moveFunction = moveFunctions.get(game.gameType)
   if (moveFunction) moveFunction(socket, roomID, move)
 }
-
-/** All possible functions to handle a `surrender` event. */
-const surrenderFunctions = new Map<GameType, Function>([
-  [GameType.AI, match.surrender],
-  [GameType.CUSTOM, match.surrender],
-  [GameType.COMPETITIVE, match.surrender],
-  [GameType.TOURNAMENT, match.surrender]
-])
 
 /**
  * Make the user playing with this socket surrender.
@@ -80,15 +72,16 @@ export const surrender = async (
     return
   }
 
+  /** All possible functions to handle a `surrender` event. */
+  const surrenderFunctions = new Map<GameType, Function>()
+  surrenderFunctions.set(GameType.AI, match.surrender)
+  surrenderFunctions.set(GameType.CUSTOM, match.surrender)
+  surrenderFunctions.set(GameType.COMPETITIVE, match.surrender)
+  surrenderFunctions.set(GameType.TOURNAMENT, match.surrender)
+
   const surrenderFunction = surrenderFunctions.get(game.gameType)
   if (surrenderFunction) surrenderFunction(socket, roomID)
 }
-
-/** All possible functions to handle a `vote_draw` event. */
-const voteDrawFunctions = new Map<GameType, Function>([
-  [GameType.CUSTOM, match.voteDraw],
-  [GameType.COMPETITIVE, match.voteDraw]
-])
 
 /**
  * Make the user playing with this socket vote for a draw.
@@ -110,6 +103,11 @@ export const voteDraw = async (
     return
   }
 
+  /** All possible functions to handle a `vote_draw` event. */
+  const voteDrawFunctions = new Map<GameType, Function>()
+  voteDrawFunctions.set(GameType.CUSTOM, match.voteDraw)
+  voteDrawFunctions.set(GameType.COMPETITIVE, match.voteDraw)
+
   const voteDrawFunction = voteDrawFunctions.get(game.gameType)
   if (voteDrawFunction) {
     voteDrawFunction(socket, roomID)
@@ -119,14 +117,6 @@ export const voteDraw = async (
         `Not supported action in game type ${game.gameType}`))
   }
 }
-
-/** All possible functions to handle a `find_room` event. */
-const findRoomFunctions = new Map<GameType, Function>([
-  [GameType.AI, ai.findGame],
-  [GameType.CUSTOM, custom.findGame],
-  [GameType.COMPETITIVE, competitive.findGame]
-  // [GameType.TOURNAMENT, tournament.findRoom]
-])
 
 /**
  * Finds/creates/joins a game depending on the data sent.
@@ -142,6 +132,13 @@ export const findRoom = async (
     socket.emit('error', error.alreadyPlaying())
     return
   }
+
+  /** All possible functions to handle a `find_room` event. */
+  const findRoomFunctions = new Map<GameType, Function>()
+  findRoomFunctions.set(GameType.AI, ai.findGame)
+  findRoomFunctions.set(GameType.CUSTOM, custom.findGame)
+  findRoomFunctions.set(GameType.COMPETITIVE, competitive.findGame)
+  findRoomFunctions.set(GameType.TOURNAMENT, tournament.findGame)
 
   const findRoomFunction = findRoomFunctions.get(data.gameType)
   if (findRoomFunction) {

@@ -5,7 +5,7 @@ post:
   tags:
     - Auth
   summary: Sign Up
-  description: Allows you to register a new user to the system.
+  description: Allows you to register a new user to the system.<br>After creating a new user, the system will send a verification email to the user's email address.
   operationId: sign-up
   security: []
   requestBody:

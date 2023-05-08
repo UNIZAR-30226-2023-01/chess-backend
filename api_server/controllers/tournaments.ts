@@ -3,7 +3,8 @@ import { setStatus } from '@lib/status'
 import { TournamentModel } from '@models/tournament'
 import jwt from 'jsonwebtoken'
 import { parseTournament } from '@lib/parsers'
-const { generateMatches } = require('lib/tournament')
+import { Types } from 'mongoose'
+import { generateMatches } from '@lib/tournament'
 
 export const create = (req: Request, res: Response): void => {
   const token = req.cookies['api-auth']
@@ -61,8 +62,11 @@ export const getAll = (req: Request, res: Response): void => {
 }
 
 export const updateOne = (req: Request, res: Response): void => {
-  TournamentModel.findByIdAndUpdate(req.params.id, req.body, { new: true })
-    .then((tournament) => {
+  TournamentModel.findOneAndUpdate({
+    _id: new Types.ObjectId(req.params.id),
+    hasStarted: false
+  }, req.body, { new: true })
+    .then(tournament => {
       res
         .status(200)
         .json({
@@ -78,7 +82,12 @@ export const updateOne = (req: Request, res: Response): void => {
 }
 
 export const getOne = (req: Request, res: Response): void => {
-  TournamentModel.findById(req.params.id)
+  TournamentModel.findById(req.params.id).populate({
+    path: 'matches',
+    populate: {
+      path: 'participants'
+    }
+  })
     .then((tournament) => {
       if (!tournament) {
         return res
@@ -101,7 +110,10 @@ export const getOne = (req: Request, res: Response): void => {
 }
 
 export const deleteOne = (req: Request, res: Response): void => {
-  TournamentModel.findByIdAndDelete(req.params.id, req.body)
+  TournamentModel.findOneAndDelete({
+    _id: new Types.ObjectId(req.params.id),
+    hasStarted: false // Delete only if hasn't started
+  }, req.body)
     .then(tournament => {
       if (!tournament) {
         res
@@ -152,9 +164,22 @@ export const join = async (req: Request, res: Response): Promise<void> => {
     return firstRound && notFull
   })
 
+  // No place for the user to join
+  if (!matches[0]) {
+    res
+      .status(409)
+      .json({ status: setStatus(req, 409, 'Conflict') })
+    return
+  }
+
   tournament.participants.push(id)
   matches[0].participants.push(id)
-  await tournament.save()
+
+  // Only replace if hasn't started yet
+  await TournamentModel.findOneAndUpdate({
+    _id: tournament._id,
+    hasStarted: false
+  }, { $set: tournament })
 
   res
     .status(200)
@@ -166,7 +191,8 @@ export const leave = async (req: Request, res: Response): Promise<void> => {
   const { id } = JSON.parse(JSON.stringify(jwt.verify(token, String(process.env.JWT_SECRET))))
 
   TournamentModel.updateOne({
-    _id: req.params.id
+    _id: new Types.ObjectId(req.params.id),
+    hasStarted: false
   }, {
     $pull: {
       participants: id,

@@ -10,7 +10,7 @@ import { Types } from 'mongoose'
 import { UserModel } from '@models/user'
 import { io } from '@server'
 import { ResourceName } from '@lib/namespaces'
-const _ = require('lodash')
+import _ from 'lodash'
 
 /** All possible times in **seconds** for a competitive game. */
 const initialTimes = [3 * 60, 5 * 60, 10 * 60] // seconds

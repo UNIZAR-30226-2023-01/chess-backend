@@ -1,13 +1,14 @@
-import { model, Schema, Document } from 'mongoose'
+import { model, Schema, Document, Types } from 'mongoose'
 import { UserModel } from '@models/user'
 
 export interface MatchDocument extends Document {
-  gameId: Schema.Types.ObjectId
-  nextMatchId: Schema.Types.ObjectId
+  gameId: Types.ObjectId
+  nextMatchId: Types.ObjectId
   tournamentRoundText: String
   startTime: Date
   state: 'NO_SHOW' | 'WALK_OVER' | 'NO_PARTY' | 'DONE' | 'SCORE_DONE'
   participants: any[]
+  played: boolean
 }
 
 const MatchSchema = new Schema<MatchDocument>({
@@ -31,8 +32,12 @@ const MatchSchema = new Schema<MatchDocument>({
   },
   participants: [{
     type: Schema.Types.ObjectId,
-    ref: 'UserModel'
-  }]
+    ref: 'User'
+  }],
+  played: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: true
 })
@@ -42,15 +47,16 @@ export interface TournamentDocument extends Document {
   startTime: Date
   rounds: Number
   participants: [typeof UserModel]
-  matches: [typeof MatchSchema]
+  matches: [MatchDocument]
   createdAt: Date
   updatedAt: Date
+  hasStarted: Boolean
 }
 
 const TournamentSchema = new Schema<TournamentDocument>({
   owner: {
     type: Schema.Types.ObjectId,
-    ref: 'UserModel'
+    ref: 'User'
   },
   startTime: {
     type: Date,
@@ -62,9 +68,13 @@ const TournamentSchema = new Schema<TournamentDocument>({
   },
   participants: [{
     type: Schema.Types.ObjectId,
-    ref: 'UserModel'
+    ref: 'User'
   }],
-  matches: [MatchSchema]
+  matches: [MatchSchema],
+  hasStarted: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: true
 })

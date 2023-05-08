@@ -4,7 +4,7 @@ import * as roomLib from '@lib/room'
 import * as error from '@lib/socket-error'
 import { io } from '@server'
 import { RoomIDMsg } from '@lib/types/socket-msg'
-const _ = require('lodash')
+import _ from 'lodash'
 
 /**
  * Emits a `room` event with the game state of the game with the given room id.
