@@ -218,10 +218,8 @@ const joinGame = async (
 
   await socket.join(roomID)
 
-  if (game.useTimer &&
-        game.timerIncrement !== undefined &&
-        game.timerLight !== undefined &&
-        game.timerDark !== undefined) {
+  if (game.useTimer && game.timerIncrement !== undefined &&
+      game.timerLight !== undefined && game.timerDark !== undefined) {
     const gameTimer = new ChessTimer(
       game.turn,
       game.timerLight,

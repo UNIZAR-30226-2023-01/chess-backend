@@ -36,6 +36,7 @@ export type FoundRoomMsg = Partial<GameState> & {
 export interface FindRoomMsg {
   gameType: GameType
   roomID?: string
+  matchID?: string
   time?: number // seconds
   increment?: number // seconds
   hostColor?: PlayerColor | 'RANDOM'

@@ -4,7 +4,7 @@ import { io } from '@server'
 import { ResourceName, compose, composeLock } from '@lib/namespaces'
 import { Types } from 'mongoose'
 import { getElo } from '@lib/elo'
-const _ = require('lodash')
+import _ from 'lodash'
 
 const K_BASE = 32
 const K_INC = 32

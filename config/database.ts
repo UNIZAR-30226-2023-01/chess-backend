@@ -2,27 +2,28 @@ import mongoose from 'mongoose'
 import * as dotenv from 'dotenv'
 import Redis from 'ioredis'
 import Redlock from 'redlock'
+import * as logger from '@lib/logger'
 
 dotenv.config()
 
 mongoose.set('strictQuery', true)
 export const connectDB = async (): Promise<void> => {
   await mongoose.connect(String(process.env.MONGO_URI))
-    .catch((err) => console.error(err))
+    .catch((err) => logger.error(err))
 }
 mongoose.Promise = global.Promise
 mongoose.connection.on('error', (err) => {
-  console.error(`🙅 🚫 🙅 🚫 🙅 🚫 🙅 🚫 → ${String(err.message)}`)
+  logger.error(`🙅 🚫 🙅 🚫 🙅 🚫 🙅 🚫 → ${String(err.message)}`)
 })
 
 export const client = new Redis(String(process.env.REDIS_URI))
 
 client.on('error', (error) => {
-  console.log('Redis Error: ', error)
+  logger.error('Redis Error: '); console.log(error)
 })
 
 client.on('connect', () => {
-  console.log('Redis Connected!')
+  logger.log('INFO', 'Redis Connected!')
 })
 
 export const redlock = new Redlock(
