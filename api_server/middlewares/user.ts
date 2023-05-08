@@ -4,7 +4,6 @@ import { TokenValidationResult, validateToken } from '@lib/token-blacklist'
 import { setStatus } from '@lib/status'
 
 export const isAuthenticated = (req: Request, res: Response, next: NextFunction): void => {
-  if (req.isAuthenticated()) return next()
   try {
     passport.authenticate('jwt', { session: false },
       async (_err: Error, user: any, _info: any): Promise<void> => {

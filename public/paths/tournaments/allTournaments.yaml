@@ -23,6 +23,17 @@ post:
             rounds:
               type: integer
               description: Number of tournament rounds.
+            matchProps:
+              type: object
+              properties: 
+                time: 
+                  type: integer
+                  description: Max duration of the match.
+                  example: 300
+                increment: 
+                  type: integer
+                  description: seconds to add to the clock after each move.
+                  example: 5
 
   responses:
     200:
