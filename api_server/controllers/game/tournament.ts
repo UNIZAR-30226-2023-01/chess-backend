@@ -12,7 +12,8 @@ import { io } from '@server'
 
 export const startMatch = async (
   id: string,
-  match: MatchDocument
+  match: MatchDocument,
+  matchProps: { time: number, increment: number }
 ): Promise<Types.ObjectId | null> => {
   // Coinflip to decide color
   let darkId, lightId: Types.ObjectId
@@ -37,10 +38,10 @@ export const startMatch = async (
     moves: [],
 
     useTimer: true,
-    initialTimer: 300,
-    timerIncrement: 5,
-    timerDark: 300 * 1000,
-    timerLight: 300 * 1000,
+    initialTimer: matchProps.time,
+    timerIncrement: matchProps.increment,
+    timerDark: matchProps.time * 1000,
+    timerLight: matchProps.time * 1000,
 
     finished: false,
     endState: undefined,
@@ -77,8 +78,8 @@ export const startMatch = async (
     await tournLib.endProtocol(id, game)
   }
 
-  // Past 15 minutes, game ends if not started
-  setTimeout(checkAbandon, 15 * 60 * 1000, id)
+  // Past 20 minutes, game ends if not started
+  setTimeout(checkAbandon, 20 * 60 * 1000, id)
 
   return gameId
 }
@@ -192,8 +193,8 @@ export const findGame = async (
 
     const gameTimer = new ChessTimer(
       game.turn,
-      game.timerDark ?? 500 * 1000,
-      game.timerLight ?? 500 * 1000,
+      game.timerDark ?? 300 * 1000,
+      game.timerLight ?? 300 * 1000,
       game.timerIncrement ?? 5 * 1000,
       gameLib.timeoutProtocol(roomID)
     )

@@ -12,6 +12,7 @@ import { ReservedUsernames, UserModel } from '@models/user'
 import { io } from '@server'
 import * as achievement from '@lib/achievements'
 import { MatchResult, updateEloOfUsers } from '@lib/elo'
+import * as logger from '@lib/logger'
 import _ from 'lodash'
 
 // 2 minutes after a game is over, it is deleted from redis
@@ -105,8 +106,8 @@ export const newGameInDB = async (
     })
 
     id = doc._id
-  } catch (error: any) {
-    console.error(error)
+  } catch (err: any) {
+    logger.error(err)
     return null
   }
 
@@ -123,8 +124,8 @@ export const startGameInDB = async (
     await GameModel.updateOne({ roomID }, {
       $set: { state: State.PLAYING }
     })
-  } catch (error: any) {
-    console.error(error)
+  } catch (err: any) {
+    logger.error(err)
     return false
   }
 
@@ -157,8 +158,8 @@ export const pauseGameInDB = async (
       },
       $unset: { roomID: '' }
     })
-  } catch (error: any) {
-    console.error(error)
+  } catch (err: any) {
+    logger.error(err)
     return false
   }
 
@@ -176,8 +177,8 @@ export const resumeGameInDB = async (
     await GameModel.updateOne({ _id: gameID }, {
       $set: { state: State.RESUMING, roomID }
     })
-  } catch (error: any) {
-    console.error(error)
+  } catch (err: any) {
+    logger.error(err)
     return false
   }
 
@@ -236,8 +237,8 @@ export const getGameStateFromDB = async (
     }
     state = gameData.state
     roomID = gameData.roomID
-  } catch (error: any) {
-    console.error(error)
+  } catch (err: any) {
+    logger.error(err)
     return undefined
   }
 
@@ -314,8 +315,8 @@ export const endGameInDB = async (
         .afterGameAchievementsCheck(game.lightId, game.gameType)
         .then(_ => {}).catch(_ => {})
     }
-  } catch (error: any) {
-    console.error(error)
+  } catch (err: any) {
+    logger.error(err)
     return false
   }
 
@@ -390,7 +391,7 @@ export const endProtocol = async (
 
   // Then save in database
   if (!await endGameInDB(game, roomID)) {
-    console.error('Error at endGameInDB')
+    logger.error('Error at endGameInDB')
   }
 
   if (game.gameType === GameType.TOURNAMENT) {
@@ -404,7 +405,7 @@ export const timeoutProtocol = (
   return async (winner: PlayerColor) => {
     const game = await getGame(roomID, async (game) => {
       if (!game) {
-        console.error('Error at timeoutProtocol: No game with roomID:', roomID)
+        logger.error('Error at timeoutProtocol: No game with roomID:' + roomID)
         return
       }
 

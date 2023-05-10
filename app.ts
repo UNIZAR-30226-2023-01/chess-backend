@@ -16,8 +16,9 @@ import passport from 'passport'
 import cookieSession from 'cookie-session'
 import { server } from '@server'
 import { Limiter, SpeedLimiter } from '@middlewares/limiters'
-import * as DEBUG from '@lib/tournament'
+
 import * as logger from '@lib/logger'
+import { notify } from '@lib/tournament'
 dotenv.config()
 require('@auth/passport')
 require('@auth/passportGoogle')
@@ -64,10 +65,12 @@ app.use('/v1/users', usersRouter)
 app.use('/v1/games', gameRouter)
 app.use('/v1/tournaments', tournamentsRouter)
 
-app.get('/v1/PREPARE', async (_, res) => {
-  await DEBUG.notify()
-  res.status(200).send()
-})
+if (process.env.NODE_ENV === 'development') {
+  app.get('/v1/PREPARE', async (_, res) => {
+    await notify()
+    res.status(200).send()
+  })
+}
 
 server.listen(Number(PORT) + 1, () => {
   logger.log('INFO', `Socket.IO is running → PORT ${String(Number(PORT) + 1)}`)

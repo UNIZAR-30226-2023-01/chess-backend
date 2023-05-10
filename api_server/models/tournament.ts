@@ -51,6 +51,10 @@ export interface TournamentDocument extends Document {
   createdAt: Date
   updatedAt: Date
   hasStarted: Boolean
+  matchProps: {
+    time: number
+    increment: number
+  }
 }
 
 const TournamentSchema = new Schema<TournamentDocument>({
@@ -74,6 +78,22 @@ const TournamentSchema = new Schema<TournamentDocument>({
   hasStarted: {
     type: Boolean,
     default: false
+  },
+  matchProps: {
+    type: new Schema({
+      time: {
+        type: Number,
+        default: 300
+      },
+      increment: {
+        type: Number,
+        default: 5
+      }
+    }),
+    default: {
+      time: 300,
+      increment: 5
+    }
   }
 }, {
   timestamps: true

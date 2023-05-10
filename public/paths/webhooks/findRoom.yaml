@@ -18,6 +18,7 @@ post:
     * **createCustom**: start a custom game
       *(requires an authenticated socket)*.
     * **joinCustom**: join a custom game.
+    * **tournament**: join a tournament game.
   requestBody:
     content:
       application/json:
@@ -27,6 +28,7 @@ post:
             - $ref: ../../components/schemas/competitive.yaml
             - $ref: ../../components/schemas/createCustom.yaml
             - $ref: ../../components/schemas/joinCustom.yaml
+            - $ref: ../../components/schemas/tournaments.yaml
           #discriminator: 
             #propertyName: gameType
             #mapping:

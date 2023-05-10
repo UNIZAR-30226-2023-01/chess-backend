@@ -144,11 +144,15 @@ interface Tournament {
   rounds: number
   participants: any[]
   matches: Match[]
+  matchProps: {
+    time: number
+    increment: number
+  }
   createdAt: Date
   updatedAt: Date
 }
 
-export const parseTournament = (Tournament: TournamentDocument): Tournament => {
+export const parseTournament = async (Tournament: TournamentDocument): Promise<Tournament> => {
   return {
     id: Tournament._id,
     join: `${URI}/v1/tournaments/join/${String(Tournament._id)}`,
@@ -157,7 +161,7 @@ export const parseTournament = (Tournament: TournamentDocument): Tournament => {
     startTime: Tournament.startTime,
     rounds: Number(Tournament.rounds),
     participants: Tournament.participants,
-    matches: Tournament.matches.map((match) => {
+    matches: await Promise.all(Tournament.matches.map(async (match) => {
       const matchJSON = JSON.parse(JSON.stringify(match))
       return {
         id: matchJSON._id,
@@ -166,15 +170,19 @@ export const parseTournament = (Tournament: TournamentDocument): Tournament => {
         tournamentRoundText: matchJSON.tournamentRoundText,
         startTime: matchJSON.startTime,
         state: 'NO_SHOW',
-        participants: matchJSON.participants.map((participant: any) => {
+        participants: await Promise.all(matchJSON.participants.map(async (participant: any) => {
           try {
-            return parseExtendedUser(participant)
+            return await parseExtendedUser(participant)
           } catch (e) {
             return participant
           }
-        })
+        }))
       }
-    }),
+    })),
+    matchProps: {
+      time: Tournament.matchProps.time,
+      increment: Tournament.matchProps.increment
+    },
     createdAt: Tournament.createdAt,
     updatedAt: Tournament.updatedAt
   }

@@ -15,6 +15,7 @@ export interface UserDocument extends Document {
   password: Buffer
   salt: Buffer
   verified: boolean
+  removed: boolean
   elo: number
   board: string
   lightPieces: string
@@ -63,6 +64,10 @@ const userSchema = new Schema<UserDocument>({
     require: true
   },
   verified: {
+    type: Boolean,
+    default: false
+  },
+  removed: {
     type: Boolean,
     default: false
   },

@@ -9,9 +9,10 @@ import { parseUser } from '@lib/parsers'
 import sgMail from '@sendgrid/mail'
 import * as achievement from '@lib/achievements'
 import * as dotenv from 'dotenv'
+import * as logger from '@lib/logger'
 dotenv.config()
 
-const URI = process.env.NODE_ENV === 'production' ? 'https://api.gracehopper.xyz' : 'http://localhost:3000'
+const URI = process.env.NODE_ENV === 'production' ? 'https://api.gracehopper.xyz/v1' : 'http://localhost:4000/v1'
 
 export const signUp = (req: Request, res: Response): void => {
   // Check if the username is reserved
@@ -24,7 +25,7 @@ export const signUp = (req: Request, res: Response): void => {
   const salt = randomBytes(16)
   pbkdf2(req.body.password, salt, 310000, 64, 'sha512', async (err, derivedKey) => {
     if (err) {
-      console.log('err:', err)
+      logger.error(String(err))
       return res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
     }
 
@@ -34,12 +35,14 @@ export const signUp = (req: Request, res: Response): void => {
       password: derivedKey,
       salt
     })
-      .then((user) => {
+      .then(async (user) => {
         const { _id: id, email } = user.toJSON()
         const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
         const payload = { id, email }
         const token = jwt.sign(payload, secret, { expiresIn: '15m' })
         const url = `${URI}/auth/verify/${String(id)}/${token}`
+
+        console.log(url)
 
         const msg = {
           to: email,
@@ -55,7 +58,7 @@ export const signUp = (req: Request, res: Response): void => {
         if (process.env.NODE_ENV === 'test') {
           UserModel.findByIdAndUpdate(id, { verified: true }).then(_ => {}).catch(_ => {})
           res.status(201).json({
-            data: parseUser(user),
+            data: await parseUser(user),
             status: setStatus(req, 0, 'Successful')
           })
           return
@@ -63,11 +66,11 @@ export const signUp = (req: Request, res: Response): void => {
 
         sgMail.setApiKey(String(process.env.SENDGRID_API_KEY))
         sgMail.send(msg)
-          .then(() => {
+          .then(async () => {
             return res
               .status(201)
               .json({
-                data: parseUser(user),
+                data: await parseUser(user),
                 status: setStatus(req, 0, 'Successful')
               })
           })

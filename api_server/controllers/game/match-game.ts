@@ -147,8 +147,6 @@ export const move = async (
   roomID: string,
   move: string
 ): Promise<void> => {
-  console.log('move:', move)
-
   const game = await gameLib.getGame(roomID, async (game) => {
     if (!game) {
       socket.emit('error', error.notPlaying())

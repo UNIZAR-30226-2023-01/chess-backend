@@ -8,6 +8,18 @@ get:
   operationId: resume
   description: event(resume) 
     Allows retrieving a saved **custom** or **ai** game to be resumed.
+  requestBody:
+    content:
+      application/json:
+        schema:
+          required: 
+            - gameID
+          properties:
+            gameID:
+              type: string
+              description: Id of the game you want to resume.
+        example:
+          gameID: "645ac3d59250304ffc293d8c"
   security: []
   responses:
     '200':

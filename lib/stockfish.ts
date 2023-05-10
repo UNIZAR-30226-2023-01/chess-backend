@@ -1,6 +1,7 @@
 import { Readable, Writable } from 'node:stream'
 import { spawn } from 'node:child_process'
 import * as dotenv from 'dotenv'
+import * as logger from '@lib/logger'
 import _ from 'lodash'
 dotenv.config()
 
@@ -81,8 +82,8 @@ export const bestMove = async (
   try {
     const move = await sf.bestMove(board)
     return move
-  } catch (error) {
-    console.error('Error at bestMove: ', error)
+  } catch (err: any) {
+    logger.error('Error at bestMove: ' + String(err))
   } finally {
     await sf.close()
   }
