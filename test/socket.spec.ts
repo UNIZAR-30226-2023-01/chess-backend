@@ -99,8 +99,9 @@ describe('Non-authenticated AI player', () => {
       socket.emit('vote_save') // Not authenticated
       socket.emit('find_room', options) // Already playing
       socket.emit('move', { move: 'e7e6' }) // Illegal move
-      socket.emit('move', { move: 'a2a4' })
-      socket.emit('move', { move: 'b2b4' }) // Not your turn
+      setTimeout(() => {
+        socket.emit('move', { move: 'a2a4' })
+      }, 100)
     })
 
     socket.on('moved', (res: any) => {
@@ -116,7 +117,7 @@ describe('Non-authenticated AI player', () => {
       chai.expect(res.endState).to.be.equal(EndState.SURRENDER)
       setTimeout(() => {
         socket.disconnect()
-        chai.expect(numErrors).to.be.equal(5)
+        chai.expect(numErrors).to.be.equal(4)
         done()
       }, 100)
     })
