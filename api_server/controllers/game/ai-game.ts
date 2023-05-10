@@ -51,9 +51,16 @@ export const findGame = async (
     data.difficulty = 1
   }
 
+  if (!data.hostColor || data.hostColor === 'RANDOM') {
+    socket.emit('error', error.internalServerError())
+    return
+  }
+
   // ---- End of validation ---- //
 
   const roomID = await roomLib.generateUniqueRoomCode()
+
+  const socketColor = data.hostColor
 
   let darkId: Types.ObjectId | undefined
   let lightId: Types.ObjectId | undefined
@@ -100,7 +107,7 @@ export const findGame = async (
     gameType: GameType.AI,
     difficulty: data.difficulty
   }
-  await completeUserInfo(socket, game)
+  await completeUserInfo(socket, game, socketColor)
   await gameLib.setGame(roomID, game)
   await gameLib.newGameInDB(game, roomID)
   await startAIGame(socket, game, roomID)
@@ -118,9 +125,11 @@ export const findGame = async (
  */
 export const completeUserInfo = async (
   socket: Socket,
-  game: GameState
+  game: GameState,
+  socketColor?: PlayerColor
 ): Promise<void> => {
-  if (game.darkId?.equals(socket.data.userID)) {
+  if (socketColor === PlayerColor.DARK ||
+      game.darkId?.equals(socket.data.userID)) {
     game.dark = (await UserModel.findById(game.darkId))?.username ??
       ReservedUsernames.GUEST_USER
     game.light = ReservedUsernames.AI_USER

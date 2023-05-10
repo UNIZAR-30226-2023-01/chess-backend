@@ -85,7 +85,7 @@ describe('POST /v1/auth/sign-out', () => {
           .set('Cookie', res.headers['set-cookie'])
           .expect(200)
           .expect(res => {
-            chai.expect(res).to.have.not.cookie('api-auth')
+            chai.expect(res).to.have.cookie('api-auth', '')
           })
       })
   })
