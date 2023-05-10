@@ -106,20 +106,16 @@ describe('Non-authenticated AI player', () => {
 
     socket.on('moved', (res: any) => {
       if (res.turn === options.hostColor) {
-        setTimeout(() => {
-          socket.emit('surrender')
-        }, 100)
+        socket.emit('surrender')
       }
     })
 
     socket.on('game_over', (res: any) => {
       chai.expect(res.winner).to.be.equal(alternativeColor(options.hostColor))
       chai.expect(res.endState).to.be.equal(EndState.SURRENDER)
-      setTimeout(() => {
-        socket.disconnect()
-        chai.expect(numErrors).to.be.equal(4)
-        done()
-      }, 100)
+      socket.disconnect()
+      chai.expect(numErrors).to.be.equal(4)
+      done()
     })
 
     socket.on('error', () => { numErrors++ })
@@ -127,3 +123,6 @@ describe('Non-authenticated AI player', () => {
     socket.connect()
   })
 })
+
+// Test de timeout...
+// Not your turn...
