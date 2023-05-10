@@ -104,7 +104,11 @@ describe('Non-authenticated AI player', () => {
     })
 
     socket.on('moved', (res: any) => {
-      if (res.turn === options.hostColor) socket.emit('surrender')
+      if (res.turn === options.hostColor) {
+        setTimeout(() => {
+          socket.emit('surrender')
+        }, 100)
+      }
     })
 
     socket.on('game_over', (res: any) => {
