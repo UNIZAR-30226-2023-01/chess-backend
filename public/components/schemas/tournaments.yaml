@@ -1,0 +1,15 @@
+type: object
+required:
+  - gameType
+  - roomID
+properties:
+  gameType:
+    type: string
+    enum: 
+      - "TOURNAMENT"
+  matchID:
+    type: string
+    description: Id of the tournament match you want to join.
+example:
+  gameType: "TOURNAMENT"
+  matchID: "64573cb88f79d136c44ec63e"

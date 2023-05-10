@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { setStatus } from '@lib/status'
 import { UserModel } from '@models/user'
 import { parseExtendedUser } from '@lib/parsers'
+import * as logger from '@lib/logger'
 
 export const getAll = async (req: Request, res: Response): Promise<void> => {
   const { meta, data } = res.locals
@@ -18,7 +19,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
 export const getOne = (req: Request, res: Response): void => {
   UserModel.findById(req.params.id)
     .then(async (user) => {
-      if (!user) {
+      if (!user || user.removed) {
         return res
           .status(404)
           .json({ status: setStatus(req, 404, 'Not Found') })
@@ -39,9 +40,9 @@ export const getOne = (req: Request, res: Response): void => {
 }
 
 export const updateOne = (req: Request, res: Response): void => {
-  UserModel.findByIdAndUpdate(req.params.id, req.body, { new: true })
+  UserModel.findOneAndUpdate({ _id: req.params.id, removed: false }, req.body, { new: true })
     .then(async (user) => {
-      if (!user) {
+      if (!user || user.removed) {
         return res
           .status(404)
           .json({ status: setStatus(req, 404, 'Not Found') })
@@ -62,9 +63,9 @@ export const updateOne = (req: Request, res: Response): void => {
 }
 
 export const deleteOne = (req: Request, res: Response): void => {
-  UserModel.findByIdAndDelete(req.params.id, req.body)
+  UserModel.findByIdAndUpdate(req.params.id, { $set: { removed: true } })
     .then(user => {
-      if (!user) {
+      if (!user || user.removed) {
         return res
           .status(404)
           .json({ status: setStatus(req, 404, 'Not Found') })
@@ -77,7 +78,7 @@ export const deleteOne = (req: Request, res: Response): void => {
         })
     })
     .catch(err => {
-      console.log(err)
+      logger.error(String(err))
       res
         .status(500)
         .json({ status: setStatus(req, 500, 'Internal Server Error') })

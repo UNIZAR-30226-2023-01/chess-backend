@@ -4,6 +4,7 @@ import { io } from '@server'
 import { ResourceName, compose, composeLock } from '@lib/namespaces'
 import { Types } from 'mongoose'
 import { getElo } from '@lib/elo'
+import * as logger from '@lib/logger'
 import _ from 'lodash'
 
 const K_BASE = 32
@@ -212,7 +213,7 @@ export const findCompetitiveGame = async (
     match = await checkQueueOrAwakenOrCancelled(queueName, player)
     if (!match) {
       // SITUACION PELIAGUDA
-      console.log('timeout(', i, ') ')
+      logger.log('INFO', `Socket ${socket.id} is searching for a competive match [${i}]`)
 
       await addToQueue(queueName, player)
       await new Promise(resolve => {

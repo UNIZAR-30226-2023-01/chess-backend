@@ -2,6 +2,7 @@ import { GameType, START_BOARD, State } from '@lib/types/game'
 import { GameModel } from '@models/game'
 import { ReservedUsernames, UserModel } from '@models/user'
 import { pbkdf2Sync, randomBytes } from 'crypto'
+import * as logger from '@lib/logger'
 
 // ----- Fake User ----- //
 
@@ -25,8 +26,8 @@ export const setClient = async (): Promise<void> => {
       email: newClient.email,
       password: key,
       salt,
-      verified: true
-      // ...
+      verified: true,
+      removed: false
     })
   } catch (err: any) {}
 }
@@ -41,7 +42,7 @@ export const clearClientWithCallback = (callback: CallableFunction): void => {
   UserModel.deleteOne({ username: client.username })
     .then(_ => { callback() })
     .catch(err => {
-      console.error(err.message)
+      logger.error(err.message)
       callback()
     })
 }
@@ -61,7 +62,7 @@ export const setGame = async (): Promise<void> => {
     })
     gameId = game._id.toString()
   } catch (err: any) {
-    console.error(err)
+    logger.error(err)
   }
 }
 
@@ -69,6 +70,6 @@ export const clearGame = async (): Promise<void> => {
   try {
     await GameModel.findByIdAndDelete(gameId)
   } catch (err: any) {
-    console.error(err)
+    logger.error(err)
   }
 }

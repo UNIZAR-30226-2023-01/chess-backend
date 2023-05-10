@@ -101,7 +101,7 @@ describe('Non-authenticated AI player', () => {
       socket.emit('move', { move: 'e7e6' }) // Illegal move
       setTimeout(() => {
         socket.emit('move', { move: 'a2a4' })
-      }, 100)
+      }, 500)
     })
 
     socket.on('moved', (res: any) => {

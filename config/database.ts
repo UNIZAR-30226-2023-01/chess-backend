@@ -19,7 +19,7 @@ mongoose.connection.on('error', (err) => {
 export const client = new Redis(String(process.env.REDIS_URI))
 
 client.on('error', (error) => {
-  logger.error('Redis Error: '); console.log(error)
+  logger.error('Redis Error: '); console.error(error)
 })
 
 client.on('connect', () => {

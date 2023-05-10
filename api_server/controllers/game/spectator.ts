@@ -78,7 +78,6 @@ export const joinRoom = async (
 
   if (!await gameState(socket, roomID, true)) return
 
-  console.log('join_room', data.roomID)
   await socket.join(data.roomID)
 }
 

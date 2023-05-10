@@ -29,11 +29,11 @@ export const create = (req: Request, res: Response): void => {
         participants: [],
         matches: generateMatches(rounds, new Date(startTime))
       })
-        .then((tournament) => {
+        .then(async (tournament) => {
           return res
             .status(201)
             .json({
-              data: parseTournament(tournament),
+              data: await parseTournament(tournament),
               status: setStatus(req, 0, 'Successful')
             })
         })
@@ -50,13 +50,13 @@ export const create = (req: Request, res: Response): void => {
     })
 }
 
-export const getAll = (req: Request, res: Response): void => {
+export const getAll = async (req: Request, res: Response): Promise<void> => {
   const { meta, data } = res.locals
   res
     .status(200)
     .json({
       meta,
-      data: data.map(parseTournament),
+      data: await Promise.all(data.map(parseTournament)),
       status: setStatus(req, 0, 'Successful')
     })
 }
@@ -88,7 +88,7 @@ export const getOne = (req: Request, res: Response): void => {
       path: 'participants'
     }
   })
-    .then((tournament) => {
+    .then(async (tournament) => {
       if (!tournament) {
         return res
           .status(404)
@@ -98,7 +98,7 @@ export const getOne = (req: Request, res: Response): void => {
       return res
         .status(200)
         .json({
-          data: parseTournament(tournament),
+          data: await parseTournament(tournament),
           status: setStatus(req, 0, 'Successful')
         })
     })

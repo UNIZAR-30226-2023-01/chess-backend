@@ -37,7 +37,6 @@ waitForElements().then(() => {
     const description = section.getElementsByClassName('sc-iJCRrE sc-ciSkZP').item(0)
     let text
     if (description) text = description.firstChild
-    console.log(text)
     try {
       const event = getEvent(text.innerText)
       text.innerText = text.innerText.replace(`event(${event})`, '');

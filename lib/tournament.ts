@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 import { Types } from 'mongoose'
 import { startMatch } from '@controllers/game/tournament'
 import { GameState, PlayerColor } from './types/game'
-// import sgMail from '@sendgrid/mail'
+import sgMail from '@sendgrid/mail'
 import { UserModel } from '@models/user'
 import * as logger from '@lib/logger'
 import _ from 'lodash'
@@ -22,7 +22,7 @@ function generateGames (rondas: number, start: Date): Match[][] {
         _id: new ObjectId(),
         nextMatchId: null,
         tournamentRoundText: `Ronda ${ronda + 1}`,
-        startTime: getDate(rondas - ronda, start)
+        startTime: getDate(rondas - ronda - 1, start)
       }
       gameLlist.push(data)
     }
@@ -121,7 +121,7 @@ export async function startNextRound (id: string): Promise<void> {
         { $set: { 'matches.$.played': true } }
       )
       if (match.participants.length > 0) {
-        const gameId = await startMatch(match._id.toString(), match)
+        const gameId = await startMatch(match._id.toString(), match, tournament.matchProps)
         if (gameId) match.gameId = gameId
       }
     }
@@ -202,10 +202,12 @@ export const notify = async (): Promise<void> => {
             logger.log('INFO', `Sending email to ${String(user?.email)}`)
             console.log(msg)
 
-            // sgMail.setApiKey(String(process.env.SENDGRID_API_KEY))
-            // await sgMail.send(msg)
+            if (process.env.NODE_ENV === 'test') {
+              sgMail.setApiKey(String(process.env.SENDGRID_API_KEY))
+            }
+            await sgMail.send(msg)
           }).catch(_err => {
-            console.error('Cannot access to user:', id)
+            logger.error('Cannot access to user:' + String(id))
           })
         }
       }

@@ -3,6 +3,7 @@ import { EndState, GameType, State } from '@lib/types/game'
 import { Types } from 'mongoose'
 import { GameModel } from '@models/game'
 import { TournamentModel } from '@models/tournament'
+import * as logger from '@lib/logger'
 
 export enum Achievements {
   FIRST_LOGIN = 'FIRST LOGIN',
@@ -38,7 +39,7 @@ const checkAndUpdateGamesPlayed = async (
       )
     }
   } catch (err: any) {
-    console.error(err)
+    logger.error(err)
   }
 }
 
@@ -52,7 +53,7 @@ const checkAndUpdateTournamentsPlayed = async (
     { $count: 'total' }
   ]).exec(async (err, result) => {
     if (err) {
-      console.error(err)
+      logger.error(err.message)
       return
     }
     const count: number = result.length > 0 ? result[0].total : 0
@@ -86,7 +87,7 @@ const checkAndUpdateDraws = async (
       )
     }
   } catch (err: any) {
-    console.error(err)
+    logger.error(err)
   }
 }
 
@@ -121,7 +122,7 @@ const updateTopRankingAchievement = async (
 ): Promise<void> => {
   UserModel.find().sort({ elo: -1 }).limit(topUsers).exec((err, users) => {
     if (err) {
-      console.error(err)
+      logger.error(err.message)
       return
     }
     users.map(async user => await UserModel.updateMany(

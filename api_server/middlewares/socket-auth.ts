@@ -29,6 +29,6 @@ export const socketAuth = async (
   } else {
     socket.data.authenticated = false
   }
-  console.log('user connected using socket: ', socket.data.userID)
+
   return next()
 }

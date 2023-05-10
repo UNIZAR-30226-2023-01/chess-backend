@@ -3,7 +3,7 @@ import http from 'http'
 import { Server, Socket } from 'socket.io'
 import * as gameCtl from '@controllers/game/game'
 import * as spectatorCtl from '@controllers/game/spectator'
-import { socketAuth } from '@middlewares/socket_auth'
+import { socketAuth } from '@middlewares/socket-auth'
 
 export const server = http.createServer(App)
 

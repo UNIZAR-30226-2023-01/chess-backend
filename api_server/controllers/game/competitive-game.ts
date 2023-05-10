@@ -53,8 +53,6 @@ export const findGame = async (
   // Temporary room not to let the socket find another game
   await socket.join(ResourceName.PLAYER_Q)
 
-  console.log('Matching...')
-
   const match = await matchmaking
     .findCompetitiveGame(socket.data.userID, data.time, socket)
 
