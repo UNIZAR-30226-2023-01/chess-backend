@@ -10,6 +10,7 @@ env:
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   MONGO_URI: ${{ secrets.MONGO_URI }}
   REDIS_URI: ${{ secrets.REDIS_URI }}
+  STOCKFISH_PATH: stockfish
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,6 +30,8 @@ jobs:
         node-version: 16
     - name: Install Dependencies
       run: npm ci
+    - name: Install Stockfish
+      run: sudo apt-get install -y stockfish
 
   lint:
     name: lint 🪅
@@ -60,7 +63,7 @@ jobs:
         cache: npm
         node-version: 16
     - name: Install Dependencies
-      run: npm ci && sudo apt-get install -y stockfish
+      run: npm ci
     - name: Certificates
       env:
         CERT: ${{ secrets.CERT }}
