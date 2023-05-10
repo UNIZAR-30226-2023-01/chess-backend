@@ -72,4 +72,5 @@ jobs:
     - name: Test
       env:
         NODE_ENV: test
+        NO_AI: true
       run: npm run test

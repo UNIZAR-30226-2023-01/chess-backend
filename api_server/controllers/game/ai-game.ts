@@ -185,14 +185,7 @@ export const startAIGame = async (
         game.turn === PlayerColor.DARK) ||
       (game.light === ReservedUsernames.AI_USER &&
         game.turn === PlayerColor.LIGHT)) {
-    const move = await bestMove(
-      game.board,
-      skillLevel[game.difficulty ?? 1],
-      randomTimeToThink()
-    )
-    if (move) {
-      await moveAI(socket, roomID, move)
-    }
+    await moveAI(socket, roomID, game)
   }
 }
 
@@ -306,14 +299,7 @@ export const move = async (
   // Execute AI's move if game is not over and
   // this move was executed by a real user
   if (!aiMove && !game.finished) {
-    const move = await bestMove(
-      game.board,
-      skillLevel[game.difficulty ?? 1],
-      randomTimeToThink()
-    )
-    if (move) {
-      await moveAI(socket, roomID, move)
-    }
+    await moveAI(socket, roomID, game)
   }
 }
 
@@ -327,7 +313,21 @@ export const move = async (
 const moveAI = async (
   socket: Socket,
   roomID: string,
-  bestMove: string
+  game: GameState
 ): Promise<void> => {
-  await move(socket, roomID, bestMove, true)
+  if (process.env.NO_AI === 'true') {
+    const chess = new Chess(game.board)
+    if (!chess.gameOver()) {
+      const moves = chess.moves()
+      const aiMove = moves[Math.floor(Math.random() * moves.length)]
+      await move(socket, roomID, aiMove, true)
+    }
+  } else {
+    const aiMove = await bestMove(
+      game.board,
+      skillLevel[game.difficulty ?? 1],
+      randomTimeToThink()
+    )
+    if (aiMove) await move(socket, roomID, aiMove, true)
+  }
 }
