@@ -1,6 +1,6 @@
 import { GameDocument } from '@models/game'
 import { TournamentDocument } from '@models/tournament'
-import { UserDocument } from '@models/user'
+import { UserDocument, UserModel } from '@models/user'
 import { EndState, GameType, PlayerColor, State } from '@lib/types/game'
 
 const URI = process.env.NODE_ENV === 'production' ? 'https://api.gracehopper.xyz' : 'http://localhost:4000'
@@ -13,6 +13,7 @@ interface User {
   google: Boolean
   verified: boolean
   elo?: number
+  ranking: number
   skins?: object
   availableSkins?: object[]
   stats?: object
@@ -22,7 +23,12 @@ interface User {
   achievements?: string[]
 }
 
-export const parseUser = (user: UserDocument): User => {
+const getRanking = async (user: UserDocument): Promise<number> => {
+  const top = await UserModel.countDocuments({ elo: { $gt: user.elo } })
+  return top + 1
+}
+
+export const parseUser = async (user: UserDocument): Promise<User> => {
   return {
     id: user._id,
     avatar: user.avatar,
@@ -31,11 +37,12 @@ export const parseUser = (user: UserDocument): User => {
     google: !!user.googleId,
     verified: user.verified,
     createdAt: user.createdAt,
-    updatedAt: user.updatedAt
+    updatedAt: user.updatedAt,
+    ranking: await getRanking(user)
   }
 }
 
-export const parseExtendedUser = (user: UserDocument): User => {
+export const parseExtendedUser = async (user: UserDocument): Promise<User> => {
   const filter = {
     $or: [
       { darkId: String(user._id) },
@@ -52,6 +59,7 @@ export const parseExtendedUser = (user: UserDocument): User => {
     verified: user.verified,
     games: `${URI}/v1/games?limit=25&page=1&sort=-createdAt&filter=${encodeURIComponent(JSON.stringify(filter))}`,
     elo: user.elo,
+    ranking: await getRanking(user),
     skins: {
       board: user.board,
       lightPieces: user.lightPieces,

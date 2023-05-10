@@ -12,7 +12,7 @@ describe('GET /v1/games', () => {
     await request(app).post('/v1/auth/sign-in').send(fake.client)
       .then(async res => {
         await request(app)
-          .get('/v1/games/')
+          .get('/v1/games')
           .set('Cookie', res.headers['set-cookie'])
           .expect(200)
           .then((res) => {

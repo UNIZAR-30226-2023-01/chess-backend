@@ -29,6 +29,8 @@ jobs:
         node-version: 16
     - name: Install Dependencies
       run: npm ci
+    - name: Install stockfish
+      run: sudo apt-get install -y stockfish
 
   lint:
     name: lint 🪅
@@ -71,4 +73,5 @@ jobs:
     - name: Test
       env:
         NODE_ENV: test
+        NO_AI: true
       run: npm run test

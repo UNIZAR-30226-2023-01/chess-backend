@@ -1,5 +1,5 @@
 
-interface SocketError {
+export interface SocketError {
   code: number
   error: string
   message: string

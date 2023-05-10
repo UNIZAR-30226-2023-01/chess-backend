@@ -94,7 +94,7 @@ export const signIn = (req: Request, res: Response): void => {
   const { username = undefined, email = undefined } = req.body
   const filter = username ? { username } : { email }
   UserModel.findOne(filter)
-    .then((user) => {
+    .then(async (user) => {
       if (!user) {
         return res
           .status(404)
@@ -112,7 +112,7 @@ export const signIn = (req: Request, res: Response): void => {
       return pbkdf2(
         req.body.password,
         salt, 310000, 64, 'sha512',
-        (err, derivedKey): Response => {
+        async (err, derivedKey): Promise<Response> => {
           if (err != null || !timingSafeEqual(password, derivedKey)) {
             return res
               .status(401)
@@ -138,7 +138,7 @@ export const signIn = (req: Request, res: Response): void => {
           return res
             .status(200)
             .json({
-              data: parseUser(user),
+              data: await parseUser(user),
               status: setStatus(req, 0, 'Successful')
             })
         })
@@ -160,7 +160,8 @@ export const signOut = async (req: Request, res: Response): Promise<void> => {
         secure: process.env.NODE_ENV === 'production',
         expires: dayjs().add(1, 'day').toDate(),
         domain: process.env.NODE_ENV === 'production' ? '.gracehopper.xyz' : undefined,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/'
       })
       .status(200)
       .json({ status: setStatus(req, 0, 'Successful') })

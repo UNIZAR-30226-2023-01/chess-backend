@@ -51,9 +51,16 @@ export const findGame = async (
     data.difficulty = 1
   }
 
+  if (!data.hostColor || data.hostColor === 'RANDOM') {
+    socket.emit('error', error.internalServerError())
+    return
+  }
+
   // ---- End of validation ---- //
 
   const roomID = await roomLib.generateUniqueRoomCode()
+
+  const socketColor = data.hostColor
 
   let darkId: Types.ObjectId | undefined
   let lightId: Types.ObjectId | undefined
@@ -100,7 +107,7 @@ export const findGame = async (
     gameType: GameType.AI,
     difficulty: data.difficulty
   }
-  await completeUserInfo(socket, game)
+  await completeUserInfo(socket, game, socketColor)
   await gameLib.setGame(roomID, game)
   await gameLib.newGameInDB(game, roomID)
   await startAIGame(socket, game, roomID)
@@ -118,9 +125,11 @@ export const findGame = async (
  */
 export const completeUserInfo = async (
   socket: Socket,
-  game: GameState
+  game: GameState,
+  socketColor?: PlayerColor
 ): Promise<void> => {
-  if (game.darkId?.equals(socket.data.userID)) {
+  if (socketColor === PlayerColor.DARK ||
+      game.darkId?.equals(socket.data.userID)) {
     game.dark = (await UserModel.findById(game.darkId))?.username ??
       ReservedUsernames.GUEST_USER
     game.light = ReservedUsernames.AI_USER
@@ -176,14 +185,7 @@ export const startAIGame = async (
         game.turn === PlayerColor.DARK) ||
       (game.light === ReservedUsernames.AI_USER &&
         game.turn === PlayerColor.LIGHT)) {
-    const move = await bestMove(
-      game.board,
-      skillLevel[game.difficulty ?? 1],
-      randomTimeToThink()
-    )
-    if (move) {
-      await moveAI(socket, roomID, move)
-    }
+    await moveAI(socket, roomID, game)
   }
 }
 
@@ -297,14 +299,7 @@ export const move = async (
   // Execute AI's move if game is not over and
   // this move was executed by a real user
   if (!aiMove && !game.finished) {
-    const move = await bestMove(
-      game.board,
-      skillLevel[game.difficulty ?? 1],
-      randomTimeToThink()
-    )
-    if (move) {
-      await moveAI(socket, roomID, move)
-    }
+    await moveAI(socket, roomID, game)
   }
 }
 
@@ -318,7 +313,21 @@ export const move = async (
 const moveAI = async (
   socket: Socket,
   roomID: string,
-  bestMove: string
+  game: GameState
 ): Promise<void> => {
-  await move(socket, roomID, bestMove, true)
+  if (process.env.NO_AI === 'true') {
+    const chess = new Chess(game.board)
+    if (!chess.gameOver()) {
+      const moves = chess.moves()
+      const aiMove = moves[Math.floor(Math.random() * moves.length)]
+      await move(socket, roomID, aiMove, true)
+    }
+  } else {
+    const aiMove = await bestMove(
+      game.board,
+      skillLevel[game.difficulty ?? 1],
+      randomTimeToThink()
+    )
+    if (aiMove) await move(socket, roomID, aiMove, true)
+  }
 }
