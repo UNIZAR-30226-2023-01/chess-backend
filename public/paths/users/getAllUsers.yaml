@@ -20,6 +20,18 @@ get:
       schema:
         type: integer
       description: Max number of results on one page.
+    - in: query
+      name: sort
+      schema:
+        type: integer
+        example: -elo
+      description: Sort to be applied to the query.
+    - in: query
+      name: filter
+      schema:
+        type: integer
+        example: '{"elo": {"$gt":800}}'
+      description: Filter to be applied to the query.
   responses:
     200:
       description: Successful
