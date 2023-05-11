@@ -1,0 +1,23 @@
+type: object
+properties: 
+  type: 
+    type: string
+    description: Denotes the type of the object.
+    example: "pieces"
+  src: 
+    type: string
+    format: url
+    description: Location where the piece's image is hosted.
+    example: "/pieces/moroccans"
+  name:
+    type: string
+    description: Name of the category of pieces.
+    example: "moroccans"
+  activeLight:
+    type: boolean
+    description: Denotes whether the piece is active or not for the light player.
+    example: true
+  activeDark: 
+    type: boolean
+    description: Denotes whether the piece is active or not for the dark player.
+    example: true

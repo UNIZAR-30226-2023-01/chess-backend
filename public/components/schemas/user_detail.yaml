@@ -28,37 +28,48 @@ properties:
   elo:
     type: integer
     description: User score.
+  ranking:
+    type: integer
+    description: User ranking.
   skins: 
-    type: object
-    properties: 
-      board:
-        type: string
-        description: Equipped game board.
-      lightPieces:
-        type: string
-        description: Light-equipped chess pieces.
-      darkPieces:
-        type: string
-        description: Dark-equipped chess pieces.
-  availableSkins: 
     type: array
     items: 
-      type: string
+      anyOf: 
+        - $ref: './board.yaml'
+        - $ref: './pieces.yaml'
   stats: 
     $ref: './stats.yaml'
   achievements:
     type: array
     items: 
-      type: string
-      enum: 
-      - FIRST LOGIN
-      - TOP 1
-      - TOP 100 
-      - PLAY 10 COMPETITIVE
-      - PLAY 10 AI
-      - PLAY 10 CUSTOM
-      - PLAY 10 TOURNAMENT
-      - DRAW 10 GAMES
+      type: object
+      properties:
+        imgSrc:
+          type: string
+          format: url
+          example: /achievements/1.webp
+          description: Location where the achievement's image is hosted.
+        imgAlt:
+          type: string
+          example: first login
+          description: Description of an achievement.
+        name:
+          type: string
+          description: Name of the achievement.
+          example: FIRST LOGIN
+          enum: 
+            - FIRST LOGIN
+            - TOP 1
+            - TOP 100 
+            - PLAY 10 COMPETITIVE
+            - PLAY 10 AI
+            - PLAY 10 CUSTOM
+            - PLAY 10 TOURNAMENT
+            - DRAW 10 GAMES
+        achieved:
+          type: boolean
+          example: true
+          description: Denotes whether the achievement has been earned or not.
   createdAt:
     type: string
     format: date

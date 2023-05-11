@@ -81,11 +81,11 @@ const userSchema = new Schema<UserDocument>({
   },
   lightPieces: {
     type: String,
-    default: 'classic'
+    default: 'medieval'
   },
   darkPieces: {
     type: String,
-    default: 'classic'
+    default: 'medieval'
   },
   stats: {
     type: new Schema({
