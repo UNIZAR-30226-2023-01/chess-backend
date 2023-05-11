@@ -3,7 +3,6 @@ import { setStatus } from '@lib/status'
 import { GameModel } from '@models/game'
 import { parseGame } from '@lib/parsers'
 import { ObjectId } from 'mongodb'
-// import sgMail from '@sendgrid/mail'
 
 export const getAll = (req: Request, res: Response): void => {
   const { meta, data } = res.locals
