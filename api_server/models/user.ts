@@ -53,7 +53,7 @@ const userSchema = new Schema<UserDocument>({
   },
   avatar: {
     type: String,
-    default: '/animales/1.webp'
+    default: '/animals/1.webp'
   },
   password: {
     type: Buffer,
@@ -81,11 +81,11 @@ const userSchema = new Schema<UserDocument>({
   },
   lightPieces: {
     type: String,
-    default: 'classic'
+    default: 'medieval'
   },
   darkPieces: {
     type: String,
-    default: 'classic'
+    default: 'medieval'
   },
   stats: {
     type: new Schema({

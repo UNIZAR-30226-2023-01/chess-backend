@@ -39,13 +39,79 @@ get:
                   email: "johndoe@example.com"
                   google: true
                   verified: false
-                  games: https://api.gracehopper.xyz/v1/games?limit=25&page=1&sort=-createdAt&filter=%7B%22%24or%22%3A%5B%7B%22darkId%22%3A%2264562da339a95f025485a3fe%22%7D%2C%7B%22lightId%22%3A%2264562da339a95f025485a3fe%22%7D%5D%7D
+                  games: https://api.gracehopper.xyz/v1/games?sort=-createdAt&filter=%7B%22%24or%22%3A%5B%7B%22darkId%22%3A%2264562da339a95f025485a3fe%22%7D%2C%7B%22lightId%22%3A%2264562da339a95f025485a3fe%22%7D%5D%7D
                   elo: 800
-                  skins: 
-                    board: coral
-                    lightPieces: chess
-                    darkPieces: chess
-                  availableSkins: []
+                  ranking: 1
+                  skins: [{
+                      "type": "board",
+                      "name": "wood",
+                      "lightColor": "#E3C16F",
+                      "darkColor": "#B88B4A",
+                      "active": false
+                    },
+                    {
+                      "type": "board",
+                      "name": "coral",
+                      "lightColor": "#B1E4B9",
+                      "darkColor": "#70A2A3",
+                      "active": false
+                    },
+                    {
+                      "type": "board",
+                      "name": "dark",
+                      "lightColor": "#CCB7AE",
+                      "darkColor": "#706677",
+                      "active": false
+                    },
+                    {
+                      "type": "board",
+                      "name": "marine",
+                      "lightColor": "#9DACFF",
+                      "darkColor": "#6F73D2",
+                      "active": true
+                    },
+                    {
+                      "type": "board",
+                      "name": "wheat",
+                      "lightColor": "#EAF0CE",
+                      "darkColor": "#BBBE64",
+                      "active": false
+                    },
+                    {
+                      "type": "board",
+                      "name": "emerald",
+                      "lightColor": "#ADBD8F",
+                      "darkColor": "#6F8F72",
+                      "active": false
+                    },
+                    {
+                      "type": "pieces",
+                      "src": "/pieces/medieval",
+                      "name": "medieval",
+                      "activeWhite": false,
+                      "activeBlack": false
+                    },
+                    {
+                      "type": "pieces",
+                      "src": "/pieces/moroccans",
+                      "name": "moroccans",
+                      "activeWhite": false,
+                      "activeBlack": false
+                    },
+                    {
+                      "type": "pieces",
+                      "src": "/pieces/maya",
+                      "name": "maya",
+                      "activeWhite": true,
+                      "activeBlack": false
+                    },
+                    {
+                      "type": "pieces",
+                      "src": "/pieces/arab",
+                      "name": "arab",
+                      "activeWhite": false,
+                      "activeBlack": true
+                    }]
                   stats: 
                     bulletWins: 0
                     bulletDraws: 0
@@ -56,12 +122,54 @@ get:
                     fastWins: 0
                     fastDraws: 0
                     fastDefeats: 0
-                  achievements: [
-                      "FIRST LOGIN",
-                      "PLAY 10 COMPETITIVE",
-                      "TOP 1",
-                      "TOP 100"
-                    ]
+                  achievements: [{
+                      "imgSrc": "/achievements/1.webp",
+                      "imgAlt": "first login",
+                      "name": "FIRST LOGIN",
+                      "achieved": true
+                    },
+                    {
+                      "imgSrc": "/achievements/2.webp",
+                      "imgAlt": "top 1",
+                      "name": "TOP 1",
+                      "achieved": false
+                    },
+                    {
+                      "imgSrc": "/achievements/3.webp",
+                      "imgAlt": "top 100",
+                      "name": "TOP 100",
+                      "achieved": false
+                    },
+                    {
+                      "imgSrc": "/achievements/4.webp",
+                      "imgAlt": "play 10 competitive",
+                      "name": "PLAY 10 COMPETITIVE",
+                      "achieved": false
+                    },
+                    {
+                      "imgSrc": "/achievements/5.webp",
+                      "imgAlt": "play 10 ai",
+                      "name": "PLAY 10 AI",
+                      "achieved": false
+                    },
+                    {
+                      "imgSrc": "/achievements/6.webp",
+                      "imgAlt": "play 10 custom",
+                      "name": "PLAY 10 CUSTOM",
+                      "achieved": false
+                    },
+                    {
+                      "imgSrc": "/achievements/7.webp",
+                      "imgAlt": "play 10 tournaments",
+                      "name": "PLAY 10 TOURNAMENT",
+                      "achieved": false
+                    },
+                    {
+                      "imgSrc": "/achievements/7.webp",
+                      "imgAlt": "draw 10 games",
+                      "name": "DRAW 10 GAMES",
+                      "achieved": false
+                    }]
                   createdAt: 2023-03-30T17:24:17.230Z
                   updatedAt: 2023-03-30T17:24:17.230Z
                 status:

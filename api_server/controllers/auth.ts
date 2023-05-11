@@ -42,8 +42,6 @@ export const signUp = (req: Request, res: Response): void => {
         const token = jwt.sign(payload, secret, { expiresIn: '15m' })
         const url = `${URI}/auth/verify/${String(id)}/${token}`
 
-        console.log(url)
-
         const msg = {
           to: email,
           from: 'hi@gracehopper.xyz',
