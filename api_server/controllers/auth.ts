@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { pbkdf2, randomBytes, timingSafeEqual } from 'crypto'
 import dayjs from 'dayjs'
 import jwt from 'jsonwebtoken'
-import { ReservedUsernames, UserModel } from '@models/user'
+import { ReservedUsernames, UserDocument, UserModel } from '@models/user'
 import { setStatus } from '@lib/status'
 import { invalidateToken } from '@lib/token-blacklist'
 import { parseUser } from '@lib/parsers'
@@ -14,11 +14,87 @@ dotenv.config()
 
 const URI = process.env.NODE_ENV === 'production' ? 'https://reign.gracehopper.xyz' : 'http://localhost:3000'
 
-export const signUp = (req: Request, res: Response): void => {
+export const signUp = async (req: Request, res: Response): Promise<void> => {
+  const signUpSuccessCallback = async (user: UserDocument): Promise<void> => {
+    const { _id: id, email } = user.toJSON()
+    const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
+    const payload = { id, email }
+    const token = jwt.sign(payload, secret, { expiresIn: '15m' })
+    const url = `${URI}/auth/verify/${String(id)}/${token}`
+
+    const msg = {
+      to: email,
+      from: 'hi@gracehopper.xyz',
+      templateId: 'd-2b5bee891e744e05a027478bd276ccee',
+      dynamicTemplateData: {
+        subject: 'Verifica tu cuenta de Reign',
+        url
+      }
+    }
+
+    // NO EMAIL CHECKING IN TEST MODE
+    if (process.env.NODE_ENV === 'test') {
+      UserModel.findByIdAndUpdate(id, { verified: true }).then(_ => {}).catch(_ => {})
+      res.status(201).json({
+        data: await parseUser(user),
+        status: setStatus(req, 0, 'Successful')
+      })
+      return
+    }
+
+    sgMail.setApiKey(String(process.env.SENDGRID_API_KEY))
+    sgMail.send(msg)
+      .then(async () => {
+        return res
+          .status(201)
+          .json({
+            data: await parseUser(user),
+            status: setStatus(req, 0, 'Successful')
+          })
+      })
+      .catch(() => {
+        return res
+          .status(500)
+          .json({ status: setStatus(req, 500, 'Internal Server Error') })
+      })
+  }
+
   // Check if the username is reserved
   if (process.env.NODE_ENV !== 'test' &&
       Object.values(ReservedUsernames).includes(req.body.username)) {
     res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
+    return
+  }
+
+  // Check Removed User to reactivate
+  const restoredUser = await UserModel.findOne({
+    username: req.body.username,
+    email: req.body.email,
+    removed: true
+  })
+
+  if (restoredUser) {
+    pbkdf2(
+      req.body.password,
+      restoredUser.salt, 310000, 64, 'sha512',
+      async (err, derivedKey) => {
+        if (err != null || !timingSafeEqual(restoredUser.password, derivedKey)) {
+          res
+            .status(409)
+            .json({ status: setStatus(req, 409, 'Conflict') })
+        } else {
+          const resUser = await UserModel.findByIdAndUpdate(
+            restoredUser.id, { removed: false, verified: false }, { new: true }
+          )
+          if (resUser) {
+            await signUpSuccessCallback(resUser)
+          } else {
+            res
+              .status(409)
+              .json({ status: setStatus(req, 409, 'Conflict') })
+          }
+        }
+      })
     return
   }
 
@@ -35,49 +111,7 @@ export const signUp = (req: Request, res: Response): void => {
       password: derivedKey,
       salt
     })
-      .then(async (user) => {
-        const { _id: id, email } = user.toJSON()
-        const secret = String(process.env.JWT_SECRET) + String(user.password.toString('hex'))
-        const payload = { id, email }
-        const token = jwt.sign(payload, secret, { expiresIn: '15m' })
-        const url = `${URI}/auth/verify/${String(id)}/${token}`
-
-        const msg = {
-          to: email,
-          from: 'hi@gracehopper.xyz',
-          templateId: 'd-2b5bee891e744e05a027478bd276ccee',
-          dynamicTemplateData: {
-            subject: 'Verifica tu cuenta de Reign',
-            url
-          }
-        }
-
-        // NO EMAIL CHECKING IN TEST MODE
-        if (process.env.NODE_ENV === 'test') {
-          UserModel.findByIdAndUpdate(id, { verified: true }).then(_ => {}).catch(_ => {})
-          res.status(201).json({
-            data: await parseUser(user),
-            status: setStatus(req, 0, 'Successful')
-          })
-          return
-        }
-
-        sgMail.setApiKey(String(process.env.SENDGRID_API_KEY))
-        sgMail.send(msg)
-          .then(async () => {
-            return res
-              .status(201)
-              .json({
-                data: await parseUser(user),
-                status: setStatus(req, 0, 'Successful')
-              })
-          })
-          .catch(() => {
-            return res
-              .status(500)
-              .json({ status: setStatus(req, 500, 'Internal Server Error') })
-          })
-      })
+      .then(signUpSuccessCallback)
       .catch((err: Error) => {
         if (err.message.includes('duplicate key')) {
           return res
@@ -93,7 +127,7 @@ export const signUp = (req: Request, res: Response): void => {
 
 export const signIn = (req: Request, res: Response): void => {
   const { username = undefined, email = undefined } = req.body
-  const filter = username ? { username } : { email }
+  const filter = username ? { username, removed: false } : { email, removed: false }
   UserModel.findOne(filter)
     .then(async (user) => {
       if (!user) {
