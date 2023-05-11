@@ -12,7 +12,7 @@ import * as dotenv from 'dotenv'
 import * as logger from '@lib/logger'
 dotenv.config()
 
-const URI = process.env.NODE_ENV === 'production' ? 'https://api.gracehopper.xyz/v1' : 'http://localhost:4000/v1'
+const URI = process.env.NODE_ENV === 'production' ? 'https://reign.gracehopper.xyz' : 'http://localhost:3000'
 
 export const signUp = (req: Request, res: Response): void => {
   // Check if the username is reserved
