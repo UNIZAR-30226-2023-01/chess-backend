@@ -148,7 +148,7 @@ export const parseExtendedUser = async (user: UserDocument): Promise<User> => {
     ranking: await getRanking(user),
     skins: skins.map((skin) => {
       if (skin.type === 'board') return { ...skin, active: user.board === skin.name }
-      return { ...skin, activeWhite: skin?.name === user.lightPieces, activeBlack: skin?.name === user.darkPieces }
+      return { ...skin, activeLight: skin?.name === user.lightPieces, activeDark: skin?.name === user.darkPieces }
     }),
     stats: {
       bulletWins: user.stats.bulletWins,
