@@ -1,0 +1,22 @@
+type: object
+properties: 
+  type: 
+    type: string
+    description: Denotes the type of the object.
+    example: "board"
+  name: 
+    type: string
+    description: Name of the board.
+    example: "wood"
+  lightColor:
+    type: string
+    description: Color of the light squares.
+    example: "#E3C16F"
+  darkColor:
+    type: string
+    description: Color of the dark squares.
+    example: "#B88B4A"
+  active: 
+    type: boolean
+    description: Denotes whether the board is active or not.
+    example: true
