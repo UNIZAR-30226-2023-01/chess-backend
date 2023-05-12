@@ -416,6 +416,7 @@ export const timeoutProtocol = (
       }
       game.finished = true
       game.endState = EndState.TIMEOUT
+      game.winner = winner
 
       await setGame(roomID, game, true)
       return game
