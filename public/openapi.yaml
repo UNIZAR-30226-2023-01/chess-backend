@@ -15,9 +15,77 @@ tags:
   - name: Tournament
     description: Allows to query and manipulate the information of the tournament type objects.
   - name: Room
-    description: Under this category are defined the methods/messages that allow to interact with the different rooms that define the games.
+    description: |
+      Under this category are defined the methods/messages that allow to interact with the different rooms that define the games.
+      <br><br>
+      The next diagrams describe the usual order in which events are exchanged between client and server for every situation:
+      
+      <details>
+        <summary><b>Show diagrams<b></summary>
+        <details class="nested">
+          <summary><b>AI game<b></summary>
+          <details class="nested">
+            <summary><b>Start a game against the AI<b></summary>
+            <center><br><img src="/public/assets/diagrams/AI.png"><br></center>
+          </details>
+          <details class="nested">
+            <summary><b>Resume a game against the AI<b></summary>
+            <center><br><img src="/public/assets/diagrams/resumeAI.png"><br></center>
+          </details>
+        </details>
+        <details class="nested">
+          <summary><b>Competitive game<b></summary>
+          <details class="nested">
+            <summary><b>Find a competitive game<b></summary>
+            <center><br><img src="/public/assets/diagrams/competitive.png"><br></center>
+          </details>
+          <details class="nested">
+            <summary><b>Cancel the search for a competitive game<b></summary>
+            <center><br><img src="/public/assets/diagrams/cancelCompetitive.png"><br></center>
+          </details>
+        </details>
+        <details class="nested">
+          <summary><b>Custom game<b></summary>
+          <details class="nested">
+            <summary><b>Start a custom game<b></summary>
+            <center><br><img src="/public/assets/diagrams/custom.png"><br></center>
+          </details>
+          <details class="nested">
+            <summary><b>Resume a custom game<b></summary>
+            <center><br><img src="/public/assets/diagrams/resumeCustom.png"><br></center>
+          </details>
+          <details class="nested">
+            <summary><b>Cancel the room creation of a custom game<b></summary>
+            <center><br><img src="/public/assets/diagrams/cancelCustom.png"><br></center>
+          </details>
+        </details>
+        <details class="nested">
+          <summary><b>Join a room as spectator / Leave the room<b></summary>
+          <center><br><img src="/public/assets/diagrams/spectator.png"><br></center>
+        </details>
   - name: Game
-    description: This section defines the methods that allow you to interact with a specific room as well as the game logic.
+    description: |
+      This section defines the methods that allow you to interact with a specific room as well as the game logic.
+      <br><br>
+      The next diagrams describe the usual order in which events are exchanged between client and server for every situation:
+      <details>
+        <summary><b>Show diagrams<b></summary>
+        <details class="nested">
+          <summary><b>Make a move<b></summary>
+          <center><br><img src="/public/assets/diagrams/move.png"><br></center>
+        </details>
+        <details class="nested">
+          <summary><b>Surrender<b></summary>
+          <center><br><img src="/public/assets/diagrams/surrender.png"><br></center>
+        </details>
+        <details class="nested">
+          <summary><b>Vote for a draw<b></summary>
+          <center><br><img src="/public/assets/diagrams/voteDraw.png"><br></center>
+        </details>
+        <details class="nested">
+          <summary><b>Vote for saving the game<b></summary>
+          <center><br><img src="/public/assets/diagrams/voteSave.png"><br></center>
+        </details>
 x-tagGroups:
   - name: Health
     tags:

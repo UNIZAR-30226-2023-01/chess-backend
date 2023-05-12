@@ -131,7 +131,7 @@ The client side events are offer to the user to play or watch chess games.
 
 <h2>Server Side Events</h2>
 
-The client side events are emitted as replies to the events sent by the user.
+The server side events are emitted as replies to the events sent by the user.
 
 | Event          | Description                                                                                                       |
 | -------------- | ----------------------------------------------------------------------------------------------------------------- |

@@ -11,7 +11,7 @@ post:
     event(find_room)
     Allows a user to search for a match against a random opponent
     or create a custom game against AI or a friend.
-
+    
     * **AI**: start a game against the AI.
     * **competitive**: find a game against a random player to climb in rankings
       *(requires an authenticated socket)*.
