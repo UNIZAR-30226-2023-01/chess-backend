@@ -8,7 +8,7 @@ import { validateBody } from '@middlewares/parser'
 
 const router = express.Router()
 
-router.get('', userMiddleware.isAuthenticated, paginate(UserModel), userCtrl.getAll)
+router.get('', userMiddleware.isAuthenticated, paginate(UserModel, { removed: false }), userCtrl.getAll)
 router.get('/:id', userMiddleware.isAuthenticated, userCtrl.getOne)
 router.patch('/:id', userMiddleware.isAuthenticated, validateBody(updateUser), userCtrl.updateOne)
 router.delete('/:id', userMiddleware.isAuthenticated, userCtrl.deleteOne)

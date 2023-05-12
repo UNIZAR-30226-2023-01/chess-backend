@@ -1,17 +1,19 @@
 import { Request, Response } from 'express'
 import { setStatus } from '@lib/status'
-import { UserModel } from '@models/user'
+import { UserDocument, UserModel } from '@models/user'
 import { parseExtendedUser } from '@lib/parsers'
 import * as logger from '@lib/logger'
 
 export const getAll = async (req: Request, res: Response): Promise<void> => {
-  const { meta, data } = res.locals
+  let { meta, data } = res.locals
+
+  data = await Promise.all(data.map(parseExtendedUser))
 
   res
     .status(200)
     .json({
       meta,
-      data: await Promise.all(data.map(parseExtendedUser)),
+      data: data.filter((u: UserDocument) => { return !u.removed }),
       status: setStatus(req, 0, 'Successful')
     })
 }

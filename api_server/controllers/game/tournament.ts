@@ -117,6 +117,7 @@ const checkAbandon = async (id: string): Promise<void> => {
 
   if (doubleLoss) {
     await gameLib.endGameInDB(game, id)
+    await tournLib.endProtocol(id, game)
   } else if (singleLoss) {
     await gameLib.endGameInDB(game, id)
     await tournLib.endProtocol(id, game)

@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express'
 import { MongooseQueryParser } from 'mongoose-query-parser'
 import { setStatus } from '@lib/status'
 
-export const paginate = (model: any) => {
+export const paginate = (model: any, preFilter?: any) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const parser = new MongooseQueryParser({
@@ -20,9 +20,14 @@ export const paginate = (model: any) => {
       const nextPage = new URL(basePath)
       const previousPage = new URL(basePath)
 
+      const filter = {
+        ...preFilter,
+        ...resultado.filter
+      }
+
       const numDocs = await model.countDocuments().exec()
       const data = await model
-        .find(resultado.filter)
+        .find(filter)
         .limit(limit).skip(startIndex)
         .sort(resultado.sort)
         .exec()
