@@ -26,42 +26,42 @@ tags:
           <summary><b>AI game<b></summary>
           <details class="nested">
             <summary><b>Start a game against the AI<b></summary>
-            <center><br><img src="/public/assets/diagrams/AI.png"><br></center>
+            <center><br><img src="./diagrams/AI.png"><br></center>
           </details>
           <details class="nested">
             <summary><b>Resume a game against the AI<b></summary>
-            <center><br><img src="/public/assets/diagrams/resumeAI.png"><br></center>
+            <center><br><img src="./diagrams/resumeAI.png"><br></center>
           </details>
         </details>
         <details class="nested">
           <summary><b>Competitive game<b></summary>
           <details class="nested">
             <summary><b>Find a competitive game<b></summary>
-            <center><br><img src="/public/assets/diagrams/competitive.png"><br></center>
+            <center><br><img src="./diagrams/competitive.png"><br></center>
           </details>
           <details class="nested">
             <summary><b>Cancel the search for a competitive game<b></summary>
-            <center><br><img src="/public/assets/diagrams/cancelCompetitive.png"><br></center>
+            <center><br><img src="./diagrams/cancelCompetitive.png"><br></center>
           </details>
         </details>
         <details class="nested">
           <summary><b>Custom game<b></summary>
           <details class="nested">
             <summary><b>Start a custom game<b></summary>
-            <center><br><img src="/public/assets/diagrams/custom.png"><br></center>
+            <center><br><img src="./diagrams/custom.png"><br></center>
           </details>
           <details class="nested">
             <summary><b>Resume a custom game<b></summary>
-            <center><br><img src="/public/assets/diagrams/resumeCustom.png"><br></center>
+            <center><br><img src="./diagrams/resumeCustom.png"><br></center>
           </details>
           <details class="nested">
             <summary><b>Cancel the room creation of a custom game<b></summary>
-            <center><br><img src="/public/assets/diagrams/cancelCustom.png"><br></center>
+            <center><br><img src="./diagrams/cancelCustom.png"><br></center>
           </details>
         </details>
         <details class="nested">
           <summary><b>Join a room as spectator / Leave the room<b></summary>
-          <center><br><img src="/public/assets/diagrams/spectator.png"><br></center>
+          <center><br><img src="./diagrams/spectator.png"><br></center>
         </details>
   - name: Game
     description: |
@@ -72,19 +72,19 @@ tags:
         <summary><b>Show diagrams<b></summary>
         <details class="nested">
           <summary><b>Make a move<b></summary>
-          <center><br><img src="/public/assets/diagrams/move.png"><br></center>
+          <center><br><img src="./diagrams/move.png"><br></center>
         </details>
         <details class="nested">
           <summary><b>Surrender<b></summary>
-          <center><br><img src="/public/assets/diagrams/surrender.png"><br></center>
+          <center><br><img src="./diagrams/surrender.png"><br></center>
         </details>
         <details class="nested">
           <summary><b>Vote for a draw<b></summary>
-          <center><br><img src="/public/assets/diagrams/voteDraw.png"><br></center>
+          <center><br><img src="./diagrams/voteDraw.png"><br></center>
         </details>
         <details class="nested">
           <summary><b>Vote for saving the game<b></summary>
-          <center><br><img src="/public/assets/diagrams/voteSave.png"><br></center>
+          <center><br><img src="./diagrams/voteSave.png"><br></center>
         </details>
 x-tagGroups:
   - name: Health
