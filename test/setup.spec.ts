@@ -9,6 +9,12 @@ before((done) => {
   })
 })
 
+afterEach((done) => {
+  fake.clearClientWithCallback(async () => {
+    done()
+  })
+})
+
 after((done) => {
   fake.clearClientWithCallback(async () => {
     await fake.clearGame()
