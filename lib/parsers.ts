@@ -217,7 +217,7 @@ interface Match {
   nextMatchId: string | null
   tournamentRoundText: string
   startTime: string
-  hasStarted: boolean
+  played: boolean
   state: 'NO_SHOW' | 'WALK_OVER' | 'NO_PARTY' | 'DONE' | 'SCORE_DONE'
   participants: any[]
 }
@@ -233,6 +233,7 @@ interface Tournament {
   matches: Match[]
   winner: any
   finished: Boolean
+  hasStarted: Boolean
   matchProps: {
     time: number
     increment: number
@@ -252,6 +253,7 @@ export const parseTournament = async (Tournament: TournamentDocument): Promise<T
     participants: Tournament.participants,
     winner: Tournament.winner,
     finished: Tournament.finished,
+    hasStarted: Tournament.hasStarted,
     matches: await Promise.all(Tournament.matches.map(async (match) => {
       const matchJSON = JSON.parse(JSON.stringify(match))
       return {
@@ -261,7 +263,7 @@ export const parseTournament = async (Tournament: TournamentDocument): Promise<T
         tournamentRoundText: matchJSON.tournamentRoundText,
         startTime: matchJSON.startTime,
         state: 'NO_SHOW',
-        hasStarted: matchJSON.hasStarted,
+        played: matchJSON.played,
         participants: await Promise.all(matchJSON.participants.map(async (participant: any) => {
           try {
             return await parseExtendedUser(participant)
