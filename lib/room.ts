@@ -1,6 +1,7 @@
 import { client, redlock } from '@config/database'
 import { ResourceName, compose, composeLock } from '@lib/namespaces'
 import { Socket } from 'socket.io'
+import * as logger from '@lib/logger'
 
 /**
  * Generates a random 6-digit room code that is not currently in use.
@@ -26,16 +27,21 @@ export const reserveRoomCode = async (code: string): Promise<boolean> => {
   const lockName = composeLock(ResourceName.ROOM, code)
   const resource = compose(ResourceName.ROOM, code)
 
-  let lock = await redlock.acquire([lockName], 5000) // LOCK
-  try {
-    const record = await client.get(resource)
-    lock = await lock.extend(5000) // EXTEND
-    if (record === null) { // room code is free
-      await client.set(resource, 'locked')
-      return true
+  let lock = null
+  while (!lock) {
+    try {
+      lock = await redlock.acquire([lockName], 20000) // LOCK
+      const record = await client.get(resource)
+      lock = await lock.extend(20000) // EXTEND
+      if (record === null) { // room code is free
+        await client.set(resource, 'locked')
+        return true
+      }
+    } catch (err) {
+      logger.error(String(err))
+    } finally {
+      if (lock) await lock.release() // UNLOCK
     }
-  } finally {
-    await lock.release() // UNLOCK
   }
   return false
 }

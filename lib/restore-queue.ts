@@ -1,5 +1,6 @@
 import { client, redlock } from '@config/database'
 import { ResourceName, compose, composeLock } from '@lib/namespaces'
+import * as logger from '@lib/logger'
 
 export const pushGameID = async (gameID: string): Promise<boolean> => {
   const lockName = composeLock(ResourceName.RESTORE_Q, gameID)
@@ -7,16 +8,21 @@ export const pushGameID = async (gameID: string): Promise<boolean> => {
 
   let pushed = false
 
-  let lock = await redlock.acquire([lockName], 5000) // LOCK
-  try {
-    const record = await client.get(resource)
-    lock = await lock.extend(5000) // EXTEND
-    if (record === null) { // game is not being resumed
-      await client.set(resource, 'locked')
-      pushed = true
+  let lock = null
+  while (!lock) {
+    try {
+      lock = await redlock.acquire([lockName], 20000) // LOCK
+      const record = await client.get(resource)
+      lock = await lock.extend(20000) // EXTEND
+      if (record === null) { // game is not being resumed
+        await client.set(resource, 'locked')
+        pushed = true
+      }
+    } catch (err) {
+      logger.error(String(err))
+    } finally {
+      if (lock) await lock.release() // UNLOCK
     }
-  } finally {
-    await lock.release() // UNLOCK
   }
 
   return pushed
@@ -28,16 +34,21 @@ export const pullGameID = async (gameID: string): Promise<boolean> => {
 
   let pulled = false
 
-  let lock = await redlock.acquire([lockName], 5000) // LOCK
-  try {
-    const record = await client.get(resource)
-    lock = await lock.extend(5000) // EXTEND
-    if (record !== null) { // game has been resumed
-      await client.del(resource)
-      pulled = true
+  let lock = null
+  while (!lock) {
+    try {
+      lock = await redlock.acquire([lockName], 20000) // LOCK
+      const record = await client.get(resource)
+      lock = await lock.extend(20000) // EXTEND
+      if (record !== null) { // game has been resumed
+        await client.del(resource)
+        pulled = true
+      }
+    } catch (err) {
+      logger.error(String(err))
+    } finally {
+      if (lock) await lock.release() // UNLOCK
     }
-  } finally {
-    await lock.release() // UNLOCK
   }
 
   return pulled

@@ -26,21 +26,26 @@ export const getGame = async (
   const resource = compose(ResourceName.ROOM, roomID)
 
   let game: GameState | undefined
-  let lock = await redlock.acquire([lockName], 5000) // LOCK
-  try {
-    const rawGame = await client.get(resource)
-    if (!rawGame) game = undefined
-    else game = JSON.parse(rawGame)
+  let lock = null
+  while (!lock) {
+    try {
+      lock = await redlock.acquire([lockName], 20000) // LOCK
+      const rawGame = await client.get(resource)
+      try {
+        if (!rawGame) game = undefined
+        else game = JSON.parse(rawGame)
+      } catch (err) { return undefined }
 
-    lock = await lock.extend(5000) // EXTEND
-    if (action) {
-      game = await action(game)
+      lock = await lock.extend(20000) // EXTEND
+      if (action) {
+        game = await action(game)
+      }
+    } catch (err) {
+      logger.error(String(err))
+    } finally {
+      // This block executes even if a return statement is called
+      if (lock) await lock.release() // UNLOCK
     }
-  } catch (err) {
-    game = undefined
-  } finally {
-    // This block executes even if a return statement is called
-    await lock.release() // UNLOCK
   }
   return game
 }

@@ -16,12 +16,11 @@ import passport from 'passport'
 import cookieSession from 'cookie-session'
 import { server } from '@server'
 import { Limiter, SpeedLimiter } from '@middlewares/limiters'
-
 import * as logger from '@lib/logger'
 import { notify } from '@lib/tournament'
 dotenv.config()
 require('@auth/passport')
-require('@auth/passportGoogle')
+require('@auth/passport-google')
 
 const app = express()
 app.use(express.json())
