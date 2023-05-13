@@ -51,6 +51,10 @@ export interface TournamentDocument extends Document {
   createdAt: Date
   updatedAt: Date
   hasStarted: Boolean
+
+  finished: Boolean
+  winner: typeof UserModel
+
   matchProps: {
     time: number
     increment: number
@@ -69,6 +73,14 @@ const TournamentSchema = new Schema<TournamentDocument>({
   rounds: {
     type: Number,
     required: true
+  },
+  finished: {
+    type: Boolean,
+    default: false
+  },
+  winner: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   },
   participants: [{
     type: Schema.Types.ObjectId,

@@ -26,6 +26,7 @@ export const create = (req: Request, res: Response): void => {
         owner,
         startTime,
         rounds,
+        finished: false,
         participants: [],
         matches: generateMatches(rounds, new Date(startTime))
       })

@@ -142,8 +142,6 @@ export async function endProtocol (
 
   const match = tournament.matches[index]
 
-  if (!match.nextMatchId) return
-
   let winnerId: Types.ObjectId | undefined
 
   // If victory move to the next game
@@ -156,6 +154,16 @@ export async function endProtocol (
     // if equal choose randomly
     if (Math.random() >= 0.5) winnerId = game.lightId
     else winnerId = game.darkId
+  }
+
+  if (!match.nextMatchId) {
+    // Final Round
+    await TournamentModel.findByIdAndUpdate(
+      tournament.id,
+      { $set: { winner: winnerId, finished: true } }
+    )
+
+    return
   }
 
   await TournamentModel.findOneAndUpdate(

@@ -30,9 +30,16 @@ properties:
     type: integer
     description: Number of tournament rounds.
   participants:
-    type: integer
-    format: date
-    description: Number of people registered in the tournament. Cannot exceed 2^rounds
+    type: string[]
+    format: id
+    description: Array of people registered in the tournament.
+  winner:
+    type: string
+    format: id
+    description: Id of this tournament winner.
+  finished:
+    type: boolean
+    description: Set to true if the tournament has already been finished.
   matches:
     type: object
     description: Tournament pairings
