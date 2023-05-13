@@ -35,7 +35,7 @@ const achievements = [
     imgAlt: 'play 10 tournaments',
     name: 'PLAY 10 TOURNAMENT'
   }, {
-    imgSrc: '/achievements/7.webp',
+    imgSrc: '/achievements/8.webp',
     imgAlt: 'draw 10 games',
     name: 'DRAW 10 GAMES'
   }

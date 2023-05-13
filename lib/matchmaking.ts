@@ -67,24 +67,31 @@ const getQueue = async (
   let queue: PlayerQueue | undefined
 
   const lockName = composeLock(queueName)
-  let lock = await redlock.acquire([lockName], 5000) // LOCK
-  try {
-    const awaiting = await client.get(queueName)
-    lock = await lock.extend(5000) // EXTEND
+  let lock = null
+  while (!lock) {
+    try {
+      lock = await redlock.acquire([lockName], 20000) // LOCK
+      const awaiting = await client.get(queueName)
+      lock = await lock.extend(20000) // EXTEND
 
-    if (!awaiting) queue = undefined
-    else queue = JSON.parse(awaiting)
+      try {
+        if (!awaiting) queue = undefined
+        else queue = JSON.parse(awaiting)
+      } catch (err) {
+        return undefined
+      }
 
-    lock = await lock.extend(5000) // EXTEND
-    if (action) {
-      if (queue) queue = removeDisconnectedSockets(queue)
-      queue = await action(queue)
-    }
-  } catch (err) {
-    queue = undefined
-  } finally {
+      lock = await lock.extend(20000) // EXTEND
+      if (action) {
+        if (queue) queue = removeDisconnectedSockets(queue)
+        queue = await action(queue)
+      }
+    } catch (err) {
+      logger.error(String(err))
+    } finally {
     // This block executes even if a return statement is called
-    await lock.release() // UNLOCK
+      if (lock) await lock.release() // UNLOCK
+    }
   }
   return queue
 }

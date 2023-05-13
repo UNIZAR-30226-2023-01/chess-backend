@@ -13,12 +13,20 @@
 
 - `app.ts`: This is the main file of your project, it could be the entry point of your application and where you will set up your server.
 - `config`: This directory contains any configuration files, such as database connection settings, that the application needs to run.
-- `test`: this folder contains tests to check the correct operation of the application.
-- `api/controllers`: This directory contains the application's controllers, which are responsible for handling user input and updating the model and view accordingly.
-- `api/middleware`: This folder stores intermediate functionalities that act as middelwares for filtering certain requests.
-- `api/models`: This directory contains the application's data models, which are responsible for handling data and business logic.
-- `api/routes`: This directory contains the application's routing files, which map URLs to specific controllers and actions.
-- `api/views`: This directory contains the application's views, which are responsible for displaying data to the user.
+- `test`: This folder contains tests to check the correct operation of the application.
+- `lib`: This folder contains modules with very specific functionality or collections of functions used repeatedly by controllers.
+- `api_server/controllers`: This directory contains the application's controllers, which are responsible for handling user input and updating the model and view accordingly.
+- `api_server/middleware`: This folder stores intermediate functionalities that act as middelwares for filtering certain requests.
+- `api_server/models`: This directory contains the application's data models, which are responsible for handling data and business logic.
+- `api_server/routes`: This directory contains the application's routing files, which map URLs to specific controllers and actions.
+
+## Naming convention
+
+- `ALL_CAPS` for constants (e.g: `GAME_OVER_TTL`)
+- `camelCase` for variable names and object properties
+- `PascalCase` for type names and classes (e.g: `ChessTimer`)
+- `kebab-case` for module names (e.g: `restore-queue`)
+- `kebab-case` with `namespaces` sintax for Redis string keys (e.g: `token-blacklist:user`)
 
 ## Getting Started
 
