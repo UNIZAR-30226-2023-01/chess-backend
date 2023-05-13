@@ -213,7 +213,7 @@ export const parseGame = (Games: GameDocument): Game => {
 
 interface Match {
   id: string
-  game: string
+  game: string | null
   nextMatchId: string | null
   tournamentRoundText: string
   startTime: string
@@ -256,7 +256,7 @@ export const parseTournament = async (Tournament: TournamentDocument): Promise<T
       const matchJSON = JSON.parse(JSON.stringify(match))
       return {
         id: matchJSON._id,
-        game: `${URI}/v1/games/${String(matchJSON._id)}`,
+        game: matchJSON.gameId ? `${URI}/v1/games/${String(matchJSON.gameId)}` : null,
         nextMatchId: matchJSON.nextMatchId,
         tournamentRoundText: matchJSON.tournamentRoundText,
         startTime: matchJSON.startTime,
