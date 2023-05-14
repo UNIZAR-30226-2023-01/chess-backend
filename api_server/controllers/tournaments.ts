@@ -21,11 +21,12 @@ export const create = (req: Request, res: Response): void => {
           .json({ status: setStatus(req, 409, 'Conflict') })
       }
 
-      const { startTime, rounds } = req.body
+      const { startTime, rounds, matchProps } = req.body
       return await TournamentModel.create({
         owner,
         startTime,
         rounds,
+        matchProps,
         finished: false,
         participants: [],
         matches: generateMatches(rounds, new Date(startTime))
