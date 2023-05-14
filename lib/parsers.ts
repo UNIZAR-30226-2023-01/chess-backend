@@ -2,6 +2,7 @@ import { GameDocument } from '@models/game'
 import { TournamentDocument } from '@models/tournament'
 import { UserDocument, UserModel } from '@models/user'
 import { EndState, GameType, PlayerColor, State } from '@lib/types/game'
+import { Types } from 'mongoose'
 
 const URI = process.env.NODE_ENV === 'production' ? 'https://api.gracehopper.xyz' : 'http://localhost:4000'
 
@@ -250,7 +251,9 @@ export const parseTournament = async (Tournament: TournamentDocument): Promise<T
     id: Tournament._id,
     join: `${URI}/v1/tournaments/join/${String(Tournament._id)}`,
     leave: `${URI}/v1/tournaments/leave/${String(Tournament._id)}`,
-    owner: await parseExtendedUser(populatedOwner),
+    owner: populatedOwner instanceof Types.ObjectId
+      ? populatedOwner
+      : await parseExtendedUser(populatedOwner),
     startTime: Tournament.startTime,
     rounds: Number(Tournament.rounds),
     participants: Tournament.participants,

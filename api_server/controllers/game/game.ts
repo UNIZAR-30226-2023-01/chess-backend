@@ -9,9 +9,30 @@ import * as gameLib from '@lib/game'
 import * as roomLib from '@lib/room'
 import * as matchmaking from '@lib/matchmaking'
 import * as error from '@lib/socket-error'
-import { FindRoomMsg, MoveMsg } from '@lib/types/socket-msg'
+import { FindRoomMsg, MoveMsg, SaluteMsg } from '@lib/types/socket-msg'
 import { GameType } from '@lib/types/game'
 import { ResourceName } from '@lib/namespaces'
+import { io } from '@server'
+
+export const salute = async (
+  socket: Socket,
+  data: SaluteMsg
+): Promise<void> => {
+  const roomID = roomLib.getGameRoom(socket)
+  if (!roomID) {
+    socket.emit('error', error.notPlaying())
+    return
+  }
+
+  const game = await gameLib.getGame(roomID)
+  if (!game || !gameLib.isPlayerOfGame(socket, game)) {
+    socket.emit('error', error.notPlayerOfThisGame())
+    return
+  }
+
+  if (!data.text) io.to(roomID).emit('salute')
+  else io.to(roomID).emit('salute', data.text)
+}
 
 /**
  * Executes the given move to the game this socket has joined.

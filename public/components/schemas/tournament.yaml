@@ -17,10 +17,7 @@ properties:
     description: URI to leave the tournament.
     example: https://api.gracehopper.xyz/v1/tournaments/leave/642ff637124419bec84934cb
   owner:
-    type: string
-    format: url
-    description: URI to query the owner's information.
-    example: https://api.gracehopper.xyz/v1/users/6427012084270ee46cd8300c
+    $ref: '../../components/schemas/user_detail.yaml'
   startTime:
     type: string
     format: date
@@ -39,7 +36,11 @@ properties:
     description: Id of this tournament winner.
   finished:
     type: boolean
-    description: Set to true if the tournament has already been finished.
+    description: This tournament has already been finished.
+  hasStarted:
+    type: boolean
+    description: This tournament has already been started.
+      It is not possible to join, leave or delete a tournament if this flag is set to true.
   matches:
     type: object
     description: Tournament pairings
@@ -63,6 +64,16 @@ properties:
         type: string
         format: date
         example: 2023-03-26T15:30:34.785Z
+      winner:
+        type: string
+        format: id
+        description: Id of this match winner.
+      finished:
+        type: boolean
+        description: This match has already been finished.
+      hasStarted:
+        type: boolean
+        description: This match has already been started.
       state:
         type: string
         enum:

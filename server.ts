@@ -22,6 +22,8 @@ export const io = new Server(server, {
 io.use(socketAuth)
 
 function onConnection (socket: Socket): void {
+  socket.on('salute', gameCtl.salute.bind(null, socket))
+
   socket.on('join_room', spectatorCtl.joinRoom.bind(null, socket))
   socket.on('leave_room', spectatorCtl.leaveRoom.bind(null, socket))
 

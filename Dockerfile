@@ -22,8 +22,8 @@ RUN npm ci --save-prod
 # RUN npm install
 
 # Bundle app source
-ENV NODE_ENV=development
-# ENV NODE_ENV=production
+# ENV NODE_ENV=development
+ENV NODE_ENV=production
 COPY ./.env .
 COPY ./build .
 
