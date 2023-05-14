@@ -217,16 +217,18 @@ interface Match {
   nextMatchId: string | null
   tournamentRoundText: string
   startTime: string
-  played: boolean
   state: 'NO_SHOW' | 'WALK_OVER' | 'NO_PARTY' | 'DONE' | 'SCORE_DONE'
   participants: any[]
+  winner: any
+  finished: boolean
+  hasStarted: boolean
 }
 
 interface Tournament {
   id: string
   join: string
   leave: string
-  owner: string
+  owner: any
   startTime: Date
   rounds: number
   participants: any[]
@@ -243,11 +245,12 @@ interface Tournament {
 }
 
 export const parseTournament = async (Tournament: TournamentDocument): Promise<Tournament> => {
+  const populatedOwner: any = Tournament.owner
   return {
     id: Tournament._id,
     join: `${URI}/v1/tournaments/join/${String(Tournament._id)}`,
     leave: `${URI}/v1/tournaments/leave/${String(Tournament._id)}`,
-    owner: `${URI}/v1/users/${String(Tournament.owner)}`,
+    owner: await parseExtendedUser(populatedOwner),
     startTime: Tournament.startTime,
     rounds: Number(Tournament.rounds),
     participants: Tournament.participants,
@@ -263,7 +266,9 @@ export const parseTournament = async (Tournament: TournamentDocument): Promise<T
         tournamentRoundText: matchJSON.tournamentRoundText,
         startTime: matchJSON.startTime,
         state: 'NO_SHOW',
-        played: matchJSON.played,
+        winner: matchJSON.winner,
+        finished: matchJSON.finished,
+        hasStarted: matchJSON.hasStarted,
         participants: await Promise.all(matchJSON.participants.map(async (participant: any) => {
           try {
             return await parseExtendedUser(participant)

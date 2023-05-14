@@ -9,7 +9,7 @@ import { createTournament } from '@schemas/tournaments'
 const router = express.Router()
 
 router.post('/', validateBody(createTournament), userMiddleware.isAuthenticated, tournamentsCtrl.create)
-router.get('/', userMiddleware.isAuthenticated, paginate(TournamentModel), tournamentsCtrl.getAll)
+router.get('/', userMiddleware.isAuthenticated, paginate(TournamentModel, undefined, 'owner'), tournamentsCtrl.getAll)
 router.patch('/:id', userMiddleware.isAuthenticated, tournamentsCtrl.updateOne)
 router.get('/:id', userMiddleware.isAuthenticated, tournamentsCtrl.getOne)
 router.delete('/:id', userMiddleware.isAuthenticated, tournamentsCtrl.deleteOne)

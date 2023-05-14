@@ -84,12 +84,14 @@ export const updateOne = (req: Request, res: Response): void => {
 }
 
 export const getOne = (req: Request, res: Response): void => {
-  TournamentModel.findById(req.params.id).populate({
-    path: 'matches',
-    populate: {
-      path: 'participants'
-    }
-  })
+  TournamentModel.findById(req.params.id)
+    .populate('owner')
+    .populate({
+      path: 'matches',
+      populate: {
+        path: 'participants'
+      }
+    })
     .then(async (tournament) => {
       if (!tournament) {
         return res
