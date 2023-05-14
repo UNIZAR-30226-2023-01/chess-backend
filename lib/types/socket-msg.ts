@@ -42,3 +42,7 @@ export interface FindRoomMsg {
   hostColor?: PlayerColor | 'RANDOM'
   difficulty?: number
 }
+
+export interface SaluteMsg {
+  text?: string
+}
