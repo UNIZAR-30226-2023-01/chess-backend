@@ -127,7 +127,7 @@ export const startGameInDB = async (
 
   try {
     await GameModel.updateOne({ roomID }, {
-      $set: { state: State.PLAYING }
+      $set: { state: State.PLAYING, lightId: game.lightId, darkId: game.darkId }
     })
   } catch (err: any) {
     logger.error(err)
