@@ -8,7 +8,9 @@ export interface MatchDocument extends Document {
   startTime: Date
   state: 'NO_SHOW' | 'WALK_OVER' | 'NO_PARTY' | 'DONE' | 'SCORE_DONE'
   participants: any[]
-  played: boolean
+  hasStarted: boolean
+  finished: boolean
+  winner: typeof UserModel
 }
 
 const MatchSchema = new Schema<MatchDocument>({
@@ -34,9 +36,17 @@ const MatchSchema = new Schema<MatchDocument>({
     type: Schema.Types.ObjectId,
     ref: 'User'
   }],
-  played: {
+  hasStarted: {
     type: Boolean,
     default: false
+  },
+  finished: {
+    type: Boolean,
+    default: false
+  },
+  winner: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   }
 }, {
   timestamps: true

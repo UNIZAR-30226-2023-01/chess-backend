@@ -106,8 +106,8 @@ export async function startNextRound (id: string): Promise<void> {
   for (let round = rounds; round >= 0; round--) {
     const slots: number = Number(BigInt(1) << BigInt(round)).valueOf() // 2^(round - 1)
 
-    // If round has been played skip
-    if (tournament.matches[slots - 1].played) continue
+    // If round has started -> skip
+    if (tournament.matches[slots - 1].hasStarted) continue
 
     await TournamentModel.findByIdAndUpdate(tournament._id, {
       $set: { matches: tournament.matches }
@@ -122,7 +122,7 @@ export async function startNextRound (id: string): Promise<void> {
       }
       await TournamentModel.findOneAndUpdate(
         { 'matches._id': new Types.ObjectId(match._id) },
-        { $set: { 'matches.$.played': true, 'matches.$.gameId': match.gameId } }
+        { $set: { 'matches.$.hasStarted': true, 'matches.$.gameId': match.gameId } }
       )
     }
 
@@ -156,6 +156,13 @@ export async function endProtocol (
     else winnerId = game.darkId
   }
 
+  await TournamentModel.findOneAndUpdate(
+    { 'matches._id': new Types.ObjectId(match.id) },
+    {
+      $set: { 'matches.$.finished': true, 'matches.$.winner': winnerId }
+    }
+  )
+
   if (!match.nextMatchId) {
     // Final Round
     await TournamentModel.findByIdAndUpdate(
@@ -168,7 +175,9 @@ export async function endProtocol (
 
   await TournamentModel.findOneAndUpdate(
     { 'matches._id': new Types.ObjectId(match.nextMatchId) },
-    { $addToSet: { 'matches.$.participants': winnerId } }
+    {
+      $addToSet: { 'matches.$.participants': winnerId }
+    }
   )
 }
 
@@ -183,7 +192,7 @@ export const notify = async (): Promise<void> => {
   const fPairs = pairs.filter(([_id, matches]) => {
     for (const match of matches) {
       // To not notify twice...
-      if (match.played) continue
+      if (match.hasStarted) continue
 
       const matchStart = new Date(match.startTime)
       if (matchStart >= now && matchStart <= tenMinutesLater) {

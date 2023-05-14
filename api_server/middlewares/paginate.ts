@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express'
 import { MongooseQueryParser } from 'mongoose-query-parser'
 import { setStatus } from '@lib/status'
 
-export const paginate = (model: any, preFilter?: any) => {
+export const paginate = (model: any, preFilter?: any, prePopulate?: any) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const parser = new MongooseQueryParser({
@@ -30,6 +30,7 @@ export const paginate = (model: any, preFilter?: any) => {
         .find(filter)
         .limit(limit).skip(startIndex)
         .sort(resultado.sort)
+        .populate(prePopulate)
         .exec()
 
       currentPage.searchParams.set('page', String(page))
