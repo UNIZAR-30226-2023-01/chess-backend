@@ -46,7 +46,12 @@ const gameState = async (
   })
   if (!game) return false
 
-  socket.emit('room', gameLib.filterGameState(game))
+  const msg = {
+    ...gameLib.filterGameState(game),
+    roomID
+  }
+
+  socket.emit('room', msg)
   return true
 }
 

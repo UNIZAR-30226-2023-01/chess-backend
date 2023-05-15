@@ -79,9 +79,11 @@ properties:
     type: string
     description: "Indicates the current status of a game."
     enum: 
-      - 'AI'
-      - 'COMPETITIVE'
-      - 'CUSTOM'
+      - 'PAUSED'
+      - 'RESUMING'
+      - 'PLAYING'
+      - 'NOT STARTED'
+      - 'ENDED'
     example: FINISHED
   createdAt:
     type: string

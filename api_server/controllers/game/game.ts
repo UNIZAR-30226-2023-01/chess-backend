@@ -29,7 +29,7 @@ export const salute = async (
     return
   }
 
-  if (!data.text) socket.to(roomID).emit('salute')
+  if (!data.text) socket.to(roomID).emit('salute', '')
   else socket.to(roomID).emit('salute', data.text)
 }
 

@@ -225,10 +225,10 @@ export const notify = async (): Promise<void> => {
             logger.log('INFO', `Sending email to ${String(user?.email)}`)
             console.log(msg)
 
-            if (process.env.NODE_ENV === 'test') {
+            if (process.env.NODE_ENV !== 'test') {
               sgMail.setApiKey(String(process.env.SENDGRID_API_KEY))
+              await sgMail.send(msg)
             }
-            await sgMail.send(msg)
           }).catch(_err => {
             logger.error('Cannot access to user:' + String(id))
           })
