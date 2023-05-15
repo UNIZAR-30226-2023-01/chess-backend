@@ -12,7 +12,6 @@ import * as error from '@lib/socket-error'
 import { FindRoomMsg, MoveMsg, SaluteMsg } from '@lib/types/socket-msg'
 import { GameType } from '@lib/types/game'
 import { ResourceName } from '@lib/namespaces'
-import { io } from '@server'
 
 export const salute = async (
   socket: Socket,
@@ -30,8 +29,8 @@ export const salute = async (
     return
   }
 
-  if (!data.text) io.to(roomID).emit('salute')
-  else io.to(roomID).emit('salute', data.text)
+  if (!data.text) socket.to(roomID).emit('salute')
+  else socket.to(roomID).emit('salute', data.text)
 }
 
 /**

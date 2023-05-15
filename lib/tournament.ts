@@ -119,11 +119,17 @@ export async function startNextRound (id: string): Promise<void> {
       if (match.participants.length > 0) {
         const gameId = await startMatch(match._id.toString(), match, tournament.matchProps)
         if (gameId) match.gameId = gameId
+
+        await TournamentModel.findOneAndUpdate(
+          { 'matches._id': new Types.ObjectId(match._id) },
+          { $set: { 'matches.$.hasStarted': true, 'matches.$.gameId': match.gameId } }
+        )
+      } else {
+        await TournamentModel.findOneAndUpdate(
+          { 'matches._id': new Types.ObjectId(match._id) },
+          { $set: { 'matches.$.hasStarted': true } }
+        )
       }
-      await TournamentModel.findOneAndUpdate(
-        { 'matches._id': new Types.ObjectId(match._id) },
-        { $set: { 'matches.$.hasStarted': true, 'matches.$.gameId': match.gameId } }
-      )
     }
 
     break

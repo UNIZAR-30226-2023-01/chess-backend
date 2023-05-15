@@ -60,7 +60,8 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
   }
 
   // Check if the username is reserved
-  if (process.env.NODE_ENV !== 'test' &&
+  if (req.body.username !== ReservedUsernames.GUEST_USER &&
+      process.env.NODE_ENV !== 'test' &&
       Object.values(ReservedUsernames).includes(req.body.username)) {
     res.status(409).json({ status: setStatus(req, 409, 'Conflict') })
     return
@@ -109,7 +110,9 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
       username: req.body.username,
       email: req.body.email,
       password: derivedKey,
-      salt
+      salt,
+      elo: req.body.username === ReservedUsernames.GUEST_USER ? -400 : 800,
+      verified: req.body.username === ReservedUsernames.GUEST_USER
     })
       .then(signUpSuccessCallback)
       .catch((err: Error) => {

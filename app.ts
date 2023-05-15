@@ -18,6 +18,8 @@ import { server } from '@server'
 import { Limiter, SpeedLimiter } from '@middlewares/limiters'
 import * as logger from '@lib/logger'
 import { notify } from '@lib/tournament'
+import request from 'supertest'
+import { ReservedUsernames } from '@models/user'
 dotenv.config()
 require('@auth/passport')
 require('@auth/passport-google')
@@ -52,7 +54,22 @@ const PORT = process.env.PORT ?? 4000
 app.listen(PORT, () => {
   logger.log('INFO', `Server is running → PORT ${String(PORT)}`)
   connectDB()
-    .then(() => logger.log('INFO', 'MongoDB has been connected'))
+    .then(() => {
+      logger.log('INFO', 'MongoDB has been connected')
+      request(app)
+        .post('/v1/auth/sign-up')
+        .send({
+          username: ReservedUsernames.GUEST_USER,
+          email: 'guest@example.com',
+          password: '12345678'
+        })
+        .then((res) => {
+          if (res.status === 201) logger.log('INFO', '\'guest\' user has been created succesfully')
+          else logger.log('INFO', '\'guest\' user is already created')
+        }).catch(() => {
+          logger.log('INFO', '\'guest\' user is already created')
+        })
+    })
     .catch((err) => logger.error(err))
 })
 
