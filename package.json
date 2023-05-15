@@ -10,7 +10,7 @@
   "scripts": {
     "start": "set NODE_ENV=production && node build/app.js",
     "dev": "set NODE_ENV=development && ts-node-dev -r tsconfig-paths/register app.ts",
-    "tsc": "tsc && tsc-alias && copyfiles -u 1 public/assets/**/* build/public && minimize-js build",
+    "tsc": "tsc && tsc-alias && copyfiles -u 1 public/assets/**/* build/public",
     "lint": "eslint . --ext .ts --fix",
     "prepare": "husky install",
     "test": "set NODE_ENV=test && nyc mocha --exit --timeout 10000 -r ts-node/register -r tsconfig-paths/register \"test/**/*.ts\""

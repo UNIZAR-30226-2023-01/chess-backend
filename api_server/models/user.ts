@@ -1,7 +1,7 @@
 import { model, Schema, Document } from 'mongoose'
 
 export enum ReservedUsernames {
-  GUEST_USER = 'Guest',
+  GUEST_USER = 'guest',
   AI_USER = 'AI',
   DEV_USER_1 = 'dev1',
   DEV_USER_2 = 'dev2'
