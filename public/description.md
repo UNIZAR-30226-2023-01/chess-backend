@@ -207,16 +207,16 @@ The API uses standard HTTP status codes to indicate the success or failure of an
 
 A `Status` object is always included in the JSON response payload for both successful calls and failures when possible. During error scenarios you may reference the `error_code` and `error_message` properties of the Status object. One of the API error codes below will be returned if applicable otherwise the HTTP status code for the general error type is returned.
 
-| HTTP Status | Error Code                                 | Error Message                                                                                |
-| :---------: | :----------------------------------------- | :------------------------------------------------------------------------------------------- |
-|     401     | 1001  `API_KEY_INVALID`                    | This API Key is invalid.                                                                     |
-|     401     | 1002  `API_KEY_MISSING`                    | API key missing.                                                                             |
-|     403     | 1003  `API_KEY_REQUIRED`                   | An API Key is required for this call.                                                        |
-|     403     | 1004  `API_KEY_DISABLED`                   | This API Key has been disabled. Please contact [support](https://reign.gracehopper.xyz/faq). |
-|     429     | 1005  `API_KEY_MINUTE_RATE_LIMIT_REACHED`  | You've exceeded your API Key's HTTP request rate limit. Rate limits reset every minute.      |
-|     429     | 1006  `API_KEY_DAILY_RATE_LIMIT_REACHED`   | You've exceeded your API Key's daily rate limit.                                             |
-|     429     | 1007  `API_KEY_MONTHLY_RATE_LIMIT_REACHED` | You've exceeded your API Key's monthly rate limit.                                           |
-|     429     | 1008  `IP_RATE_LIMIT_REACHED`              | You've hit an IP rate limit.                                                                 |
+| HTTP Status | Error Code                                | Error Message                                                                                |
+| :---------: | :---------------------------------------- | :------------------------------------------------------------------------------------------- |
+|     401     | 401  `API_KEY_INVALID`                    | This API Key is invalid.                                                                     |
+|     401     | 401  `API_KEY_MISSING`                    | API key missing.                                                                             |
+|     403     | 403  `API_KEY_REQUIRED`                   | An API Key is required for this call.                                                        |
+|     403     | 403  `API_KEY_DISABLED`                   | This API Key has been disabled. Please contact [support](https://reign.gracehopper.xyz/faq). |
+|     429     | 429  `API_KEY_MINUTE_RATE_LIMIT_REACHED`  | You've exceeded your API Key's HTTP request rate limit. Rate limits reset every minute.      |
+|     429     | 429  `API_KEY_DAILY_RATE_LIMIT_REACHED`   | You've exceeded your API Key's daily rate limit.                                             |
+|     429     | 429  `API_KEY_MONTHLY_RATE_LIMIT_REACHED` | You've exceeded your API Key's monthly rate limit.                                           |
+|     429     | 429  `IP_RATE_LIMIT_REACHED`              | You've hit an IP rate limit.                                                                 |
 
 <h2>Error Event Codes</h2>
 
