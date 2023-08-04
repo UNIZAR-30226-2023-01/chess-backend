@@ -34,11 +34,15 @@ jobs:
       run: npm ci
     - name: Generate Build
       run: npm run tsc
+    - name: Create Archive
+      run: |
+        zip -r build.zip .
     - name: Publish Build Artifact
       uses: actions/upload-artifact@v2
       with:
         name: build-artifact
-        path: .
+        path: build.zip
+        if-no-files-found: error
 
   # lint:
   #   name: lint 🪅
@@ -104,6 +108,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: build-artifact
+
+      - name: Extract Archive
+        run: |
+          unzip build.zip -d build
 
       - name: Generate Docker Metadata and Push Tags to GitHub
         id: meta
