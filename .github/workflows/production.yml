@@ -10,7 +10,9 @@ env:
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   MONGO_URI: ${{ secrets.MONGO_URI }}
   REDIS_URI: ${{ secrets.REDIS_URI }}
+  IMAGE_NAME: ${{ github.repository }}
   STOCKFISH_PATH: stockfish
+  REGISTRY: ghcr.io
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,7 +21,7 @@ concurrency:
 jobs:
   install:
     name: install 📦
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
       with:
@@ -34,7 +36,7 @@ jobs:
   lint:
     name: lint 🪅
     needs: install
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
       with:
@@ -51,7 +53,7 @@ jobs:
   test:
     name: test 🧪
     needs: [install, lint]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
       with:
@@ -74,3 +76,39 @@ jobs:
         NODE_ENV: test
         NO_AI: true
       run: npm run test
+
+  deploy:
+    name: deploy 🧪
+    needs: [test]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
