@@ -126,6 +126,20 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+
+      - name: Create .env file
+        run: |
+          echo "PORT=4000" >> .env
+          echo "STOCKFISH_PATH=stockfish" >> .env
+          echo "SUCCESS_REDIRECT=https://reign.gracehopper.xyz" >> .env
+          echo "FAILURE_REDIRECT=https://reign.gracehopper.xyz/auth/signin" >> .env
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
+          echo "REDIS_URI=${{ secrets.REDIS_URI }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+          echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" >> .env
       
       - name: Build and push
         uses: docker/build-push-action@v4
@@ -134,15 +148,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          secrets: |
-            PORT=4000
-            STOCKFISH_PATH="stockfish"
-            SUCCESS_REDIRECT="https://reign.gracehopper.xyz"
-            FAILURE_REDIRECT="https://reign.gracehopper.xyz/auth/signin"
-            MONGO_URI=${{ env.MONGO_URI }}
-            REDIS_URI=${{ env.REDIS_URI }}
-            JWT_SECRET=${{ env.JWT_SECRET }}
-            GOOGLE_CALLBACK_URL=${{ env.GOOGLE_CALLBACK_URL }}
-            GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
-            SENDGRID_API_KEY=${{ env.SENDGRID_API_KEY }}

@@ -22,7 +22,7 @@ RUN npm ci --save-prod
 
 # Bundle app source
 ENV NODE_ENV=production
-RUN if [ -e ./.env ]; then COPY ./.env .; fi
+COPY ./.env .
 COPY ./build .
 
 EXPOSE 4000
