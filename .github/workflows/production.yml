@@ -44,54 +44,53 @@ jobs:
         path: build.zip
         if-no-files-found: error
 
-  # lint:
-  #   name: lint 🪅
-  #   needs: install
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #     with:
-  #       fetch-depth: 0
-  #   - uses: actions/setup-node@v3
-  #     with:
-  #       cache: npm
-  #       node-version: 16
-  #   - name: Install Dependencies
-  #     run: npm ci
-  #   - name: Lint
-  #     run: npm run lint
+  lint:
+    name: lint 🪅
+    needs: install
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-node@v3
+      with:
+        cache: npm
+        node-version: 16
+    - name: Install Dependencies
+      run: npm ci
+    - name: Lint
+      run: npm run lint
 
-  # test:
-  #   name: test 🧪
-  #   needs: [install, lint]
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #     with:
-  #       fetch-depth: 0
-  #   - uses: actions/setup-node@v3
-  #     with:
-  #       cache: npm
-  #       node-version: 16
-  #   - name: Install Dependencies
-  #     run: npm ci
-  #   - name: Certificates
-  #     env:
-  #       CERT: ${{ secrets.CERT }}
-  #       KEY: ${{ secrets.KEY }}
-  #     run: |
-  #       mkdir -p nginx/api.gracehopper.xyz && echo "$CERT" | base64 -d > nginx/api.gracehopper.xyz/cert.pem
-  #       mkdir -p nginx/api.gracehopper.xyz && echo "$KEY" | base64 -d > nginx/api.gracehopper.xyz/privkey.pem
-  #   - name: Test
-  #     env:
-  #       NODE_ENV: test
-  #       NO_AI: true
-  #     run: npm run test
+  test:
+    name: test 🧪
+    needs: [install, lint]
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-node@v3
+      with:
+        cache: npm
+        node-version: 16
+    - name: Install Dependencies
+      run: npm ci
+    - name: Certificates
+      env:
+        CERT: ${{ secrets.CERT }}
+        KEY: ${{ secrets.KEY }}
+      run: |
+        mkdir -p nginx/api.gracehopper.xyz && echo "$CERT" | base64 -d > nginx/api.gracehopper.xyz/cert.pem
+        mkdir -p nginx/api.gracehopper.xyz && echo "$KEY" | base64 -d > nginx/api.gracehopper.xyz/privkey.pem
+    - name: Test
+      env:
+        NODE_ENV: test
+        NO_AI: true
+      run: npm run test
 
   deploy:
     name: deploy 🧪
-    # needs: [test]
-    needs: [install]
+    needs: [test]
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
