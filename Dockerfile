@@ -7,7 +7,6 @@ COPY stockfish-compile.sh Stockfish/src
 RUN cd Stockfish/src && chmod u+x stockfish-compile.sh \
   && ./stockfish-compile.sh && mv stockfish /bin && make clean && cd
 
-
 RUN apk upgrade && apk add nodejs npm
 # Create app directory
 WORKDIR /usr/src/app
@@ -22,9 +21,8 @@ RUN npm ci --save-prod
 # RUN npm install
 
 # Bundle app source
-# ENV NODE_ENV=development
 ENV NODE_ENV=production
-RUN if [ -e ./.env ]; then cp ./.env .; fi
+RUN if [ -e ./.env ]; then COPY ./.env .; fi
 COPY ./build .
 
 EXPOSE 4000
