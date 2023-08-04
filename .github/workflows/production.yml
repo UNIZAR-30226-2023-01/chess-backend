@@ -7,12 +7,15 @@ on:
     branches: [main]
 
 env:
-  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: ghcr.io
   MONGO_URI: ${{ secrets.MONGO_URI }}
   REDIS_URI: ${{ secrets.REDIS_URI }}
-  IMAGE_NAME: ${{ github.repository }}
-  STOCKFISH_PATH: stockfish
-  REGISTRY: ghcr.io
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -100,7 +103,7 @@ jobs:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -133,13 +136,13 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           secrets: |
             PORT=4000
-            STOCKFISH_PATH= "stockfish"
-            SUCCESS_REDIRECT= "https://reign.gracehopper.xyz"
-            FAILURE_REDIRECT= "https://reign.gracehopper.xyz/auth/signin"
-            MONGO_URI=0
-            REDIS_URI=0
-            JWT_SECRET=0
-            GOOGLE_CALLBACK_URL=0
-            GOOGLE_CLIENT_ID=0
-            GOOGLE_CLIENT_SECRET=0
-            SENDGRID_API_KEY=0
+            STOCKFISH_PATH="stockfish"
+            SUCCESS_REDIRECT="https://reign.gracehopper.xyz"
+            FAILURE_REDIRECT="https://reign.gracehopper.xyz/auth/signin"
+            MONGO_URI=${{ env.MONGO_URI }}
+            REDIS_URI=${{ env.REDIS_URI }}
+            JWT_SECRET=${{ env.JWT_SECRET }}
+            GOOGLE_CALLBACK_URL=${{ env.GOOGLE_CALLBACK_URL }}
+            GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
+            SENDGRID_API_KEY=${{ env.SENDGRID_API_KEY }}
