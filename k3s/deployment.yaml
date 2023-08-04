@@ -4,6 +4,9 @@ metadata:
   name: chess-backend-deployment
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: chess
   template:
     metadata:
       labels:
