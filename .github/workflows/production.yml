@@ -128,5 +128,6 @@ jobs:
           ls -la
       - name: Build and push
         run: |
+          echo "IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
           docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest -f ./Dockerfile .
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
