@@ -53,34 +53,7 @@ npm run start
 >  This version includes `nginx` redirection so the ports that need to be open in the router are `443` and `8443`. This version supports HTTPS.
 Compile for docker
 
-  <details>
-    <summary><b>Get a certificate<b></summary>
-    <details>
-    <summary>Self Signed</summary>
-
-1. Crea una clave privada utilizando el siguiente comando:
-```bash
-openssl genrsa -out privkey.pem 2048
-```
-1. Crea un certificado autofirmado utilizando el siguiente comando:<br>
-  Este comando generará un certificado autofirmado válido por 365 días y lo guardará en un archivo llamado "cert.crt". Durante la ejecución del comando se te solicitará que proporciones algunos datos para el certificado. Asegúrate de proporcionar el nombre de dominio correcto en el campo "Common Name".
-```bash
-openssl req -new -x509 -key privkey.pem -out cert.pem -days 365
-```
-1. Verifica que el certificado SSL y la clave privada corresponden utilizando los siguientes comandos:
-```
-openssl x509 -noout -modulus -in privkey.pem | openssl md5
-openssl rsa -noout -modulus -in cert.pem | openssl md5
-```
-  </details>
-  <details>
-    <summary>Lets Encrypt & Certbot</summary>
-
 Follow the instructions on the following [page](https://certbot.eff.org/)
-
-  </details>
-  </details>
-<br>
 
 ```bash
 docker-compose up -d

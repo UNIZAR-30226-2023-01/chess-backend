@@ -13,11 +13,4 @@ services:
       - 8443:8443
     restart: always
     volumes:
-      - ./data/nginx/conf/:/etc/nginx/conf.d/:ro
-      - ./data/certbot/www/:/var/www/certbot/:ro
-      - ./data/certbot/conf/:/etc/nginx/ssl/:ro
-  certbot:
-    image: certbot/certbot:latest
-    volumes:
-      - ./data/certbot/www/:/var/www/certbot/:rw
-      - ./data/certbot/conf/:/etc/letsencrypt/:rw
+      - /etc/letsencrypt/live/api.gracehopper.xyz:/etc/letsencrypt/live/api.gracehopper.xyz
