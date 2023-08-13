@@ -115,7 +115,7 @@ jobs:
           name: build-artifact
       - name: Extract Archive
         run: |
-          unzip build.zip -d build
+          unzip build.zip -d .
           rm -rf build.zip
       - name: Generate Docker Metadata and Push Tags to GitHub
         id: meta
