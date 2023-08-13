@@ -39,7 +39,7 @@ jobs:
       run: npm run tsc
     - name: Create Archive
       run: |
-        zip -r build.zip .
+        zip -r build.zip ./build
     - name: Publish Build Artifact
       uses: actions/upload-artifact@v3
       with:
@@ -116,7 +116,7 @@ jobs:
       - name: Extract Archive
         run: |
           unzip build.zip -d build
-          rm build.zip
+          rm -rf build.zip
       - name: Generate Docker Metadata and Push Tags to GitHub
         id: meta
         uses: docker/metadata-action@v4
