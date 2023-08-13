@@ -7,10 +7,10 @@ RUN rm /etc/nginx/conf.d/*
 # Copy config files
 # *.conf files in conf.d/ dir get included in main config
 COPY ./nginx.conf /etc/nginx/conf.d/
-COPY ./api.gracehopper.xyz/fullchain.pem /etc/nginx/fullchain.pem
-COPY ./api.gracehopper.xyz/chain.pem /etc/nginx/chain.pem
-COPY ./api.gracehopper.xyz/cert.pem /etc/nginx/cert.pem
-COPY ./api.gracehopper.xyz/privkey.pem /etc/nginx/privkey.pem
+# COPY ./api.gracehopper.xyz/fullchain.pem /etc/nginx/fullchain.pem
+# COPY ./api.gracehopper.xyz/chain.pem /etc/nginx/chain.pem
+# COPY ./api.gracehopper.xyz/cert.pem /etc/nginx/cert.pem
+# COPY ./api.gracehopper.xyz/privkey.pem /etc/nginx/privkey.pem
 
 # Expose the listening port
 EXPOSE 443
