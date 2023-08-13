@@ -12,5 +12,3 @@ services:
       - 443:443
       - 8443:8443
     restart: always
-    volumes:
-      - ./nginx/cert:/etc/letsencrypt/live/api.gracehopper.xyz

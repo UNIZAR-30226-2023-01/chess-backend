@@ -1,4 +1,4 @@
-# express-template  [![Production CI](https://github.com/UNIZAR-30226-01/chess-backend/actions/workflows/production.yml/badge.svg)](https://github.com/UNIZAR-30226-01/chess-backend/actions/workflows/production.yml)
+# chess-backend  [![Production CI](https://github.com/UNIZAR-30226-01/chess-backend/actions/workflows/production.yml/badge.svg)](https://github.com/UNIZAR-30226-01/chess-backend/actions/workflows/production.yml)
 
 ![Beta](https://img.shields.io/badge/Status-Beta-red)
 ![node](https://img.shields.io/badge/node-16.x-blue)
@@ -53,7 +53,12 @@ npm run start
 >  This version includes `nginx` redirection so the ports that need to be open in the router are `443` and `8443`. This version supports HTTPS.
 Compile for docker
 
-Follow the instructions on the following [page](https://certbot.eff.org/)
+Follow the instructions on the following [page](https://certbot.eff.org/) to get a certificate.
+
+```bash
+make -p nginx/certs
+sudo cp  /etc/letsencrypt/live/api.gracehopper.xyz/* nginx/certs
+```
 
 ```bash
 docker-compose up -d
