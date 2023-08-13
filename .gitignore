@@ -65,7 +65,7 @@ build
 dump.rdb
 
 # certificados
-nginx/api.gracehopper.xyz/*
+nginx/cert/*
 
 # test especificos
 test.sh

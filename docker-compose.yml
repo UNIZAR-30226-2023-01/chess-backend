@@ -13,4 +13,4 @@ services:
       - 8443:8443
     restart: always
     volumes:
-      - /etc/letsencrypt/live/api.gracehopper.xyz:/etc/letsencrypt/live/api.gracehopper.xyz
+      - ./nginx/cert:/etc/letsencrypt/live/api.gracehopper.xyz
