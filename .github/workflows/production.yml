@@ -116,6 +116,7 @@ jobs:
       - name: Extract Archive
         run: |
           unzip build.zip -d build
+          rm build.zip
       - name: Generate Docker Metadata and Push Tags to GitHub
         id: meta
         uses: docker/metadata-action@v4
