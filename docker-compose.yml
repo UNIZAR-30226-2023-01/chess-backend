@@ -1,6 +1,7 @@
 version: '3'
 services:
   express:
+    # image: ghcr.io/unizar-30226-2023-01/chess-backend:main
     build: ./
     ports:
       - 4000:4000

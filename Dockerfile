@@ -24,6 +24,7 @@ RUN npm ci --save-prod
 ENV NODE_ENV=production
 COPY ./.env .
 COPY ./build .
+RUN ls
 
 EXPOSE 4000
 EXPOSE 4001
