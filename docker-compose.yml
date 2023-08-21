@@ -1,7 +1,8 @@
 version: '3'
 services:
   express:
-    build: ./
+    # build: ./
+    image: ghcr.io/unizar-30226-2023-01/chess-backend:main
     env_file:
       - .env
     ports:

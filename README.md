@@ -39,19 +39,38 @@ npm run dev
 ###  Run for a production environment
 
 #### Command Line
-> **Note** 
-> this version requires to have ports `4000` and `4001` open on the router. This version does not support HTTPS 
+> **Note**
+> this version requires to have ports `4000` and `4001` open on the router. This version does not support HTTPS
 
 ```bash
 npm run tsc
 npm run start
 ```
 
+#### Docker
+
+Build Docker image:
+
+```bash
+docker build -t chess-backend-express:latest .
+```
+
+Run the container: 
+
+```bash
+docker run -p 4000:4000 -p 4001:4001 --env-file .env chess-backend-express:latest
+```
+
+Another option is to run the compiled and tested image and run the container with it as follows:
+
+```bash
+docker run -p 4000:4000 -p 4001:4001 --env-file .env ghcr.io/unizar-30226-2023-01/chess-backend:main
+```
+
 #### Docker Compose (preferred)
 
-> **Note** 
+> **Note**
 >  This version includes `nginx` redirection so the ports that need to be open in the router are `443` and `8443`. This version supports HTTPS.
-Compile for docker
 
 Follow the instructions on the following [page](https://certbot.eff.org/) to get a certificate.
 
