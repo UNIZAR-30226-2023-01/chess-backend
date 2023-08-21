@@ -1,31 +1,36 @@
-FROM alpine:latest
+FROM node:lts-alpine
 
-# Compile Stockfish and move it to /bin
-RUN apk upgrade && apk add git gcc g++ make util-linux
-RUN git clone https://github.com/official-stockfish/Stockfish.git
+# Install build dependencies and compile Stockfish
+RUN apk update && apk upgrade && \
+    apk add git gcc g++ make util-linux && \
+    npm install -g npm@latest && \
+    git clone https://github.com/official-stockfish/Stockfish.git
 COPY stockfish-compile.sh Stockfish/src
 RUN cd Stockfish/src && chmod u+x stockfish-compile.sh \
   && ./stockfish-compile.sh && mv stockfish /bin && make clean && cd
 
-RUN apk upgrade && apk add nodejs npm
-# Create app directory
+# Create a non-root user
+RUN addgroup -S gracehopper && adduser -S gracehopper -G gracehopper
+
+# Set the working directory for the app
 WORKDIR /usr/src/app
 
+# Give ownership of the working directory to the non-root user
+RUN chown -R gracehopper:gracehopper /usr/src/app
+
 # Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
 COPY package*.json ./
+RUN npm ci --omit=dev --ignore-scripts
 
-# If you are building your code for production
-RUN npm ci --save-prod
-# RUN npm install
-
-# Bundle app source
-ENV NODE_ENV=production
-COPY ./.env .
+# Copy the built app source
 COPY ./build .
 
+# Expose the required ports
 EXPOSE 4000
 EXPOSE 4001
 
-CMD [ "node", "app.js" ]
+# Switch to the non-root user before running the app
+USER gracehopper
+
+# Run the Node.js app
+CMD ["node", "app.js"]

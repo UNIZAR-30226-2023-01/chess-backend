@@ -4,13 +4,13 @@
   "license": "MIT",
   "private": true,
   "engines": {
-    "node": "16.x",
-    "npm": "8.15.0"
+    "node": "v18.x",
+    "npm": "9.8.1"
   },
   "scripts": {
     "start": "set NODE_ENV=production && node build/app.js",
     "dev": "set NODE_ENV=development && ts-node-dev -r tsconfig-paths/register app.ts",
-    "tsc": "tsc && tsc-alias && copyfiles -u 1 public/assets/**/* build/public",
+    "tsc": "tsc --project tsconfig.build.json && tsc-alias && copyfiles -u 1 public/assets/**/* build/public",
     "lint": "eslint . --ext .ts --fix",
     "prepare": "husky install",
     "test": "set NODE_ENV=test && nyc mocha --exit --timeout 10000 -r ts-node/register -r tsconfig-paths/register \"test/**/*.ts\""
@@ -44,6 +44,7 @@
     "socket.io": "4.6.1",
     "socket.io-client": "4.6.1",
     "spdy": "4.0.2",
+    "supertest": "6.3.3",
     "ts-standard": "12.0.2",
     "tsconfig-paths": "4.1.2",
     "yup": "1.0.2"
@@ -76,7 +77,6 @@
     "lint-staged": "13.1.0",
     "mocha": "10.2.0",
     "nyc": "15.1.0",
-    "supertest": "6.3.3",
     "ts-node-dev": "2.0.0",
     "tsc-alias": "1.8.3",
     "typescript": "4.9.4"
