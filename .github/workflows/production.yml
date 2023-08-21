@@ -9,6 +9,9 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  MONGO_URI: ${{ secrets.MONGO_URI }}
+  REDIS_URI: ${{ secrets.REDIS_URI }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
