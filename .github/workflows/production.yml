@@ -91,7 +91,7 @@ jobs:
     name: deploy 🧪
     needs: [test]
     runs-on: ubuntu-22.04
-    steps:   
+    steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set up QEMU
@@ -129,3 +129,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          builder: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
