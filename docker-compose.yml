@@ -1,17 +1,23 @@
 version: '3'
+
 services:
   express:
     # build: ./
-    image: ghcr.io/unizar-30226-2023-01/chess-backend:main
+    image: ghcr.io/unizar-30226-2023-01/chess-backend:latest
+    container_name: chess-backend-express
     env_file:
       - .env
     ports:
       - 4000:4000
       - 4001:4001
+  restart: always
+
   nginx:
     build: ./nginx
+    container_name: chess-backend-nginx
     ports:
       - 80:80 
       - 443:443
       - 8443:8443
+
     restart: always

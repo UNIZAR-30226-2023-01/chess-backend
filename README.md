@@ -64,7 +64,7 @@ docker run -p 4000:4000 -p 4001:4001 --env-file .env chess-backend-express:lates
 Another option is to run the compiled and tested image and run the container with it as follows:
 
 ```bash
-docker run -p 4000:4000 -p 4001:4001 --env-file .env ghcr.io/unizar-30226-2023-01/chess-backend:main
+docker run -p 4000:4000 -p 4001:4001 --env-file .env ghcr.io/unizar-30226-2023-01/chess-backend:latest
 ```
 
 #### Docker Compose (preferred)
