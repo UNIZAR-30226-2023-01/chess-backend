@@ -75,7 +75,7 @@ docker run -p 4000:4000 -p 4001:4001 --env-file .env ghcr.io/unizar-30226-2023-0
 Follow the instructions on the following [page](https://certbot.eff.org/) to get a certificate.
 
 ```bash
-make -p nginx/certs
+mkdir -p nginx/certs
 sudo cp  /etc/letsencrypt/live/api.gracehopper.xyz/* nginx/certs
 ```
 
