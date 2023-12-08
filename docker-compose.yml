@@ -10,7 +10,7 @@ services:
     ports:
       - 4000:4000
       - 4001:4001
-  restart: always
+    restart: always
 
   nginx:
     build: ./nginx
